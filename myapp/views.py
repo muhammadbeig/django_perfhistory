@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from myapp.models import Project, Tags
 
-# Create your views here.
+
+def index(request):
+	context = RequestContext(request)
+	allprojs= Project.objects.all()
+    	return render_to_response('index.html', { 'an_attrib': allprojs }, context)
