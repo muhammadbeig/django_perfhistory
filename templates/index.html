@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
     <meta charset="utf-8">
-    <title>Change me</title>
+    <title>Historical Performance - Projects</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -16,20 +16,55 @@
     <![endif]-->
     <script src="//code.jquery.com/jquery-1.10.1.min.js" type="text/javascript"></script>
     <script type="text/javascript">
-        // var x='{{ an_attrib}}';
+         var x='{{ an_attrib}}';
     </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <div class="page-header">
+        <h1>Historical Performance <small>Projects</small></h1>
+    </div>
+
     </head>
     
     <body>
     
-    <div class="container">
-        <div class="row">
-            <div class="alert-success">
-                Hello world: {{ an_attrib }}
-            </div>
-        </div>
-    </div> <!-- /container -->
+
+    <div>
+        <div class="panel panel-primary">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Project List</div>
+        <div class="panel-body">
+        <p>Given below is a list of projects results for which exist in the repository</p>
+
+    </div>
+
+  <!-- Table -->
+  <table class="table">
+        <script type="text/javascript">
+            var x='{{ projects_all }}';
+            document.writeln(x.split(',')[1])
+            
+            document.writeln("<th scope=\"row\">Project Name</th>")
+            for (var project in x.split(','))
+                {
+
+                    document.writeln("<tr><td>");
+                    document.writeln(project);
+                    document.writeln("</td></tr>");
+                }
+                
+        </script>
+  </table>
+</div>
+</div>
+    </div>
+
+    <ul>
+        {% for project in object_list %}
+    <li class="project">{{ project }}</li>
+    {% endfor %}
+    </ul>
+
     </body>
 </html>
