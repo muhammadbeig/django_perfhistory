@@ -22,4 +22,7 @@ urlpatterns = [
     url(r'^$', 'myapp.views.projects'),
     url(r'^projects/', 'myapp.views.projects'),
     url(r'^tags/', 'myapp.views.tags'),
+    url(r'^projects/new/$', 'myapp.views.project_new', name='project_new'),
+    url(r'^projects/new1/$', 'myapp.views.project_new1', name='project_new'),
+
 ]

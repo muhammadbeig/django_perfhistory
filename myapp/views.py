@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.template import RequestContext
 from myapp.models import Project, Tag
 
@@ -6,23 +6,27 @@ from .forms import ProjectForm
 
 
 
+def project_new(request):
+	form = ProjectForm()
+	return render(request, 'project_edit.html', {'form':form})
+
 
 
 def projects(request):
 	if request.method == 'POST':
-		# try:
-		# except:
 		form = ProjectForm(request.POST)
-		print 'Request.POST:',request.body
+		print '***form:***',form 
+		print '****Request.body:****',request.POST
+		print form.errors
 		if form.is_valid():
 			print form.cleaned_data
 		else:
 			print 'Invalid Form'
-
-	context = RequestContext(request)
-	allprojs= Project.objects.all()
 	
-	return render_to_response('projects.html', { 'object_list': allprojs, 'type': 'Project' }, context)
+	form = ProjectForm()
+	allprojs= Project.objects.all()
+	return render(request, 'projects.html', {'form':form,'object_list': allprojs, 'type': 'Project'})
+
 	
 def tags(request):
 	context = RequestContext(request)

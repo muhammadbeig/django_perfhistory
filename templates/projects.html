@@ -36,14 +36,19 @@
     <body>
     
 
-    <form id="input-form" class="form-inline" action="/{{ type|lower }}s/" method="post">
+    <form class="form-inline" action="/{{ type|lower }}s/" method="post">
         {% csrf_token %}
-        <div class="form-group">
-            <input type="text" class="form-control" id="InputName" placeholder="Name">
-        </div>
-        <div class="form-group">
-            <textarea  form="input-form" id="InputDescription" class="form-control" rows="1" placeholder="Description"></textarea>
-        </div>
+        {% load css_filter %}
+
+        {% for field in form %}
+        
+
+
+        {{ field|addcss:"form-control" }}
+        
+        
+        {% endfor %}
+
         <input type="submit" class="btn btn-primary" value="Create {{ type }}">
     </form>
 
@@ -133,6 +138,9 @@
 
    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="//code.jquery.com/jquery-1.10.1.min.js" type="text/javascript"></script>
+
+
+
 
     </body>
 </html>
