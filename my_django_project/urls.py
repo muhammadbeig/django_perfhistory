@@ -19,10 +19,15 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', 'myapp.views.projects'),
-    url(r'^projects/', 'myapp.views.projects'),
+    url(r'^perfhistory/$', 'perfhistory.views.project'),
+    # url(r'^perfhistory/project', 'perfhistory.views.project'),
+    # url(r'^myapp/', 'myapp.views.projects'),
+    # url(r'^projects/', 'myapp.views.projects'),
     url(r'^tags/', 'myapp.views.tags'),
     url(r'^projects/new/$', 'myapp.views.project_new', name='project_new'),
     url(r'^projects/new1/$', 'myapp.views.project_new1', name='project_new'),
+    url(r'^perfhistory/project/(?P<project_id>[\d+])$', 'perfhistory.views.projectdetail'),
+    url(r'^perfhistory/chart/$', 'perfhistory.views.chart'),
+    url(r'^perfhistory/d3/$', 'perfhistory.views.d3'),
 
 ]

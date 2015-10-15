@@ -15,14 +15,14 @@ def project_new(request):
 def projects(request):
 	if request.method == 'POST':
 		form = ProjectForm(request.POST)
-		print '***form:***',form 
-		print '****Request.body:****',request.POST
-		print form.errors
+		# print '***form:***',form 
+		# print '****Request.body:****',request.POST
+		# print form.errors
 		if form.is_valid():
 			print form.cleaned_data
+			project = form.save(commit=False)
 		else:
 			print 'Invalid Form'
-	
 	form = ProjectForm()
 	allprojs= Project.objects.all()
 	return render(request, 'projects.html', {'form':form,'object_list': allprojs, 'type': 'Project'})
