@@ -96,7 +96,7 @@ function parseFile(file, callback) {
             return;
         }
 
-        block(offset, chunkSize, file);
+        // block(offset, chunkSize, file);
     }
 
     block = function(_offset, length, _file) {
@@ -110,12 +110,12 @@ function parseFile(file, callback) {
 }
 
 function callback(text) {
-  console.log("********\r\ntext:"+text+"\r\n***************");
+  // console.log("********\r\ntext:"+text+"\r\n***************");
   a=text.split("\n")
-  console.log(a.length)
-  console.log(a)
+  // console.log(a.length)
+  // console.log(a)
   a.pop()
-  text=a.join()
+  text=a.join("\n")
   
   drawChart(text);
   console.log("called drawChart");
@@ -131,7 +131,6 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var parseDate = d3.time.format("%d-%b-%y").parse;
 
 var x = d3.time.scale()
     .range([0, width]);
@@ -148,8 +147,8 @@ var yAxis = d3.svg.axis()
     .orient("left");
 
 var line = d3.svg.line()
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.close); });
+    .x(function(d) { return x( d.date); })
+    .y(function(d) { return y(d.responsetime); });
 
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -157,38 +156,127 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+
+
+  csvchunk = 'date,responsetime,label,responsecode,responsemessage,threadgroup,datatype,assertion,bytes,latency\n'+csvchunk;
 // d3.tsv("/static/data.tsv", function(error, data) {
-  d3.csv.parseRows(csvchunk, function(error, data) {
-  if (error) throw error;
+  // d3.csv(csvchunk, function(error, data) {
+    // console.log(csvchunk);
+    var data = d3.csv.parse(csvchunk, function(rowobject){
+          rowobject.date = new Date(+rowobject.date);
+          rowobject.responsetime = +rowobject.responsetime;
+          // console.log(rowobject)
+          return rowobject 
+        });
 
-  data.forEach(function(d) {
-    d.date = parseDate(d.date);
-    d.close = +d.close;
-  });
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain(d3.extent(data, function(d) { return d.responsetime; }));
 
-  x.domain(d3.extent(data, function(d) { return d.date; }));
-  y.domain(d3.extent(data, function(d) { return d.close; }));
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
 
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+          .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Response Time (ms)");
 
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Price ($)");
+        svg.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", line);
 
-  svg.append("path")
-      .datum(data)
-      .attr("class", "line")
-      .attr("d", line);
-});
+    
+    
+      // , function(row) 
+      //             {
+      //               console.log("Row:"+row)
+      //               var m={ date: row[0], responsetime: row[1], label: row[2], responsecode: row[3] };
+      //               console.log("m:"+m);
+      //               return m;
+
+                    // return row.map(function(value) 
+                    //                 {
+                    //                   console.log("Value:"+value)
+                    //                   var m={ date: row[0], responsetime: row[1], label: row[2], responsecode: 
+                    //                   return +value;
+                    //                 });
+                  // });
+  // console.log(data);
+
+//   d3.csv.parseRows(csvchunk, function(error, data) {
+//   if (error) throw error;
+  // console.log("in d3 csv, data:"+data)
+
+  // data.forEach(function(d) {
+  //   console.log("data for each: "+d);
+  //   d.date = new Date(d[0])
+  //   d.responsetime = +d[1];
+  // });
+
+// for (i = 0; i < data.length; i++) {
+
+//   x.domain(d3.extent(data, function(d) { return d.date; }));
+//   y.domain(d3.extent(data, function(d) { return d.responsetime; }));
+
+//   svg.append("g")
+//       .attr("class", "x axis")
+//       .attr("transform", "translate(0," + height + ")")
+//       .call(xAxis);
+
+//   svg.append("g")
+//       .attr("class", "y axis")
+//       .call(yAxis)
+//     .append("text")
+//       .attr("transform", "rotate(-90)")
+//       .attr("y", 6)
+//       .attr("dy", ".71em")
+//       .style("text-anchor", "end")
+//       .text("Response Time (ms)");
+
+//                 // data[i].date = new Date(data[i].date);
+//                 // data[i].responsetime = +data[i].responsetime;
+//                 console.log('data after parse:' + new Date(+data[i][0]))
+//                 svg.append("path")
+//                   .data(data)
+//                   .attr("class", "line")
+//                   .attr("d", line);
+//             }
+
+ // svg.append("path")
+ //      .datum(data)
+ //      .attr("class", "line")
+ //      .attr("d", line);
+
+  // x.domain(d3.extent(data, function(d) { return d.date; }));
+  // y.domain(d3.extent(data, function(d) { return d.responsetime; }));
+
+  // svg.append("g")
+  //     .attr("class", "x axis")
+  //     .attr("transform", "translate(0," + height + ")")
+  //     .call(xAxis);
+
+  // svg.append("g")
+  //     .attr("class", "y axis")
+  //     .call(yAxis)
+  //   .append("text")
+  //     .attr("transform", "rotate(-90)")
+  //     .attr("y", 6)
+  //     .attr("dy", ".71em")
+  //     .style("text-anchor", "end")
+  //     .text("Price ($)");
+
+  // svg.append("path")
+  //     .datum(data)
+  //     .attr("class", "line")
+  //     .attr("d", line);
+// });
 
 }
 </script>
