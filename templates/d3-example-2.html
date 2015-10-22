@@ -163,9 +163,12 @@ var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
 
-var line = d3.svg.line().interpolate("basis")
+var line = d3.svg.line()
+    .interpolate("basis")
     .x(function(d) { return x( d.date); })
-    .y(function(d) { return y( d.responsetime); });
+    .y(function(d) { console.log('d;',d);return y( d.responsetime); });
+
+
 
 
 function drawChart (csvchunk) {
@@ -192,22 +195,29 @@ var svg = d3.select("body").append("svg")
     {
           rowobject.date = new Date(+rowobject.date);
           rowobject.responsetime = +rowobject.responsetime;
-          rowobject.label = rowobject.label;
+          // rowobject.label = rowobject.label;
 
           // console.log(rowobject)
           return rowobject 
     });
+    // console.log('data:',data[0]);
 
+    color.domain(d3.keys(data[0]).filter(function(key) { return key=="label"; }));
+    data = d3.nest().key(function(d) { return d.label; }).entries(data);
     x.domain(d3.extent(data, function(d) { return d.date; }));
     y.domain(d3.extent(data, function(d) { return d.responsetime; }));
 
-    // color.domain(d3.keys(data[0]).filter(function(key) { return key=="label"} ));
-    // data = d3.nest().key(function(d) { return d.label; }).entries(data);
+    // 
+    
 
     svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
+            .call(xAxis)
+            .append("text")
+            .text("Time")
+            .style("text-anchor", "end")
+            .attr("x",width);
 
     svg.append("g")
             .attr("class", "y axis")
@@ -219,10 +229,21 @@ var svg = d3.select("body").append("svg")
             .style("text-anchor", "end")
             .text("Response Time (ms)");
 
-    svg.append("path")
-            .datum(data)
-            .attr("class", "line")
-            .attr("d", line);
+    // svg.append("path")
+    //         .datum(data)
+    //         .attr("class", "line")
+    //         .attr("d", line);
+
+    var labels = svg.selectAll(".label")
+                  .data(data, function(d) { return d.label; })
+                  .enter().append("g")
+                  .attr("class", "label")
+
+    labels.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return color(d.key); });
+
 
     
     
