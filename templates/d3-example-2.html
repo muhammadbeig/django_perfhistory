@@ -37,6 +37,14 @@ body {
   #byte_range { margin-top: 5px; }
 </style>
 
+
+<div class="progress">
+  <div id="pbar" class="progress-bar" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+    <span class="sr-only">0% Complete</span>
+  </div>
+</div>
+
+
 <input type="file" id="files" name="file" /> Read bytes: 
 <span class="readBytesButtons">
   <button data-startbyte="0" data-endbyte="4">1-5</button>
@@ -49,22 +57,17 @@ body {
 
 <script>
 
-document.querySelector('.readBytesButtons').addEventListener('click', function(evt) 
-  {
-    if (evt.target.tagName.toLowerCase() == 'button') 
-    {
-      var startByte = evt.target.getAttribute('data-startbyte');
-      var endByte = evt.target.getAttribute('data-endbyte');
-      readBlob(startByte, endByte);
-      
-    }
-  }, false);
+function getFileName (event) {
+  console.log('new file selected', event)
+}
 
+document.getElementById('files').onchange= function(event)
+{
 
+  console.log("change", event);
+  progressNode = document.getElementById("pbar");
 
-function readBlob(opt_startByte, opt_stopByte) {
-
-    var files = document.getElementById('files').files;
+  var files = document.getElementById('files').files;
     if (!files.length) 
     {
       alert('Please select a file!');
@@ -72,42 +75,54 @@ function readBlob(opt_startByte, opt_stopByte) {
     }
 
     var file = files[0];
-    parseFile(file,callback);
-  
-  }
 
-function parseFile(file, callback) {
-    var fileSize   = file.size;
-    var chunkSize  = 64 * 1024; // bytes
-    var offset     = 0;
-    var self       = this; // we need a reference to the current object
-    var block      = null;
+    var reader = new FileReader();
 
-    var foo = function(evt) {
-        if (evt.target.error == null) {
-            offset += evt.target.result.length;
-            callback(evt.target.result); // callback for handling read chunk
-        } else {
-            console.log("Read error: " + evt.target.error);
-            return;
-        }
-        if (offset >= fileSize) {
-            console.log("Done reading file");
-            return;
-        }
 
-        // block(offset, chunkSize, file);
-    }
+    reader.onprogress = function(event) 
+    {
+      
+      if (event.lengthComputable) 
+      {
+          progressNode.max = 1;
+          var valeur = parseInt(event.loaded/event.total*100);
+          progressNode.value = event.loaded/event.total;
+          $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
+          console.log('on progress, loaded:',event.loaded );
+          console.log('on progress, total:',event.total );
+          console.log('on progress, ratio:',event.loaded/event.total );
 
-    block = function(_offset, length, _file) {
-        var r = new FileReader();
-        var blob = _file.slice(_offset, length + _offset);
-        r.onload = foo;
-        r.readAsText(blob);
-    }
+      }
+    };
 
-    block(offset, chunkSize, file);
-}
+    reader.onloadend = function(event) 
+    {
+    var contents = event.target.result,
+        error    = event.target.error;
+
+      if (error != null) 
+      {
+          console.error("File could not be read! Code " + error.code);
+      } 
+      else 
+      {
+          progressNode.max = 1;
+          progressNode.value = 1;
+          console.log('done:' );
+          // console.log("Contents: " + contents);
+          callback(contents);
+
+
+      }
+    };
+
+     reader.readAsText(file);
+
+
+  };
+
+
+function sleep(el) { setTimeout(function() { foobar_cont(el); }, 5000); } 
 
 function callback(text) {
   // console.log("********\r\ntext:"+text+"\r\n***************");
@@ -125,7 +140,7 @@ function callback(text) {
 
 
 
-function drawChart (csvchunk) {
+
 
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
@@ -138,6 +153,8 @@ var x = d3.time.scale()
 var y = d3.scale.linear()
     .range([height, 0]);
 
+var color = d3.scale.category20();
+
 var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom");
@@ -146,14 +163,14 @@ var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
 
-var line = d3.svg.line()
+var line = d3.svg.line().interpolate("basis")
     .x(function(d) { return x( d.date); })
-    .y(function(d) { return y(d.responsetime); });
+    .y(function(d) { return y( d.responsetime); });
 
-// remote already existing svg tags if exist
-// if (!appendToChart) {
+
+function drawChart (csvchunk) {
+
   d3.select("svg").remove();  
-// }
 
 
 var svg = d3.select("body").append("svg")
@@ -164,28 +181,35 @@ var svg = d3.select("body").append("svg")
 
 
 
+
   csvchunk = 'date,responsetime,label,responsecode,responsemessage,threadgroup,datatype,assertion,bytes,latency\n'+csvchunk;
+
+  
 // d3.tsv("/static/data.tsv", function(error, data) {
   // d3.csv(csvchunk, function(error, data) {
     // console.log(csvchunk);
-    var data = d3.csv.parse(csvchunk, function(rowobject){
+    var data = d3.csv.parse(csvchunk, function(rowobject)
+    {
           rowobject.date = new Date(+rowobject.date);
           rowobject.responsetime = +rowobject.responsetime;
+          rowobject.label = rowobject.label;
+
           // console.log(rowobject)
           return rowobject 
-        });
+    });
 
-        x.domain(d3.extent(data, function(d) { return d.date; }));
-        y.domain(d3.extent(data, function(d) { return d.responsetime; }));
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain(d3.extent(data, function(d) { return d.responsetime; }));
 
+    // color.domain(d3.keys(data[0]).filter(function(key) { return key=="label"} ));
+    // data = d3.nest().key(function(d) { return d.label; }).entries(data);
 
-
-        svg.append("g")
+    svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis);
 
-        svg.append("g")
+    svg.append("g")
             .attr("class", "y axis")
             .call(yAxis)
           .append("text")
@@ -195,7 +219,7 @@ var svg = d3.select("body").append("svg")
             .style("text-anchor", "end")
             .text("Response Time (ms)");
 
-        svg.append("path")
+    svg.append("path")
             .datum(data)
             .attr("class", "line")
             .attr("d", line);
@@ -288,5 +312,7 @@ var svg = d3.select("body").append("svg")
 
 }
 </script>
+<script src="//code.jquery.com/jquery.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
 

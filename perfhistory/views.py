@@ -33,4 +33,4 @@ def chart(request):
 
 def d3(request):
 	# project=Project.objects.get(id=project_id)
-	return render(request, 'd3-example.html')	
+	return render(request, 'd3-example-2.html')	
