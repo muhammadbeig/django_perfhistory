@@ -25,7 +25,6 @@ body {
 
 </style>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 
 <style>
   #byte_content {
@@ -55,87 +54,8 @@ body {
 <div id="byte_range"></div>
 <div id="byte_content"></div>
 <script src="//code.jquery.com/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script>
-
-function getFileName (event) {
-  console.log('new file selected', event)
-}
-
-document.getElementById('files').onchange= function(event)
-{
-
-  console.log("change", event);
-  progressNode = document.getElementById("pbar");
-
-  var files = document.getElementById('files').files;
-    if (!files.length) 
-    {
-      alert('Please select a file!');
-      return;
-    }
-
-    var file = files[0];
-
-    var reader = new FileReader();
-
-
-    reader.onprogress = function(event) 
-    {
-      
-      if (event.lengthComputable) 
-      {
-          progressNode.max = 1;
-          var valeur = parseInt(event.loaded/event.total*100);
-          progressNode.value = event.loaded/event.total;
-          $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
-          console.log('on progress, loaded:',event.loaded );
-          console.log('on progress, total:',event.total );
-          console.log('on progress, ratio:',event.loaded/event.total );
-
-      }
-    };
-
-    reader.onloadend = function(event) 
-    {
-    var contents = event.target.result,
-        error    = event.target.error;
-
-      if (error != null) 
-      {
-          console.error("File could not be read! Code " + error.code);
-      } 
-      else 
-      {
-          progressNode.max = 1;
-          progressNode.value = 1;
-          console.log('done:' );
-          // console.log("Contents: " + contents);
-          callback(contents);
-
-
-      }
-    };
-
-     reader.readAsText(file);
-
-
-  };
-
-
-function sleep(el) { setTimeout(function() { foobar_cont(el); }, 5000); } 
-
-function callback(text) {
-  // console.log("********\r\ntext:"+text+"\r\n***************");
-  a=text.split("\n")
-  // console.log(a.length)
-  // console.log(a)
-  a.pop()
-  text=a.join("\n")
-  
-  drawChart(text);
-  console.log("called drawChart");
-}
-
 
 $(function() {
     console.log( "ready!" );
@@ -145,9 +65,10 @@ $(function() {
 
 
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    width = 800 - margin.left - margin.right,
+    height = 350 - margin.top - margin.bottom;
 
+var timeFormat = d3.time.format("%H:%M:%S");
 
 var x = d3.time.scale()
     .range([0, width]);
@@ -155,27 +76,29 @@ var x = d3.time.scale()
 var y = d3.scale.linear()
     .range([height, 0]);
 
-var color = d3.scale.category20();
+var color = d3.scale.category10();
 
 var xAxis = d3.svg.axis()
     .scale(x)
-    .orient("bottom");
+    .orient("bottom")
+    .tickFormat(function(d){return d3.time.format('%H:%M:%S')(new Date(d));});
 
 var yAxis = d3.svg.axis()
     .scale(y)
-    .orient("left");
+    .orient("left");    
+    // .tickFormat(timeFormat);
 
 var line = d3.svg.line()
     .interpolate("basis")
     .x(function(d) { return x( d.date); })
-    .y(function(d) { return y( d.responsetime); }); //console.log('d;',d);
+    .y(function(d) { console.log(d); return y(  d.responsetime); }); //console.log('d;',d);
 
 
 
 
-function drawChart (csvchunk) {
+// function drawChart (csvchunk) {
 
-  d3.select("svg").remove();  
+  // d3.select("svg").remove();  
 
 
 var svg = d3.select("body").append("svg")
@@ -187,75 +110,126 @@ var svg = d3.select("body").append("svg")
 
 
 
-  csvchunk = 'date,responsetime,samplelabel,responsecode,responsemessage,threadgroup,datatype,assertion,bytes,latency\n'+csvchunk;
+  // csvchunk = 'date,responsetime,samplelabel,responsecode,responsemessage,threadgroup,datatype,assertion,bytes,latency\n'+csvchunk;
 
   
-// d3.tsv("/static/data.tsv", function(error, data) {
-  // d3.csv(csvchunk, function(error, data) {
-    // console.log(csvchunk);
-    var data = d3.csv.parse(csvchunk, function(rowobject)
-    {
-          rowobject.date = new Date(+rowobject.date);
-          rowobject.responsetime = +rowobject.responsetime;
-          rowobject.samplelabel = rowobject.samplelabel;
+  d3.csv("/static/sample.jtl", function(error, data) {
 
-          // console.log(rowobject)
-          return rowobject 
-    });
+  color.domain(d3.keys(data[0]).filter(function(key) { return key == "samplelabel"; }));
+   
+// first we need to corerce the data into the right formats
 
-    color.domain(d3.keys(data[0]).filter(function(key) { return key=="samplelabel"; }));
-    data = data.map( function (d) {
-      return {
-        label: d.samplelabel,
-        date: d.date,
-        responsetime: d.responsetime
-      };
-    });
+  data = data.map( function (d) { 
+    return { 
+      samplelabel: d.samplelabel,
+      date: new Date(+d.date),
+      responsetime: +d.responsetime }; 
+});   
+  
+  
+// then we need to nest the data on city since we want to only draw one
+// line per city
+  data = d3.nest().key(function(d) { return d.samplelabel; }).entries(data);
 
-    // console.log('data:',data[0]);
 
-    
-    
-    data = d3.nest().key(function(d) { return d.samplelabel; }).entries(data);
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain(d3.extent(data, function(d) { return d.responsetime; }));
+  x.domain([d3.min(data, function(d) { return d3.min(d.values, function (d) { return d.date; }); }),
+             d3.max(data, function(d) { return d3.max(d.values, function (d) { return d.date; }); })]);
+  y.domain([0, d3.max(data, function(d) { return d3.max(d.values, function (d) { return d.responsetime; }); })]);
 
-    // 
-    
+                                                                                   
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
 
-    svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis)
-            .append("text")
-            .text("Time")
-            .style("text-anchor", "end")
-            .attr("x",width);
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
 
-    svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
-          .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-            .text("Response Time (ms)");
+  var labels = svg.selectAll(".samplelabel")
+      .data(data, function(d) { return d.key; })
+    .enter().append("g")
+      .attr("class", "samplelabel");
 
-    // svg.append("path")
-    //         .datum(data)
-    //         .attr("class", "line")
-    //         .attr("d", line);
-
-    var labels = svg.selectAll(".samplelabel")
-                  .data(data, function(d) { return d.samplelabel; })
-                  .enter().append("g")
-                  .attr("class", "samplelabel")
-
-    labels.append("path")
+  labels.append("path")
       .attr("class", "line")
       .attr("d", function(d) { return line(d.values); })
-      // .style("stroke", function(d) { return color(d.key); });
+      .style("stroke", function(d) { return color(d.key); });
+
+}); 
+
+
+
+
+
+
+
+
+
+
+    // var data = d3.csv.parse(csvchunk, function(rowobject)
+    // {
+    //       rowobject.date = new Date(+rowobject.date);
+    //       rowobject.responsetime = +rowobject.responsetime;
+    //       rowobject.samplelabel = rowobject.samplelabel;
+
+    //       // console.log(rowobject)
+    //       return rowobject 
+    // });
+
+    // color.domain(d3.keys(data[0]).filter(function(key) { return key=="samplelabel"; }));
+    // data = data.map( function (d) {
+    //   return {
+    //     label: d.samplelabel,
+    //     date: d.date,
+    //     responsetime: d.responsetime
+    //   };
+    // });
+
+    // // console.log('data:',data[0]);
+
+    
+    
+    // data = d3.nest().key(function(d) { return d.samplelabel; }).entries(data);
+    // x.domain(d3.extent(data, function(d) { return d.date; }));
+    // y.domain(d3.extent(data, function(d) { return d.responsetime; }));
+
+    // // 
+    
+
+    // svg.append("g")
+    //         .attr("class", "x axis")
+    //         .attr("transform", "translate(0," + height + ")")
+    //         .call(xAxis)
+    //         .append("text")
+    //         .text("Time")
+    //         .style("text-anchor", "end")
+    //         .attr("x",width);
+
+    // svg.append("g")
+    //         .attr("class", "y axis")
+    //         .call(yAxis)
+    //       .append("text")
+    //         .attr("transform", "rotate(-90)")
+    //         .attr("y", 6)
+    //         .attr("dy", ".71em")
+    //         .style("text-anchor", "end")
+    //         .text("Response Time (ms)");
+
+    // // svg.append("path")
+    // //         .datum(data)
+    // //         .attr("class", "line")
+    // //         .attr("d", line);
+
+    // var labels = svg.selectAll(".samplelabel")
+    //               .data(data, function(d) { return d.samplelabel; })
+    //               .enter().append("g")
+    //               .attr("class", "samplelabel")
+
+    // labels.append("path")
+    //   .attr("class", "line")
+    //   .attr("d", function(d) { return line(d.values); })
+    //   // .style("stroke", function(d) { return color(d.key); });
 
 
     
@@ -344,7 +318,7 @@ var svg = d3.select("body").append("svg")
   //     .attr("d", line);
 // });
 
-}
+// }
 </script>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
