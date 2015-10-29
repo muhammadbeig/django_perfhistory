@@ -46,7 +46,7 @@ def getTags(request, project_id):
 	# print json_tags
 	# return JsonResponse({'tagname':tags.name})
 	# return JsonResponse(json_tags)
-	return HttpResponse(json.dumps(results), mimetype="application/json")
+	return HttpResponse(json.dumps(results), content_type="application/json")
 
 
 def encode_b(obj):
