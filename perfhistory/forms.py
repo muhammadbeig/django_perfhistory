@@ -12,20 +12,20 @@ class ProjectForm(forms.ModelForm):
 
     	fields = (name, description,)
     	widgets = {
-            name: TextInput(attrs={'placeholder': name.capitalize()}),
-            description: Textarea(attrs={'placeholder': description.capitalize(),'rows': 2}),
+            name: TextInput(attrs={'required':True, 'placeholder': 'Project '+name.capitalize()}),
+            description: Textarea(attrs={'placeholder': 'Project '+description.capitalize(),'rows': 2}),
         }
 
 class TagForm(forms.ModelForm):
 
 	class Meta:
 		model = Tag
-		project_id = 'project_id'
+		# project_id = 'project_id'
 		name='name'
 		description='description'
 
 		fields=(name, description,)
 		widgets = {
-            name: TextInput(attrs={'placeholder': name.capitalize()}),
-            description: Textarea(attrs={'placeholder': description.capitalize(),'rows': 2}),
+            name: TextInput(attrs={'required':True, 'placeholder':  'Tag '+name.capitalize()}),
+            description: Textarea(attrs={'placeholder': 'Tag '+description.capitalize(),'rows': 1}),
         }

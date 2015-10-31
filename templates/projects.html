@@ -37,7 +37,7 @@
 <body>
 
 
-    <form class="form-inline" action="/perfhistory/" method="post">
+    <form class="form-inline" action="/perfhistory/projects" method="post">
         {% csrf_token %}
         {% load css_filter %}
 
@@ -100,24 +100,31 @@
 
 
 <script>
-function createTable(pid){
+function createTable(pid, object_list){
      
-    mytable = $('<table></table>').attr({ id: "tagTable_"+pid });
-    var rows = 2;//new Number($("#rowcount").val());
-    var cols = 2;//new Number($("#columncount").val());
+    mytable = $('<table></table>').attr({ id: "tagTable_"+pid,class: ["table", "table-striped", "table-bordered"].join(' ') });
+    
+    // var rows = 2;//new Number($("#rowcount").val());
+    // var cols = 2;//new Number($("#columncount").val());
     var tr = [];
-    $('<th></th>').text("header1").appendTo(mytable);
-    $('<th></th>').text("header2").appendTo(mytable);
-    for (var i = 0; i < rows; i++) {
-        var row = $('<tr></tr>').attr({ class: ["table", "table-striped", "table-bordered"].join(' ') }).appendTo(mytable);
-        for (var j = 0; j < cols; j++) {
-            $('<td></td>').text("text1").appendTo(row); 
+    if (object_list.length > 0)
+    {
+        // console.log('object_list'+object_list);
+        // console.log('zero-th object'+object_list[0]["tag_name"]);
+        
+        $('<th></th>').text("Name").attr({ align: "center"}).appendTo(mytable);
+        $('<th></th>').text("Description").attr({ align: "center"}).appendTo(mytable);    
+        for (var i=0; i<object_list.length; i++)
+        {
+            var row = $('<tr></tr>').appendTo(mytable);
+            $('<td></td>').text(object_list[i]["tag_name"]).attr({ align: "center"}).appendTo(row); 
+            $('<td></td>').text(object_list[i]["tag_description"]).attr({ align: "center"}).appendTo(row); 
         }
-                 
-    }
-    console.log("TTTTT:"+mytable.html());
-    // mytable.appendTo("#box");      
-    $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder').append(mytable);    
+
+        console.log("TTTTT:"+mytable.html());
+        $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder').append(mytable);  
+
+    }  
   
 }
 </script>
@@ -133,42 +140,11 @@ function createTable(pid){
             {
                 var pid=event.currentTarget.dataset.pid;
                 console.log(pid);
-                var jqxhr = $.get( "project/"+pid+"/getTags",function(f) 
+                var jqxhr = $.get( "/perfhistory/project/"+pid+"/getTags",function(f) 
                 {
                   console.log('dats', f );
+                  createTable(pid, f);
 
-                  var table = document.createElement('table');
-                  var th1 = document.createElement('th');   
-                  var th2 = document.createElement('th');   
-                  th1.setAttribute("align","center");
-                  th2.setAttribute("align","center");
-
-                  // table.children().append("<td>Tag Name</td>");
-                  // table.children().append("<td>Tag Description</td>");
-
-                  var tr = document.createElement('tr');   
-
-
-                    var td1 = document.createElement('td');
-                    var td2 = document.createElement('td');
-
-                    var text1 = document.createTextNode('Text1');
-                    var text2 = document.createTextNode('Text2');
-
-                    td1.appendChild(text1);
-                    td2.appendChild(text2);
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-
-                    table.appendChild(tr);
-                    table.setAttribute("class","table table-striped table-bordered");
-
-                  // $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder').append(table);
-
-                  createTable(pid);
-                  // table.appendTo('#')
-
-                  // for 
                 })
                 .done(function(d) {
                     console.log( d );
@@ -188,7 +164,49 @@ function createTable(pid){
             });
 
             });
+
+            
+                
         });
+
+
+      $(document).ready(function() 
+      {
+            
+        $('[id^=tagform_]').submit(function(e,data)
+        {
+            var projectid=e.currentTarget.dataset.projectId;
+            // console.log('add tag button', e.currentTarget.dataset.projectId);
+            console.log(e);
+            console.log(data);
+            e.preventDefault();
+            create_tag(projectid);
+        });
+
+    });
+
+    function create_tag(projectid)
+    {
+        var jqxhr = $.post( "/perfhistory/project/"+projectid+"/createTag", function() 
+            {
+                console.log("Success" );
+            })
+            .done(function() 
+            {
+                
+                console.log("second success" );
+             })
+             .fail(function() 
+             {
+               console.log("Error" );
+             })
+            .always(function() 
+            {
+                console.log("Finished" );
+            });
+    }
+            
+
 
     </script>
 
@@ -224,33 +242,46 @@ function createTable(pid){
 
             <div id="tableplaceholder"></div>
 
-            <script type="text/javascript">
-                    // form_count = $("[name=extra_field_count");
-            // get extra form count so we know what index to use for the next item.
-            $("#add-another").click(function() 
-            {
-                element = $('<input type="text"/>');
-                element.attr('name', 'extra_field_' + form_count);
-                $("#forms_{{ obj.id }}").append(element);
-                console.log("objId: {{ obj.id }}")
-                // build element and append it to our forms container
+             <script type="text/javascript">
+        //             // form_count = $("[name=extra_field_count");
+        //     // get extra form count so we know what index to use for the next item.
+        //     $("#add-another").click(function() 
+        //     {
+        //         element = $('<input type="text"/>');
+        //         element.attr('name', 'extra_field_' + form_count);
+        //         $("#forms_{{ obj.id }}").append(element);
+        //         console.log("objId: {{ obj.id }}")
+        //         // build element and append it to our forms container
 
-                form_count ++;
-                $("[name=extra_field_count]").val(form_count);
-                // increment form count so our view knows to populate 
-                // that many fields for validation
-            })
+        //         form_count ++;
+        //         $("[name=extra_field_count]").val(form_count);
+        //         // increment form count so our view knows to populate 
+        //         // that many fields for validation
+        //     })
 
-        </script>
+         </script>
+
+        <div id="tag_form">
+        <form id="tagform_{{ obj.id }}" data-project-id="{{ obj.id }}" class="form-inline" method="post" action="/perfhistory/project/{{ obj.id }}/createTag">
+            <div >
+                   {% csrf_token %}
+                    {% load css_filter %}
+
+                    {% for field in tagForm %}
+                    
 
 
-        <form>
-            <div id="forms_{{ obj.id }}">
-                {{ tagForm.as_p }}
+                    {{ field|addcss:"form-control" }}
+                    
+                    
+                    {% endfor %}
+                <!-- {{ tagForm.as_p }} -->
+            <input type="submit" id="AddTagButton" class="btn btn-default" />
             </div>
-            <button id="add-another">add another</button>
-            <input type="submit" />
+            <!-- <button id="add-another" class="btn btn-default">add another</button> -->
+            
         </form>
+        </div>
 
 
     </div>

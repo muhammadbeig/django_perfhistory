@@ -15,7 +15,7 @@ class Project(models.Model):
                 return u'%d %s %s' % (self.id, self.name, self.description)
 
 class Tag(models.Model):
-		project_id = models.ForeignKey(Project)
+		project = models.ForeignKey(Project)
 		name = models.CharField(max_length=200)
 		description = models.CharField(max_length=400)
 		created = models.DateTimeField(auto_now_add=True)
