@@ -29,3 +29,4 @@ class TagForm(forms.ModelForm):
             name: TextInput(attrs={'required':True, 'placeholder':  'Tag '+name.capitalize()}),
             description: Textarea(attrs={'placeholder': 'Tag '+description.capitalize(),'rows': 1}),
         }
+

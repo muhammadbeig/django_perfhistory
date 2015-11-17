@@ -1,0 +1,118 @@
+{% extends "base_index.html" %}
+{% block content %}
+
+    <div>
+        <div class="panel panel-primary" id="panel-body">
+            
+            <div class="panel-heading">{{ type }} List</div>
+            <div class="panel-body" id="panel-body">
+                <p>Given below is a list of projects results for which exist in the repository</p>
+
+                
+                <table id="example" class="display compact cell-border row-border order-column" cellspacing="0" >
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th>200s</th>
+                            <th>non200s</th>
+                            <th>avg</th>
+                            <th>min</th>
+                            <th>max</th>
+                            <th>P50</th>
+                            <th>P90</th>
+                            <th>P95</th>
+                            <th>P99</th>
+                            <th>P99.99</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th>200s</th>
+                            <th>non200s</th>
+                            <th>avg</th>
+                            <th>min</th>
+                            <th>max</th>
+                            <th>P50</th>
+                            <th>P90</th>
+                            <th>P95</th>
+                            <th>P99</th>
+                            <th>P99.99</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                    {% for obj in object_list %}
+                        <tr>
+                            <td><small>{{ obj.version }}</small></td>
+                            <td>{{ obj.name }}</td>
+                            <td align="center">{{ obj.successcount }}</td>
+                            <td align="center">{{ obj.failurecount }}</td>
+                            <td align="center">{{ obj.average }}</td>
+                            <td align="center">{{ obj.minimum }}</td>
+                            <td align="center">{{ obj.maximum }}</td>
+                            <td align="center">{{ obj.median }}</td>
+                            <td align="center">{{ obj.p90 }}</td>
+                            <td align="center">{{ obj.p95 }}</td>
+                            <td align="center">{{ obj.p99 }}</td>
+                            <td align="center">{{ obj.p99_99 }}</td>
+                        </tr>
+                    {% endfor %}
+                        
+                    </tbody>
+                </table>
+                
+
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<style type="text/css">
+    td {
+        align: "center"
+    }
+</style>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js">
+    </script>
+<script type="text/javascript">
+    
+    $(document).ready(function() {
+        x="{{ object_list }}"
+    oTable= $('#example').DataTable({
+        // "sScrollY": "200px",
+        // "bScrollCollapse": true,
+        // "bPaginate": false,
+        // "bJQueryUI": true,
+        // "aoColumnDefs": [
+        //     { "sWidth": "10%", "aTargets": [ -1 ] }
+        // ]
+    });
+         // oTable.fnAdjustColumnSizing();
+        } );
+
+</script>
+
+<style type="text/css">
+    .container-fluid {
+    /*height:150px;*/
+    /*border:1px solid pink;*/
+    min-width:1050px; // set the minimum width of the container to 1100px
+    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+}
+
+    .page-wrapper  {
+    /*height:150px;*/
+    /*border:1px solid pink;*/
+    min-width:1100px; // set the minimum width of the container to 1100px
+    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+}
+</style>
+
+    
+{% endblock %}
