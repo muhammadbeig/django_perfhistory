@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+
+
+<style>
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+.btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  background: red;
+  cursor: inherit;
+  display: block;
+}
+input[readonly] {
+  background-color: white !important;
+  cursor: text !important;
+}
+
+
+</style>
+
+
+<input type="file" id="files" name="file" /> 
+<span class="btn btn-default btn-file">
+  <button>Upload Result</button>
+</span>
+
+
+
+<div class="col-lg-6 col-sm-8 col-14">
+            <h4>Upload Result</h4>
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-file">
+                      <small><span class="glyphicon glyphicon-cloud-upload"></span></small>
+                        Browse&hellip; <input id="attached_file" type="file">
+                    </span>
+                </span>
+
+                <input type="text" name="name" placeholder="Select a result file to continue" class="form-control" readonly>
+            </div>
+                    <div class="progress" style="height: 5px;">
+                      <div id="pbar" class="progress-bar progress-bar-warning progress-bar-striped" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;" >
+                        <span class="sr-only">0% Complete</span>
+                      </div>
+                    </div>
+</div>
+        
+
+
+
+<div id="form-container">
+
+  <form   id="newResultForm"  >
+      {% csrf_token %}
+
+  <div class="form-group col-xs-8">
+    <!-- <label type="text">Name:</label> -->
+    <input id="name" name="name" class="form-control" placeholder="Name" type="text"  required>
+  </div>
+                                          
+  <div class="form-group col-xs-8">
+    <!-- <label  type="text">Description:</label> -->
+    <textarea id="description" name="description" placeholder="Description"rows="2" class="form-control" ></textarea>
+  </div>
+
+  <div class="form-group col-sm-6">
+    <!-- <label  type="text">Version:</label> -->
+    <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
+  </div>
+
+  <div class="form-group col-xs-2">
+    <!-- <label  type="text">Users:</label> -->
+    <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="text">
+  </div>
+
+  <div class="form-group col-xs-5">
+    <label  type="text">Baseline:</label>
+    <input id="baseline" name="baseline" class="form-control" type="checkbox">
+  </div>
+
+  <div class="col-xs-6">
+  <button type="submit" class="btn btn-warning btn-lg" style="width: 50%;">
+    <span class="glyphicon glyphicon-ok-sign"></span> Upload
+  </button>
+  </div>
+  </form>
+</div>
+
+<script src="/static/jquery-2.1.4.min.js"></script>
+<script>
+
+$(document).on('change', '.btn-file :file', function() {
+  var input = $(this),
+      numFiles = input.get(0).files ? input.get(0).files.length : 1,
+      label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+  input.trigger('fileselect', [numFiles, label]);
+
+  console.log("file selected");
+});
+
+$(document).ready( function() {
+    $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+        
+        var input = $(this).parents('.input-group').find(':text'),
+            log = numFiles > 1 ? numFiles + ' files selected' : label;
+        
+        if( input.length ) {
+            input.val(log);
+        } else {
+            if( log ) alert(log);
+        }
+        
+        updateFormNameField(label);
+    });
+});
+
+
+function updateFormNameField(text)
+{
+  newResultform = document.getElementById('newResultForm');
+  nameField = newResultform.elements['name']
+  versionField = newResultform.elements['version']
+  if (!nameField.value)
+  {
+    nameField.value = text;
+  }
+  if (!versionField.value)
+  {
+    versionField.value = text;
+  }
+}
+
+
+var NAME_POSITION = 2;
+var RESPONSE_TIME_POSITION = 1;
+var RESPONSE_CODE_POSITION = 3;
+
+var SUCCESS = 'successcount';
+var FAILURE = 'failurecount';
+var AVERAGE = 'average';
+var MINIMUM = 'minimum';
+var MAXIMUM = 'maximum';
+var p50 = 'p50';
+var p90 = 'p90';
+var p95 = 'p95';
+var p99 = 'p99';
+var p99_9 = 'p99.9';
+var p99_99 = 'p99.99';
+
+var include_failed_requests_in_calculation = true;
+
+var SUM_OF_RESPONSE_TIMES = 'sum_of_response_times';
+var DATA = 'response_time_data';
+
+var datadic = {};
+
+// document.getElementById('files').onchange= function(event)
+// {
+document.getElementById('newResultForm').onsubmit= function(event)
+{
+  console.log("submit", event);
+  event.preventDefault();
+  progressNode = document.getElementById("pbar");
+
+  // var files = document.getElementById('files').files;
+  var files = document.getElementById('attached_file').files;
+
+  if (!files.length) 
+  {
+    alert('Please select a result file to upload!');
+    return;
+  }
+
+  var file = files[0];
+  console.log(file);
+  var reader = new FileReader();
+  datadic = {};
+
+  reader.onprogress = function(event) 
+  {
+      
+    if (event.lengthComputable) 
+    {
+      progressNode.max = 1;
+      var valeur = parseInt(event.loaded/event.total*100);
+      progressNode.valuenow = event.loaded/event.total;
+      $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
+      
+      var dataarray = event.target.result.split('\n');
+      var totallines = 0;
+      for (line in dataarray)
+      {
+        var name = dataarray[line].split(',')[NAME_POSITION]
+        var responsetime = dataarray[line].split(',')[RESPONSE_TIME_POSITION]
+        var responsecode = dataarray[line].split(',')[RESPONSE_CODE_POSITION]
+        if (name && typeof parseFloat(responsetime) === "number")
+        {
+          if (!datadic[name])
+          //initialize if it doesn't exist, push in any case
+          {
+            datadic[name] = {}
+            datadic[name][DATA] = []
+          }
+          datadic[name][DATA].push(parseFloat(responsetime));    
+          if (parseInt(responsecode) == 200)
+          {
+            datadic[name][SUCCESS] = ++datadic[name][SUCCESS]|| 1;
+          }
+          else
+          {
+            datadic[name][FAILURE] = ++datadic[name][FAILURE]|| 1;
+          }
+          if (parseInt(responsecode) == 200 || include_failed_requests_in_calculation)
+          {
+            datadic[name][SUM_OF_RESPONSE_TIMES] = datadic[name][SUM_OF_RESPONSE_TIMES] + parseFloat(responsetime) || parseFloat(responsetime);
+          }
+        }
+        else 
+        {
+          console.log( typeof parseFloat(responsetime) === "number")
+          alert('Invalid results file!');
+          return;
+        }        
+            // totallines = line
+      }
+
+          console.log ('total lines:', totallines);
+
+            // console.log('datadic:', datadic);
+
+    }
+  };
+
+  reader.onloadend = function(event) 
+  {
+    var contents = event.target.result,
+    error    = event.target.error;
+    if (error != null) 
+    {
+      console.error("File could not be read! Code " + error.code);
+    } 
+    else 
+    {
+      progressNode.max = 1;
+      progressNode.value = 1;
+      console.log('datadic:', datadic);
+      console.log('done:' );
+      // console.log("Contents: " + contents);
+      processRawData(datadic, file.name, 'summaryresults', file.name);
+      // callback(contents);
+    }
+  };
+
+  reader.readAsText(file);
+};
+
+function processRawData(dictionary, name, type, version)
+{
+  if (dictionary)
+  {
+    var resultArray = []
+    for (txnname in dictionary)
+    {
+      var length = dictionary[txnname][DATA].length; //length of the response time data array
+      if (include_failed_requests_in_calculation)
+      // we need to do this differently only for the case of average since we are dividing the sum of response time by passed request counts or total requests (depending on if we want to include failed requests)
+      {
+        dictionary[txnname][AVERAGE] = dictionary[txnname][SUM_OF_RESPONSE_TIMES] / length;
+      }
+      else
+      {
+        dictionary[txnname][AVERAGE] = dictionary[txnname][SUM_OF_RESPONSE_TIMES] / dictionary[txnname][SUCCESS];
+      }
+
+      // everything else is going to be based on the response time data array so no need to have two different cases for it since the insertion into that array is conditional (based on the boolean)
+      var sorted_data = dictionary[txnname][DATA].sort(function(a,b) {return a-b} );
+        
+       dictionary[txnname][MAXIMUM] = sorted_data[length - 1];
+       dictionary[txnname][MINIMUM] = sorted_data[0];
+       dictionary[txnname][p50] = sorted_data[Math.floor(length * 0.5) -1];
+       dictionary[txnname][p90] = sorted_data[Math.floor(length * 0.9) -1];
+       dictionary[txnname][p95] = sorted_data[Math.floor(length * 0.95) -1];
+       dictionary[txnname][p99] = sorted_data[Math.floor(length * 0.99) -1];
+       dictionary[txnname][p99_9] = sorted_data[Math.floor(length * 0.999) -1];
+       dictionary[txnname][p99_99] = sorted_data[Math.floor(length * 0.9999) -1];
+
+       dictionary[txnname]['name'] = txnname;
+       delete dictionary[txnname][DATA]; // to cleanup for final output
+      delete dictionary[txnname][SUM_OF_RESPONSE_TIMES]; // to cleanup for final output
+        
+      // if failure or success counts not present, make them zero
+      if (!dictionary[txnname][FAILURE])
+        dictionary[txnname][FAILURE]=0
+      if (!dictionary[txnname][SUCCESS])
+        dictionary[txnname][SUCCESS]=0
+
+      resultArray.push(dictionary[txnname])
+    }
+  }
+  else
+  {
+    console.log('Input data is invalid');
+  }
+  
+  var outputdictionary = {}
+  outputdictionary['name'] = name;
+  outputdictionary['version'] = version;
+  outputdictionary['type'] = type;
+  outputdictionary['data'] = resultArray;
+
+  // console.log('-------- Result -------');
+  console.log(outputdictionary);
+
+}
+</script>
+
+
+
+
+<script src="/static/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+<link href="/static/bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">

@@ -37,9 +37,16 @@ class Result(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	last_modified = models.DateTimeField(auto_now=True)
 	baseline = models.NullBooleanField(default=False, null=True)
+	numberofusers = models.IntegerField(null=True)
 
 	class Meta:
 		unique_together = ('project', 'tag', 'version', 'name')
+
+	def as_json(self):
+		return dict( result_id=self.id,
+			project_id=self.project_id, tag_id=self.tag_id,
+			name=self.name, description=self.description, created=str(self.created),
+			last_modified=str(self.last_modified), baseline=self.baseline, version=self.version, numberofusers=self.numberofusers)
 
 class Transaction(models.Model):
 	result = models.ForeignKey(Result)

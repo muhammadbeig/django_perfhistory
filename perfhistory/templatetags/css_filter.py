@@ -8,3 +8,7 @@ def addcss(field, css):
 @register.filter(name='addplaceholder')
 def addplaceholder(field, something):
 	return field.as_widget(attrs={"placeholder":something})
+
+@register.filter(name='addvalue')
+def addplaceholder(field, something):
+	return field.as_widget(attrs={"value":something})

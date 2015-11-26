@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^(?i)admin/', include(admin.site.urls)),
     url(r'^(?i)perfhistory/$', 'perfhistory.views.project'),
     url(r'^(?i)perfhistory/projects$', 'perfhistory.views.project'),
+    url(r'^(?i)perfhistory/project/(?P<projectId>[\d+]+)$', 'perfhistory.views.deleteProject'),
     # url(r'^myapp/', 'myapp.views.projects'),
     # url(r'^projects/', 'myapp.views.projects'),
     url(r'^(?i)tags/', 'myapp.views.tags'),
@@ -33,4 +34,6 @@ urlpatterns = [
     url(r'^(?i)perfhistory/project/(?P<project_id>[0-9]+)/createTag$', 'perfhistory.views.createTag'),
     url(r'^(?i)perfhistory/project/(?P<project_id>[0-9]+)/tag/(?P<tagid>[0-9]+)/createResult$', 'perfhistory.views.createResult'),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/result$', 'perfhistory.views.result'),
+    url(r'^(?i)perfhistory/result/(?P<resultId>[0-9]+)$', 'perfhistory.views.updateResult'),
+    
 ]

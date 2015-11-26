@@ -1,8 +1,8 @@
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 from perfhistory.models import Project, Tag, Result, Transaction
-from .forms import ProjectForm, TagForm
-from django.http import JsonResponse, HttpResponse
+from .forms import ProjectForm, TagForm, EditProjectForm
+from django.http import JsonResponse, HttpResponse, QueryDict
 from django.db import transaction, IntegrityError
 from django.core import serializers
 import json,sys
@@ -10,42 +10,234 @@ import json,sys
 # Create your views here.
 
 
+def deleteProject (request, projectId):
+	response_data = {}
+	tagForm = TagForm()
+	projectform = ProjectForm()
+	editprojectform = EditProjectForm()
+	allprojs= Project.objects.all()
+	project = Project.objects.get(id=projectId)
+	if request.method == 'DELETE': 
+		print 'method is delete'
+		if project:
+			try:
+				with transaction.atomic():
+					childTags = Tag.objects.filter(project_id=project.id)
+					for tag in childTags:
+						childResults = Result.objects.filter(project_id=projectId, tag_id=tag.id);
+						for result in childResults:
+							Transaction.objects.filter(result_id=result.id).delete()
+							result.delete()
+						tag.delete()
+					project.delete()
+
+					
+					response_data['message'] = 'Project and its children deleted'
+					response_data['status'] = True
+					# response_data['created_objects'] = None
+
+			except IntegrityError as e:
+				print 'Integrity error',e.message
+				response_data['message'] = 'Database IntegrityError occurred; ', str(e)
+				response_data['status'] = False
+				HttpResponse.status_code = 500
+				response_data['created_objects'] = None
+				return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+			except Exception as e:
+				print 'exception', e.message
+				response_data['message'] = 'Exception occurred; ', e.message
+				response_data['status'] = False
+				HttpResponse.status_code = 500
+				response_data['created_objects'] = None
+				return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+		else:
+			print "Project doesn't exist for id"
+			return HttpResponse(json.dumps({'status':False,'message':"Project doesn't exist for id"}),
+		            content_type="application/json")
+	
+	return HttpResponse(json.dumps(response_data),
+		            		content_type="application/json")
+
 def project(request):
+	tagForm = TagForm()
+	projectform = ProjectForm()
+	editprojectform = EditProjectForm()
+	allprojs= Project.objects.all().order_by('-last_modified')
 	if request.method == 'POST':
 		form = ProjectForm(request.POST)
-		print '***form:***',request.POST 
-		print '****Request.body:****',request.POST.get('data')
+		# print '***request.POST:***',request.POST 
+		# print '****request.POST.get:****',request.POST.get('data')
 		# print form.errors
 		if form.is_valid():
 			print form.cleaned_data
 			project = form.save()
 		else:
 			print 'Invalid Project Form'
-	tagForm = TagForm()
-	form = ProjectForm()
-	allprojs= Project.objects.all()
-	return render(request, 'home.html', {'form':form,'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
+	if request.method == 'PUT': #update case
+		data = QueryDict(request.body)
+		# print '***form PUT (POST):***', data
+		project = Project.objects.get(id=data['id'])
+		form = ProjectForm(data, instance=project)
+		if form.is_valid():
+			print form.cleaned_data
+			project = form.save()
+		else:
+			print 'Invalid Project Form'
+		allprojs= Project.objects.all() #to get an updated list
+	
+
+	
+	return render(request, 'home.html', {'projectform':projectform,  'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
+	
 
 def result(request, projectId, tagId):
 	if request.method == 'GET':
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+		projectobj = Project.objects.get(id=projectId);
+		tagobj = Tag.objects.get(id=tagId);
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
 		data = []
+		result_list = [] 
+		alltxns = []
 		for result in results:
 			print result.id
 			txns = Transaction.objects.filter(result_id=result.id)
-			dictionary={}
-			dictionary['result']=result
-			dictionary['transactions']=[str(t.as_json()) for t in txns] 
+			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
+			result_list.append(result.as_json())
+			alltxns.extend([t.as_json() for t in txns])
+
+	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+
+
+# def ResultListView(FormMixin, ListView):
+
+
+def updateResult(request, resultId):
+	if request.method == 'PUT':
+		data = QueryDict(request.body)
 		print data
 
-		# result = [ob.as_json() for ob in results]
-		# fields = [str(ob).split(".")[-1].capitalize() for ob in Result._meta.get_fields()]
+		response_data = {}
+		try:
+			with transaction.atomic():
+				result = Result.objects.get(id=resultId)
+				projectId = result.project_id;
+				tagId = result.tag_id;
+				if result:
+					updatedObjects = []
+					if data.get('baseline') is not None:
+						print 'data.get(baseline):',data.get('baseline')
+						print 'data.get(baseline):',data.get('baseline')
+						baseline = int(data.get('baseline'))
+						print 'data.get(baseline):',data.get('baseline')
 
-		# return HttpResponse(
-		            	# json.dumps(result),
-		            	# content_type="application/json")
-		return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Result', 'fields': None})
+						if baseline is 1: # is TRUE
+							# print 'baseline is true:', baseline
+							if not result.baseline: #don't do all this i.e. make it (result.baseline) true if it is already true
+								result.baseline = True
+								for res in Result.objects.filter(project_id=projectId, tag_id=tagId):
+									if res.id is not resultId:
+										res.baseline = False
+										res.save()
+										updatedObjects.append(res.as_json());
+						else: # baseline is FALSE
+							# print 'baseline is false:',baseline
+							if result.baseline: # don't make it false if its already false
+								result.baseline = False
+
+					if data.get('version'):
+						result.version = data['version'];
+					if data.get('name'):
+						result.name = data['name'];
+					if data.get('description'):
+						result.description = data['description'];
+					if data.get('numberofusers'):
+						result.numberofusers = data['numberofusers'];
+
+					
+					print 'result =>', result.as_json()
+					result.save()
+
+
+					print 'result.baseline =', result.baseline
+					updatedObjects.append(result.as_json());
+
+					response_data['updated_objects'] = updatedObjects
+					response_data['status'] = True
+					HttpResponse.status_code = 200
+					response_data['message'] = "Result(s) updated successfully"
+
+		except IntegrityError as e:
+			print 'Integrity error',e.message
+			response_data['message'] = 'Database IntegrityError occurred; ', str(e)
+			response_data['status'] = False
+			HttpResponse.status_code = 500
+			response_data['created_objects'] = None
+			return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+		except Exception as e:
+			print 'exception', e.message
+			response_data['message'] = 'Exception occurred; ', e.message
+			response_data['status'] = False
+			HttpResponse.status_code = 500
+			response_data['created_objects'] = None
+			return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+		return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+	if request.method == 'DELETE':
+		print 'delete request for resultid:',resultId
+
+		response_data = {}
+		try:
+			with transaction.atomic():
+				result = Result.objects.get(id=resultId)
+				deletedObjects = [] 
+				if result:
+					for txn in Transaction.objects.filter(result_id=result.id):
+						txn.delete()
+						deletedObjects.append(txn.as_json());
+					result.delete()
+					deletedObjects.append(result.as_json())
+					response_data['deleted_objects'] = deletedObjects
+					response_data['status'] = True
+					HttpResponse.status_code = 200
+					response_data['message'] = "Result deleted successfully"
+		except IntegrityError as e:
+			print 'Integrity error',e.message
+			response_data['message'] = 'Database IntegrityError occurred; ', str(e)
+			response_data['status'] = False
+			HttpResponse.status_code = 500
+			response_data['created_objects'] = None
+			return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+		except Exception as e:
+			print 'exception', e.message
+			response_data['message'] = 'Exception occurred; ', e.message
+			response_data['status'] = False
+			HttpResponse.status_code = 500
+			response_data['created_objects'] = None
+			return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+		return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+
+	
 
 
 def createResult(request,project_id,tagid):
@@ -88,7 +280,8 @@ def createResult(request,project_id,tagid):
 							txn.p90 = txnData.get('p90')
 							txn.p95 = txnData.get('p95')
 							txn.p99 = txnData.get('p99')
-							txn.p99_99 = txnData.get('p99_99')
+							txn.p99_9 = txnData.get('p99.9')
+							txn.p99_99 = txnData.get('p99.99')
 							# txn.save()
 							# print txn.as_json()
 							txns.append(txn)
@@ -134,10 +327,10 @@ def createResult(request,project_id,tagid):
 		            content_type="application/json")
 
 def createTag(request,project_id):
-	# print 'project_id in form', project_id
+	print 'project_id in form', project_id
 	if request.method == 'POST':
 		form = TagForm(request.POST)
-		print '****Request.body:****',request.POST
+		print '****Request.POST:****',request.POST
 		if form.is_valid():
 			response_data = {}
 			tag = form.save(commit=False)
@@ -157,9 +350,10 @@ def createTag(request,project_id):
 		else:
 			print 'Invalid Tag Form'
 			print form.errors
+			HttpResponse.status_code = 500
 			return HttpResponse(
 	            json.dumps({"status":False,
-	            	"message": "Invalid Tag Form"}),
+	            	"message": form.errors}),
 	            content_type="application/json"
 	        )
 	else:
@@ -183,11 +377,14 @@ def chart(request):
 
 def d3(request):
 	# project=Project.objects.get(id=project_id)
-	return render(request, 'd3-example-3.html')	
+	return render(request, 'result_upload.html')	
+
+
 
 def getTags(request, project_id):
 	tags=Tag.objects.filter(project_id=project_id)
 	results = [ob.as_json() for ob in tags]
+	HttpResponse.status_code = 200
 	# print tags, results
 	# print json.dumps(tags.__dict__, default=encode_b)
 	# json_tags = [json.dumps(tags.__dict__)]
