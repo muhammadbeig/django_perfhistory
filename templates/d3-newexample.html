@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 80, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%Y%m%d").parse;
+
+// var x = d3.time.scale()
+//     .range([0, width]);
+var x = d3.scale.ordinal()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category20();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line_orig = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.temperature); });
+
+
+var line = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x(d.version); })
+    .y(function(d) { return y(d.p99); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var data = [{date:"20111001","New York":"63.4","San Francisco":"62.7","Austin":"72.2"},
+{date:"20111002","New York":"58.0","San Francisco":"59.9","Austin":"67.7"},
+{date:"20111003","New York":"53.3","San Francisco":"59.1","Austin":"69.4"},
+{date:"20111004","New York":"55.7","San Francisco":"58.8","Austin":"68.0"},
+{date:"20111005","New York":"64.2","San Francisco":"58.7","Austin":"72.4"},
+{date:"20111006","New York":"58.8","San Francisco":"57.0","Austin":"77.0"},
+{date:"20111007","New York":"57.9","San Francisco":"56.7","Austin":"82.3"},
+{date:"20111008","New York":"61.8","San Francisco":"56.8","Austin":"78.9"},
+{date:"20111009","New York":"69.3","San Francisco":"56.7","Austin":"68.8"},
+{date:"20111010","New York":"71.2","San Francisco":"60.1","Austin":"68.7"},
+{date:"20111011","New York":"68.7","San Francisco":"61.1","Austin":"70.3"},
+{date:"20111012","New York":"61.8","San Francisco":"61.5","Austin":"75.3"},
+{date:"20111013","New York":"63.0","San Francisco":"64.3","Austin":"76.6"},
+{date:"20111014","New York":"66.9","San Francisco":"67.1","Austin":"66.6"},
+{date:"20111015","New York":"61.7","San Francisco":"64.6","Austin":"68.0"},
+{date:"20111016","New York":"61.8","San Francisco":"61.6","Austin":"70.6"},
+{date:"20111017","New York":"62.8","San Francisco":"61.1","Austin":"71.1"}];
+
+var data1=[
+{date:"20111001",temperature:"63.4",city:"New York"},
+{date:"20111001",temperature:"62.7",city:"San Francisco"},
+{date:"20111001",temperature:"72.2",city:"Austin"},
+{date:"20111002",temperature:"58.0",city:"New York"},
+{date:"20111002",temperature:"59.9",city:"San Francisco"},
+{date:"20111002",temperature:"67.7",city:"Austin"},
+{date:"20111003",temperature:"53.3",city:"New York"},
+{date:"20111003",temperature:"59.1",city:"San Francisco"},
+{date:"20111003",temperature:"69.4",city:"Austin"},
+{date:"20111004",temperature:"55.7",city:"New York"},
+{date:"20111004",temperature:"58.8",city:"San Francisco"},
+{date:"20111004",temperature:"68.0",city:"Austin"},
+{date:"20111005",temperature:"64.2",city:"New York"},
+{date:"20111005",temperature:"58.7",city:"San Francisco"},
+{date:"20111005",temperature:"72.4",city:"Austin"},
+{date:"20111006",temperature:"58.8",city:"New York"},
+{date:"20111006",temperature:"57.0",city:"San Francisco"},
+{date:"20111006",temperature:"77.0",city:"Austin"},
+{date:"20111007",temperature:"57.9",city:"New York"},
+{date:"20111007",temperature:"56.7",city:"San Francisco"},
+{date:"20111007",temperature:"82.3",city:"Austin"},
+{date:"20111008",temperature:"61.8",city:"New York"},
+{date:"20111008",temperature:"56.8",city:"San Francisco"},
+{date:"20111008",temperature:"78.9",city:"Austin"},
+{date:"20111009",temperature:"69.3",city:"New York"},
+{date:"20111009",temperature:"56.7",city:"San Francisco"},
+{date:"20111009",temperature:"68.8",city:"Austin"},
+{date:"20111010",temperature:"71.2",city:"New York"},
+{date:"20111010",temperature:"60.1",city:"San Francisco"},
+{date:"20111010",temperature:"68.7",city:"Austin"},
+{date:"20111011",temperature:"68.7",city:"New York"},
+{date:"20111011",temperature:"61.1",city:"San Francisco"},
+{date:"20111011",temperature:"70.3",city:"Austin"},
+{date:"20111012",temperature:"61.8",city:"New York"},
+{date:"20111012",temperature:"61.5",city:"San Francisco"},
+{date:"20111012",temperature:"75.3",city:"Austin"},
+{date:"20111013",temperature:"63.0",city:"New York"},
+{date:"20111013",temperature:"64.3",city:"San Francisco"},
+{date:"20111013",temperature:"76.6",city:"Austin"},
+{date:"20111014",temperature:"66.9",city:"New York"},
+{date:"20111014",temperature:"67.1",city:"San Francisco"},
+{date:"20111014",temperature:"66.6",city:"Austin"},
+{date:"20111015",temperature:"61.7",city:"New York"},
+{date:"20111015",temperature:"64.6",city:"San Francisco"},
+{date:"20111015",temperature:"68.0",city:"Austin"}
+];
+
+// var data3 = [{"p99":275,"description":null,"p90":199,"p95":213,"last_modified":"2015-12-01 03:06:49.272820+00:00","name":"download-1k","created":"2015-12-01 03:06:49.272792+00:00","p99_99":608,"average":188.606887227613,"median":183,"maximum":18144,"failurecount":1,"minimum":163,"stddev":161.904494827305,"result_id":103,"successcount":12573,"version":"production","baseline":true},{"p99":283,"description":null,"p90":200,"p95":216,"last_modified":"2015-12-01 03:06:49.272904+00:00","name":"download-8k","created":"2015-12-01 03:06:49.272886+00:00","p99_99":657,"average":188.515749284123,"median":184,"maximum":721,"failurecount":0,"minimum":164,"stddev":26.7453243808017,"result_id":103,"successcount":12572,"version":"production","baseline":true},{"p99":613,"description":null,"p90":426,"p95":494,"last_modified":"2015-12-01 03:06:49.272979+00:00","name":"download-128k","created":"2015-12-01 03:06:49.272962+00:00","p99_99":1714,"average":262.289214126631,"median":199,"maximum":48780,"failurecount":1,"minimum":169,"stddev":472.113807943316,"result_id":103,"successcount":12571,"version":"production","baseline":true},{"p99":1197,"description":null,"p90":856,"p95":951,"last_modified":"2015-12-01 03:06:49.273053+00:00","name":"download-1M","created":"2015-12-01 03:06:49.273036+00:00","p99_99":17577,"average":558.733312117114,"median":492,"maximum":54166,"failurecount":1,"minimum":264,"stddev":718.236695548514,"result_id":103,"successcount":12568,"version":"production","baseline":true},{"p99":302,"description":null,"p90":200,"p95":214,"last_modified":"2015-12-01 03:06:49.273127+00:00","name":"upload-1k","created":"2015-12-01 03:06:49.273110+00:00","p99_99":685,"average":190.431993633108,"median":184,"maximum":17578,"failurecount":1,"minimum":164,"stddev":158.731844326399,"result_id":103,"successcount":12564,"version":"production","baseline":true},{"p99":229,"description":null,"p90":196,"p95":204,"last_modified":"2015-12-01 03:07:21.927714+00:00","name":"download-1k","created":"2015-12-01 03:07:21.927683+00:00","p99_99":489,"average":185.874438454627,"median":184,"maximum":531,"failurecount":0,"minimum":163,"stddev":13.5254670095958,"result_id":104,"successcount":13356,"version":"ein372","baseline":false},{"p99":255,"description":null,"p90":197,"p95":206,"last_modified":"2015-12-01 03:07:21.927810+00:00","name":"download-8k","created":"2015-12-01 03:07:21.927791+00:00","p99_99":503,"average":187.211141060198,"median":185,"maximum":1140,"failurecount":0,"minimum":164,"stddev":17.3719815172387,"result_id":104,"successcount":13356,"version":"ein372","baseline":false},{"p99":547,"description":null,"p90":360,"p95":441,"last_modified":"2015-12-01 03:07:21.927903+00:00","name":"download-128k","created":"2015-12-01 03:07:21.927879+00:00","p99_99":1479,"average":237.877246854404,"median":195,"maximum":2888,"failurecount":0,"minimum":169,"stddev":91.470283746133,"result_id":104,"successcount":13352,"version":"ein372","baseline":false},{"p99":1026,"description":null,"p90":779,"p95":883,"last_modified":"2015-12-01 03:07:21.927980+00:00","name":"download-1M","created":"2015-12-01 03:07:21.927962+00:00","p99_99":2216,"average":510.073638474792,"median":456,"maximum":3073,"failurecount":0,"minimum":259,"stddev":183.164393732404,"result_id":104,"successcount":13349,"version":"ein372","baseline":false},{"p99":228,"description":null,"p90":196,"p95":205,"last_modified":"2015-12-01 03:07:21.928054+00:00","name":"upload-1k","created":"2015-12-01 03:07:21.928037+00:00","p99_99":393,"average":186.254738892635,"median":184,"maximum":506,"failurecount":0,"minimum":164,"stddev":12.7245598305261,"result_id":104,"successcount":13347,"version":"ein372","baseline":false}];
+
+var data3 = [{"p99":275,"description":null,"p90":199,"p95":213,"last_modified":"2015-12-01 03:06:49.272820+00:00","name":"download-1k","created":"2015-12-01 03:06:49.272792+00:00","p99_99":608,"average":188.606887227613,"median":183,"maximum":18144,"failurecount":1,"minimum":163,"stddev":161.904494827305,"result_id":103,"successcount":12573,"version":"production","baseline":true},{"p99":283,"description":null,"p90":200,"p95":216,"last_modified":"2015-12-01 03:06:49.272904+00:00","name":"download-8k","created":"2015-12-01 03:06:49.272886+00:00","p99_99":657,"average":188.515749284123,"median":184,"maximum":721,"failurecount":0,"minimum":164,"stddev":26.7453243808017,"result_id":103,"successcount":12572,"version":"production","baseline":true},{"p99":613,"description":null,"p90":426,"p95":494,"last_modified":"2015-12-01 03:06:49.272979+00:00","name":"download-128k","created":"2015-12-01 03:06:49.272962+00:00","p99_99":1714,"average":262.289214126631,"median":199,"maximum":48780,"failurecount":1,"minimum":169,"stddev":472.113807943316,"result_id":103,"successcount":12571,"version":"production","baseline":true},{"p99":1197,"description":null,"p90":856,"p95":951,"last_modified":"2015-12-01 03:06:49.273053+00:00","name":"download-1M","created":"2015-12-01 03:06:49.273036+00:00","p99_99":17577,"average":558.733312117114,"median":492,"maximum":54166,"failurecount":1,"minimum":264,"stddev":718.236695548514,"result_id":103,"successcount":12568,"version":"production","baseline":true},{"p99":302,"description":null,"p90":200,"p95":214,"last_modified":"2015-12-01 03:06:49.273127+00:00","name":"upload-1k","created":"2015-12-01 03:06:49.273110+00:00","p99_99":685,"average":190.431993633108,"median":184,"maximum":17578,"failurecount":1,"minimum":164,"stddev":158.731844326399,"result_id":103,"successcount":12564,"version":"production","baseline":true},{"p99":229,"description":null,"p90":196,"p95":204,"last_modified":"2015-12-01 03:07:21.927714+00:00","name":"download-1k","created":"2015-12-01 03:07:21.927683+00:00","p99_99":489,"average":185.874438454627,"median":184,"maximum":531,"failurecount":0,"minimum":163,"stddev":13.5254670095958,"result_id":104,"successcount":13356,"version":"ein372","baseline":false},{"p99":255,"description":null,"p90":197,"p95":206,"last_modified":"2015-12-01 03:07:21.927810+00:00","name":"download-8k","created":"2015-12-01 03:07:21.927791+00:00","p99_99":503,"average":187.211141060198,"median":185,"maximum":1140,"failurecount":0,"minimum":164,"stddev":17.3719815172387,"result_id":104,"successcount":13356,"version":"ein372","baseline":false},{"p99":547,"description":null,"p90":360,"p95":441,"last_modified":"2015-12-01 03:07:21.927903+00:00","name":"download-128k","created":"2015-12-01 03:07:21.927879+00:00","p99_99":1479,"average":237.877246854404,"median":195,"maximum":2888,"failurecount":0,"minimum":169,"stddev":91.470283746133,"result_id":104,"successcount":13352,"version":"ein372","baseline":false},{"p99":1026,"description":null,"p90":779,"p95":883,"last_modified":"2015-12-01 03:07:21.927980+00:00","name":"download-1M","created":"2015-12-01 03:07:21.927962+00:00","p99_99":2216,"average":510.073638474792,"median":456,"maximum":3073,"failurecount":0,"minimum":259,"stddev":183.164393732404,"result_id":104,"successcount":13349,"version":"ein372","baseline":false},{"p99":228,"description":null,"p90":196,"p95":205,"last_modified":"2015-12-01 03:07:21.928054+00:00","name":"upload-1k","created":"2015-12-01 03:07:21.928037+00:00","p99_99":393,"average":186.254738892635,"median":184,"maximum":506,"failurecount":0,"minimum":164,"stddev":12.7245598305261,"result_id":104,"successcount":13347,"version":"ein372","baseline":false},{"p99":229,"description":null,"p90":196,"p95":204,"last_modified":"2015-12-01 03:07:21.927714+00:00","name":"download-1k","created":"2015-12-01 03:07:21.927683+00:00","p99_99":489,"average":185.874438454627,"median":184,"maximum":531,"failurecount":0,"minimum":163,"stddev":13.5254670095958,"result_id":104,"successcount":13356,"version":"papi376","baseline":false},{"p99":255,"description":null,"p90":197,"p95":206,"last_modified":"2015-12-01 03:07:21.927810+00:00","name":"download-8k","created":"2015-12-01 03:07:21.927791+00:00","p99_99":503,"average":187.211141060198,"median":185,"maximum":1140,"failurecount":0,"minimum":164,"stddev":17.3719815172387,"result_id":104,"successcount":13356,"version":"papi376","baseline":false},{"p99":547,"description":null,"p90":360,"p95":441,"last_modified":"2015-12-01 03:07:21.927903+00:00","name":"download-128k","created":"2015-12-01 03:07:21.927879+00:00","p99_99":1479,"average":237.877246854404,"median":195,"maximum":2888,"failurecount":0,"minimum":169,"stddev":91.470283746133,"result_id":104,"successcount":13352,"version":"papi376","baseline":false},{"p99":1026,"description":null,"p90":779,"p95":883,"last_modified":"2015-12-01 03:07:21.927980+00:00","name":"download-1M","created":"2015-12-01 03:07:21.927962+00:00","p99_99":2216,"average":510.073638474792,"median":456,"maximum":3073,"failurecount":0,"minimum":259,"stddev":183.164393732404,"result_id":104,"successcount":13349,"version":"papi376","baseline":false},{"p99":228,"description":null,"p90":196,"p95":205,"last_modified":"2015-12-01 03:07:21.928054+00:00","name":"upload-1k","created":"2015-12-01 03:07:21.928037+00:00","p99_99":393,"average":186.254738892635,"median":184,"maximum":506,"failurecount":0,"minimum":164,"stddev":12.7245598305261,"result_id":104,"successcount":13347,"version":"papi376","baseline":false}];
+
+// d3.tsv("/static/data_1.tsv", function(error, data) 
+// {
+//   if (error) throw error;
+
+  // color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+
+  // console.log(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+  // color.domain( d3.keys(data[0]).filter(function(key) {  return key !== "date"; }) );
+  // console.log(data);
+  // console.log( d3.values(data).filter(function(key) { console.log(key.City); return key.City; }) )
+
+/* newer code */
+  mytxns = {}
+  data3.filter(function(key) { mytxns[key.name]=1;} )
+  color.domain(d3.keys(mytxns));
+
+  // data3.forEach(function(d) {
+  //   d.last_modified = parseDate(d.last_modified);
+  // });
+
+  var txns = color.domain().map(function(name) 
+  {
+
+    return {
+      name: name,
+      values: data3.filter(function(d)
+      {
+        // console.log(d);
+        if (name == d.name)
+        {
+          // console.log({date: d.date, temperature: +d.temperature});
+          return 1;//{date: d.date, temperature: +d.temperature};  
+        }
+        // else return null;
+        
+      })
+    };
+  });
+
+  console.log('txns:',txns);
+  var versions = {}
+  data3.forEach(function (d){
+    versions[d.version]=""
+
+  });
+  console.log('versions:',Object.keys(versions));
+  console.log ('extent:',d3.extent(data3, function(d) { return d.version; }));
+  // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
+  x.domain(d3.keys(versions))
+    .rangePoints([0, width]);;
+  y.domain([
+    d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v.p99; }); }),
+    d3.max(txns, function(c) { return d3.max(c.values, function(v) { return v.p99; }); })
+  ]);
+  // console.log('x.domain:',x.domain)
+  // console.log('y.domain:',y.domain)
+/***********/
+
+
+/* new code */
+  // mycities = {}
+  // data1.filter(function(key) { mycities[key.city]=1;} )
+  // color.domain(d3.keys(mycities));
+
+  // data1.forEach(function(d) {
+  //   d.date = parseDate(d.date);
+  // });
+
+
+  // var cities1 = color.domain().map(function(name) 
+  // {
+
+  //   return {
+  //     name: name,
+  //     values: data1.filter(function(d)
+  //     {
+  //       // console.log(d);
+  //       if (name == d.city)
+  //       {
+  //         // console.log({date: d.date, temperature: +d.temperature});
+  //         return {date: d.date, temperature: +d.temperature};  
+  //       }
+  //       // else return null;
+        
+  //     })
+  //   };
+  // });
+
+  // // console.log(cities1[0].values[0]);
+  // x.domain(d3.extent(data1, function(d) { return d.date; }));
+  // y.domain([
+  //   d3.min(cities1, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
+  //   d3.max(cities1, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
+  // ]);
+
+/************/
+  // data.forEach(function(d) {
+  //   d.date = parseDate(d.date);
+  // });
+
+  // var cities = color.domain().map(function(name) {
+  //   return {
+  //     name: name,
+  //     values: data.map(function(d) {
+  //       return {date: d.date, temperature: +d[name]};
+  //     })
+  //   };
+  // });
+
+  // console.log(cities[0].values[0]);
+
+  // // return;
+
+  // x.domain(d3.extent(data, function(d) { return d.date; }));
+
+  // y.domain([
+  //   d3.min(cities, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
+  //   d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
+  // ]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Temperature (ºF)");
+
+  var city = svg.selectAll(".city")
+      .data(txns)
+      // .data(cities1)
+    .enter().append("g")
+      .attr("class", "city");
+
+
+  city.append("path")
+      .attr("class", "line")
+      // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
+      .attr("d", function(d) {   return line(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+
+  city.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y(d.value.p99) + ")"; })
+      .attr("x", 3)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; });
+// });
+
+  var point = city.append("g")
+                .attr("class", "line-point");
+
+  point.selectAll('circle')
+    .data(function(d){ return d.values})
+    .enter().append('circle')
+    .attr("cx", function(d) { return x(d.version) })
+    .attr("cy", function(d) { return y(d.p99) })
+    .attr("r", 3.5)
+    .style("fill", "white")
+    .style("stroke", function(d) { return color(d.name); });
+
+</script>

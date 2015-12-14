@@ -19,15 +19,17 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^(?i)admin/', include(admin.site.urls)),
-    url(r'^(?i)perfhistory/$', 'perfhistory.views.project'),
+    url(r'^(?i)perfhistory/$', 'perfhistory.views.loginView'),
+    url(r'^(?i)perfhistory/logout$', 'perfhistory.views.logoutView'),
+    # url(r'^(?i)perfhistory/home$', HomeView.as_view(template_name='login.html'), name='home'),
     url(r'^(?i)perfhistory/projects$', 'perfhistory.views.project'),
     url(r'^(?i)perfhistory/project/(?P<projectId>[\d+]+)$', 'perfhistory.views.deleteProject'),
     # url(r'^myapp/', 'myapp.views.projects'),
     # url(r'^projects/', 'myapp.views.projects'),
     url(r'^(?i)tags/', 'myapp.views.tags'),
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+]+)/getTags$', 'perfhistory.views.getTags'),
-    url(r'^(?i)projects/new/$', 'myapp.views.project_new', name='project_new'),
-    url(r'^(?i)projects/new1/$', 'myapp.views.project_new1', name='project_new'),
+    # url(r'^(?i)projects/new/$', 'myapp.views.project_new', name='project_new'),
+    # url(r'^(?i)projects/new1/$', 'myapp.views.project_new1', name='project_new'),
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+])$', 'perfhistory.views.projectdetail'),
     url(r'^(?i)perfhistory/chart/$', 'perfhistory.views.chart'),
     url(r'^(?i)perfhistory/d3/$', 'perfhistory.views.d3'),
@@ -35,5 +37,6 @@ urlpatterns = [
     url(r'^(?i)perfhistory/project/(?P<project_id>[0-9]+)/tag/(?P<tagid>[0-9]+)/createResult$', 'perfhistory.views.createResult'),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/result$', 'perfhistory.views.result'),
     url(r'^(?i)perfhistory/result/(?P<resultId>[0-9]+)$', 'perfhistory.views.updateResult'),
-    
+    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChart$', 'perfhistory.views.comparisonChart'),
+
 ]

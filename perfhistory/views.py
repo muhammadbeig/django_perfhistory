@@ -1,15 +1,47 @@
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 from perfhistory.models import Project, Tag, Result, Transaction
-from .forms import ProjectForm, TagForm, EditProjectForm
-from django.http import JsonResponse, HttpResponse, QueryDict
+from .forms import ProjectForm, TagForm, EditProjectForm, UserForm
+from django.http import JsonResponse, HttpResponse, QueryDict, HttpResponseRedirect
 from django.db import transaction, IntegrityError
 from django.core import serializers
 import json,sys
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
+def logoutView(request):
+    print logout(request)
+    form = UserForm(request.POST or None)
+    return render(request, 'login.html', {'userform': form })
 
+def loginView(request):
+    form = UserForm(request.POST or None)
+    nexturl = request.GET.get('next') or 'projects'
+    print 'nexturl:',nexturl, request
+    if request.POST and form.is_valid():
+        user = form.login(request)
+        
+        # if request.POST.get('next') is not None:
+        nexturl = request.POST.get('next') or 'projects'
+
+        if user:
+            login(request, user)
+            return HttpResponseRedirect(nexturl)
+            # if nexturl is not None:
+            # 	return HttpResponseRedirect(nexturl)
+            # else:
+            # 	return HttpResponseRedirect("projects")# Redirect to a success page.
+    else:
+    	print 'in else', request.POST, form.is_valid(), form.errors
+
+    
+    nexturl = nexturl if nexturl else ''
+    return render(request, 'login.html', {'userform': form, 'next':nexturl })
+
+
+@login_required(login_url='/perfhistory/')
 def deleteProject (request, projectId):
 	response_data = {}
 	tagForm = TagForm()
@@ -34,6 +66,7 @@ def deleteProject (request, projectId):
 					
 					response_data['message'] = 'Project and its children deleted'
 					response_data['status'] = True
+					response_data['project_id'] = projectId
 					# response_data['created_objects'] = None
 
 			except IntegrityError as e:
@@ -63,21 +96,25 @@ def deleteProject (request, projectId):
 	return HttpResponse(json.dumps(response_data),
 		            		content_type="application/json")
 
+@login_required(login_url='/perfhistory/')
 def project(request):
+	# print 'user:',request.user.email
 	tagForm = TagForm()
-	projectform = ProjectForm()
+	projectform = ProjectForm(request.POST or None)
 	editprojectform = EditProjectForm()
 	allprojs= Project.objects.all().order_by('-last_modified')
 	if request.method == 'POST':
-		form = ProjectForm(request.POST)
+		# form = ProjectForm(request.POST)
 		# print '***request.POST:***',request.POST 
 		# print '****request.POST.get:****',request.POST.get('data')
-		# print form.errors
-		if form.is_valid():
-			print form.cleaned_data
-			project = form.save()
+		print projectform.errors
+		print projectform.cleaned_data
+		if projectform.is_valid():
+			# print projectform.cleaned_data
+			project = projectform.save()
 		else:
-			print 'Invalid Project Form'
+			print 'Invalid Project Form, POST'
+	
 	if request.method == 'PUT': #update case
 		data = QueryDict(request.body)
 		# print '***form PUT (POST):***', data
@@ -87,14 +124,44 @@ def project(request):
 			print form.cleaned_data
 			project = form.save()
 		else:
-			print 'Invalid Project Form'
-		allprojs= Project.objects.all() #to get an updated list
+			print 'Invalid Project Form, PUT'
+		# allprojs= Project.objects.all() #to get an updated list
+		response_data = {}
+		response_data['message'] = 'Project updated'
+		response_data['status'] = True
+		# response_data['project_id'] = project.id
+		# response_data['project_name'] = project_name
+		# response_data['project_description'] = project_description
+		HttpResponse.status_code = 200
+		response_data['updated_object'] = project.as_json()
+		return HttpResponse(
+		            json.dumps(response_data),
+		            content_type="application/json")
 	
 
 	
-	return render(request, 'home.html', {'projectform':projectform,  'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
+	return render(request, 'projects.html', {'projectform':projectform,  'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
 	
+@login_required(login_url='/perfhistory/')
+def comparisonChart(request, projectId, tagId):
+	if request.method == 'GET':
+		projectobj = Project.objects.get(id=projectId);
+		tagobj = Tag.objects.get(id=tagId);
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
+		data = []
+		result_list = [] 
+		alltxns = []
+		for result in results:
+			print result.id
+			txns = Transaction.objects.filter(result_id=result.id)
+			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
+			data.append(dictionary)
+			result_list.append(result.as_json())
+			alltxns.extend([t.as_json() for t in txns])
+	
+	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
 
+@login_required(login_url='/perfhistory/')
 def result(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
@@ -116,7 +183,7 @@ def result(request, projectId, tagId):
 
 # def ResultListView(FormMixin, ListView):
 
-
+@login_required(login_url='/perfhistory/')
 def updateResult(request, resultId):
 	if request.method == 'PUT':
 		data = QueryDict(request.body)
@@ -239,16 +306,18 @@ def updateResult(request, resultId):
 
 	
 
-
-def createResult(request,project_id,tagid):
+@login_required(login_url='/perfhistory/')
+def createResult(request, project_id, tagid):
 	if request.method == 'POST':
 		response_data = {}
 		insertionresult = []
 		
 
 		# print 'request.POST:',request.body, request
-		print 'project_id:',project_id, 'tagid:',tagid
+		# print 'project_id:',project_id, 'tagid:',tagid
 		# print request.body
+		print 'file read time:',request.META['HTTP_FILEREADTIME'] 
+
 		data = json.loads(request.body)
 		if data.get('type') == 'summaryresults':			
 			for resultData in data['results']:
@@ -258,9 +327,16 @@ def createResult(request,project_id,tagid):
 						txns = []
 						result.name = resultData['name']
 						result.version = resultData['version']
+						result.numberofusers = resultData.get('numberofusers')
+						result.filename = resultData.get('filename')
+						result.duration = resultData.get('duration')
+						result.description = resultData.get('description')
 						if resultData.get('baseline'):
 							# print 'is baseline'
 							result.baseline = True
+							for res in Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
+								res.baseline = False
+								res.save()
 						print result.save()
 						# insertionresultresult.id
 						
@@ -301,8 +377,8 @@ def createResult(request,project_id,tagid):
 		            	content_type="application/json")
 
 				except Exception as e:
-					print 'exception', e.message
-					response_data['message'] = 'Exception occurred; ', e.message
+					print 'exception', e.message, 'line:', sys.exc_traceback.tb_lineno 
+					response_data['message'] = 'Exception occurred; ', e.message, 'line:',sys.exc_traceback.tb_lineno 
 					response_data['status'] = False
 					HttpResponse.status_code = 500
 					response_data['created_objects'] = None
@@ -313,6 +389,7 @@ def createResult(request,project_id,tagid):
 			response_data['status'] = True
 			response_data['message'] = "Create Successful"
 			response_data['created_objects'] = insertionresult
+			HttpResponse.status_code = 200
 
 		else:
 			response_data['message'] = 'Unknown result type; please set a "type" in the request data'
@@ -326,6 +403,7 @@ def createResult(request,project_id,tagid):
 		            json.dumps({'status':False,'message':"Request method "+request.method+" not supported"}),
 		            content_type="application/json")
 
+@login_required(login_url='/perfhistory/')
 def createTag(request,project_id):
 	print 'project_id in form', project_id
 	if request.method == 'POST':
@@ -366,7 +444,7 @@ def createTag(request,project_id):
 	# allprojs= Project.objects.all()
 	# return render(request, 'projects.html', {'form':form,'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
 
-
+@login_required(login_url='/perfhistory/')
 def projectdetail(request,project_id):
 	project=Project.objects.get(id=project_id)
 	return render(request, 'project_details.html', {'project': project})
@@ -377,7 +455,15 @@ def chart(request):
 
 def d3(request):
 	# project=Project.objects.get(id=project_id)
-	return render(request, 'result_upload.html')	
+	data = request.body;
+	# print json.dumps(request.body)
+	print "**** d3 request was made:", request.method, "*****"
+	print request.body
+	# print request.POST
+	if request.method == "POST":
+		data=request.POST;
+
+	return render(request, 'd3-newexample.html', {'transactions': request.body})	
 
 
 
