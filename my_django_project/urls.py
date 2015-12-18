@@ -13,13 +13,14 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-from django.conf.urls import include, url
+from django.conf.urls import include, url, patterns
 from django.contrib import admin
+import .views 
 admin.autodiscover()
 
-urlpatterns = [
+urlpatterns = patterns('',
     url(r'^(?i)admin/', include(admin.site.urls)),
-    url(r'^(?i)perfhistory/$', 'perfhistory.views.loginView'),
+    url(r'^(?i)perfhistory/$', views.loginView),
     url(r'^(?i)sample/$', 'perfhistory.views.sample'),
     url(r'^(?i)perfhistory/logout$', 'perfhistory.views.logoutView'),
     # url(r'^(?i)perfhistory/home$', HomeView.as_view(template_name='login.html'), name='home'),
@@ -40,4 +41,4 @@ urlpatterns = [
     url(r'^(?i)perfhistory/result/(?P<resultId>[0-9]+)$', 'perfhistory.views.updateResult'),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChart$', 'perfhistory.views.comparisonChart'),
 
-]
+)
