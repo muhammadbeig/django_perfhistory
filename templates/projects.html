@@ -178,6 +178,7 @@ var mytable;
 
         });
 
+        // var errormess;
         function create_tag(projectid, data)
         {
             var jqxhr = $.post( "/perfhistory/project/"+projectid+"/createTag",data )
@@ -190,10 +191,10 @@ var mytable;
                     if (data['status'])
                     {
                         var projectid=data['project_id'];
-                        console.log(data);
+                        // console.log(data);
                         // removeTagTable(projectid);
                         // ajax_get_tags_in_project(projectid);
-                        addTagtoTagTable(projectid, data)
+                        addTagtoTagTable(projectid, data);
 
                     }
 
@@ -204,9 +205,13 @@ var mytable;
                     
                     // console.log("second success" );
                  });
-                 jqxhr.fail(function() 
+                 jqxhr.fail(function(data) 
                  {
-                   // console.log("Error" );
+                   // console.log("Error:",data, data.responseJSON.message );
+                   errormess = data.responseJSON.message;
+                   errorMessages = data.responseJSON.message;
+                   project_id = data.responseJSON.project_id;
+                   displayTagCreationErrorMessages(project_id, errorMessages);
                  });
                 jqxhr.always(function(data) 
                 {
@@ -372,9 +377,31 @@ var mytable;
 
             });
 
-
+            $('[id^=errorAlert_]').hide();
         });
+
+        function displayTagCreationErrorMessages(projectId, errorMessages){
+            alert=$('#errorAlert_'+projectId)
+            // for (i in errorMessages){
+            //     alert.append('<p>'+errorMessages[i]+'</p>')
+            // }
+            alert.show();
+
+            for (field in errormess) {  
+                // console.log(field); 
+                alert.append('<li>'+capitalizeFirstLetter(field)+'</li>')
+                for (m in errormess[field]) { 
+                    // console.log(errormess[field][m]);
+                    alert.append('<p>'+errormess[field][m]+'</p>')
+                }  
+            }
+
+
+        }
         
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
 
         var mypanel;
         function update_project(data)
@@ -477,6 +504,7 @@ var mytable;
                             // }
                         });
         }
+
 
 
 </script>
@@ -611,6 +639,17 @@ var mytable;
                         <ul><b>Last Modified:</b> {{ obj.last_modified }} </ul>
 
                             <div id="tableplaceholder">
+                            </div>
+
+
+
+                                    
+
+                                    
+
+
+                            <div id="errorAlert_{{ obj.id }}" class="alert alert-danger fade in errorAlert_{{ obj.id }}">
+                                    <a href="#" class="close" data-dismiss="alert">&times;</a>
                             </div>
 
                             <div id="tag_form_div">

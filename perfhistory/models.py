@@ -24,9 +24,12 @@ class Project(models.Model):
 class Tag(models.Model):
 	project = models.ForeignKey(Project)
 	name = models.CharField(max_length=200)
-	description = models.CharField(max_length=400)
+	description = models.CharField(max_length=400, blank=True)
 	created = models.DateTimeField(auto_now_add=True)
 	last_modified = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		unique_together = ('name','project')
 
 	def as_json(self):
 		return dict(type='tag',

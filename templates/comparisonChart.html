@@ -77,7 +77,7 @@
     </div>
 
     <div class="dropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Compare by
             <span class="caret"></span>
           </button>
@@ -159,6 +159,7 @@ $(document).ready(function()
   res = {}
   for (r in result_list)
   {
+    console.log('r:',result_list[r]);
     res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
   }
   
@@ -175,6 +176,7 @@ $(document).ready(function()
       // console.log(txn_list[t]['name'])
       baseline_result[txn_list[t]['name']]=txn_list[t]
       // delete txn_list[t]
+      txn_list[t]['version']= res[result_id]['version']+' {Baseline}'
     }
     else 
     {
@@ -183,13 +185,18 @@ $(document).ready(function()
     }
   }
 
+  
   drawChart(txn_list, "p90");
 });
 
+function compare(a,b) {
+  if (a.baseline) return -1;
+  if (b.baseline) return 1;
+}
 
 var margin = {top: 20, right: 200, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    width = 1200 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%Y%m%d").parse;
     formatResponseTime = function(d) { return d+" ms"; };
@@ -410,19 +417,19 @@ svg.append("text")
         .attr('id',function(d){  return d.name; })
         .on('click', function (d) {                           //onclick function to toggle off the lines          
           if($(this).css("opacity") == 1){          //uses the opacity of the item clicked on to determine whether to turn the line on or off         
-
+            // id of the line 045_DELETE Service-line
             var elemented = document.getElementById(this.id +"-line");   //grab the line that has the same ID as this point along w/ "-line"  use get element cause ID has spaces
             console.log("legend enter");
             d3.select(elemented)
               .transition()
-              .duration(1000)
+              .duration(250)
               .style("opacity",0)
               .style("display",'none');
           
             d3.select(this)
               .attr('fakeclass', 'fakelegend')
             .transition()
-              .duration(1000)
+              .duration(250)
               .style ("opacity", .2);
           } else {
           
@@ -431,13 +438,13 @@ svg.append("text")
             d3.select(elemented)
               .style("display", "block")
               .transition()
-              .duration(1000)
+              .duration(250)
               .style("opacity",1);
           
             d3.select(this)
               .attr('fakeclass','legend')
               .transition()
-              .duration(1000)
+              .duration(250)
               .style ("opacity", 1);}
     });
 

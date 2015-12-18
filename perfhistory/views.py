@@ -10,16 +10,21 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+def sample(request):
+    return render(request, 'sistersample.html')
+
 
 def logoutView(request):
-    print logout(request)
+    logout(request)
     form = UserForm(request.POST or None)
     return render(request, 'login.html', {'userform': form })
 
 def loginView(request):
     form = UserForm(request.POST or None)
     nexturl = request.GET.get('next') or 'projects'
-    print 'nexturl:',nexturl, request
+    print 'Debug:', request.POST
+    print 'Debug:', form.is_valid(), form.errors
+    # print 'nexturl:',nexturl, request
     if request.POST and form.is_valid():
         user = form.login(request)
         
@@ -316,7 +321,7 @@ def createResult(request, project_id, tagid):
 		# print 'request.POST:',request.body, request
 		# print 'project_id:',project_id, 'tagid:',tagid
 		# print request.body
-		print 'file read time:',request.META['HTTP_FILEREADTIME'] 
+		print 'file read time:',request.META.get('HTTP_FILEREADTIME')
 
 		data = json.loads(request.body)
 		if data.get('type') == 'summaryresults':			
@@ -406,39 +411,58 @@ def createResult(request, project_id, tagid):
 @login_required(login_url='/perfhistory/')
 def createTag(request,project_id):
 	print 'project_id in form', project_id
-	if request.method == 'POST':
-		form = TagForm(request.POST)
-		print '****Request.POST:****',request.POST
-		if form.is_valid():
-			response_data = {}
-			tag = form.save(commit=False)
-			tag.project_id = int(project_id)
-			tag.save()
-			response_data['project_id'] = tag.project_id
-			response_data['status'] = True
-			response_data['message'] = 'Create Tag successful!'
-			response_data['tag_id'] = tag.id
-			response_data['tag_name'] = tag.name
-			response_data['tag_description'] = tag.description
-			response_data['created'] = tag.created.strftime('%B %d, %Y %I:%M %p')
-			return HttpResponse(
-		            json.dumps(response_data),
+	try:
+		if request.method == 'POST':
+			form = TagForm(request.POST)
+			print '****Request.POST:****',request.POST
+			if form.is_valid():
+				response_data = {}
+				tag = form.save(commit=False)
+				tag.project_id = int(project_id)
+				tag.save()
+				response_data['project_id'] = tag.project_id
+				response_data['status'] = True
+				response_data['message'] = 'Create Tag successful!'
+				response_data['tag_id'] = tag.id
+				response_data['tag_name'] = tag.name
+				response_data['tag_description'] = tag.description
+				response_data['created'] = tag.created.strftime('%B %d, %Y %I:%M %p')
+				return HttpResponse(
+			            json.dumps(response_data),
+			            content_type="application/json"
+			        )
+			else:
+				print 'Invalid Tag Form'
+				print form.errors
+				HttpResponse.status_code = 500
+				return HttpResponse(
+		            json.dumps({"status":False, 'project_id':project_id,
+		            	"message": form.errors}),
 		            content_type="application/json"
 		        )
 		else:
-			print 'Invalid Tag Form'
-			print form.errors
-			HttpResponse.status_code = 500
 			return HttpResponse(
-	            json.dumps({"status":False,
-	            	"message": form.errors}),
-	            content_type="application/json"
-	        )
-	else:
+		            json.dumps({"Error": "Only POST method is allowed"}),
+		            content_type="application/json"
+		        )
+	except IntegrityError as e:
+		print 'Integrity error',e
+		response_data['message'] = {'Database IntegrityError': ['Duplicate entry, another tag with this name exists in the same context']}
+		response_data['status'] = False
+		HttpResponse.status_code = 500
+		response_data['project_id'] = project_id
 		return HttpResponse(
-	            json.dumps({"Error": "Only POST method is allowed"}),
-	            content_type="application/json"
-	        )
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+	except Exception as e:
+		print 'exception', e.message
+		response_data['message'] = 'Exception occurred; ', e.message
+		response_data['status'] = False
+		HttpResponse.status_code = 500
+		response_data['project_id'] = project_id
+		return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
 	# tagForm = TagForm()
 	# form = ProjectForm()
 	# allprojs= Project.objects.all()
