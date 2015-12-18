@@ -176,7 +176,7 @@ def result(request, projectId, tagId):
 		result_list = [] 
 		alltxns = []
 		for result in results:
-			print result.id
+			# print result.id
 			txns = Transaction.objects.filter(result_id=result.id)
 			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
