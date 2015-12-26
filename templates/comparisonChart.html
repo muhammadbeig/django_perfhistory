@@ -52,16 +52,23 @@
   stroke: steelblue;
 }
 
+
+
 .legend rect {
   fill:white;
   stroke:black;
   opacity:0.8;}
 
 </style>
+<link href="/static/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet">
 <body>
 
   <div id="page-wrapper">
      <!-- Page Heading -->
+    <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result" style="text-decoration: none"
+    <i class="fa fa-arrow-circle-left fa-2x text-primary"></i>
+    </a>
+     
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header">
@@ -76,23 +83,47 @@
         </div>
     </div>
 
-    <div class="dropdown">
-          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    <!-- <div class="btn-group">
+          <a class="btn btn-primary" href="#"><i class="fa fa-user fa-fw"></i>
             Compare by
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            <li><a class="option" data-comparisonField="minimum" href="#">Minimum Response Time</a></li>
-            <li><a class="option" data-comparisonField="average" href="#" >Average Response Time</a></li>
-            <li><a class="option" data-comparisonField="median" href="#">Median Response Time</a></li>
-            <li><a class="option" data-comparisonField="p90" href="#">P90 Response Time</a></li>
-            <li><a class="option" data-comparisonField="p95" href="#">P95 Response Time</a></li>
-            <li><a class="option" data-comparisonField="p99" href="#">P99 Response Time</a></li>
-            <li><a class="option" data-comparisonField="maximum" href="#">Maximum Response Time</a></li>
+            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+            <span class="fa fa-caret-down"></span>
+          
+          <ul class="dropdown-menu">
+            <li><a class="option" data-comparisonField="minimum" >Minimum Response Time</a></li>
+            <li><a class="option" data-comparisonField="average"  >Average Response Time</a></li>
+            <li><a class="option" data-comparisonField="median" >Median Response Time</a></li>
+            <li><a class="option" data-comparisonField="p90" >P90 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p95" >P95 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p99" >P99 Response Time</a></li>
+            <li><a class="option" data-comparisonField="maximum" >Maximum Response Time</a></li>
             <li role="separator" class="divider"></li>
-            <li><a class="option" data-comparisonField="successcount" href="#">Successful requests</a></li>
-            <li><a class="option" data-comparisonField="failurecount" href="#">Failed requests</a></li>
+            <li><a class="option" data-comparisonField="successcount" >Successful requests</a></li>
+            <li><a class="option" data-comparisonField="failurecount" >Failed requests</a></li>
           </ul>
+    </div> -->
+
+    <div class="btn-group">
+      <a class="btn btn-primary" href="#"><i class="fa fa-cog fa-fw"></i> Compare by</a>
+      <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+        <span class="fa fa-caret-down"></span></a>
+      <ul class="dropdown-menu">
+        <!-- <li><a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
+        <li><a href="#"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
+        <li><a href="#"><i class="fa fa-ban fa-fw"></i> Ban</a></li>
+        <li class="divider"></li> -->
+        
+            <li><a class="option" data-comparisonField="minimum" >Minimum Response Time</a></li>
+            <li><a class="option" data-comparisonField="average"  >Average Response Time</a></li>
+            <li><a class="option" data-comparisonField="median" >Median Response Time</a></li>
+            <li><a class="option" data-comparisonField="p90" >P90 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p95" >P95 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p99" >P99 Response Time</a></li>
+            <li><a class="option" data-comparisonField="maximum" >Maximum Response Time</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a class="option" data-comparisonField="successcount" >Successful requests</a></li>
+            <li><a class="option" data-comparisonField="failurecount" >Failed requests</a></li>
+      </ul>
     </div>
 
     <div class="d3graph">

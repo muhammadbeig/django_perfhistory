@@ -260,16 +260,16 @@ var mytable;
 
                 <!-- Page Heading -->
                 <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
+                    <!-- <div class="col-lg-12"> -->
+                        <h2 class="page-header fa fa-2x">
                             Projects <small>Overview</small>
-                        </h1>
+                        </h2>
                         <ol class="breadcrumb">
                             <li class="active">
-                                <i class="fa fa-dashboard"></i> List of projects
+                                <i class="fa fa-fw"></i> List of projects
                             </li>
                         </ol>
-                    </div>
+                    <!-- </div> -->
                 </div>
 
 
@@ -278,7 +278,7 @@ var mytable;
                      <div class="alert alert-danger fade in">
                         <a href="#" class="close" data-dismiss="alert">&times;</a>
                         {% for error in projectform.non_field_errors %}
-                            <li>{{ error }}</li>
+                            <i class="fa"><li>{{ error }}</li></i>
                         {% endfor %}
                     </div>
                 {% endif %}
@@ -289,7 +289,7 @@ var mytable;
                             <a href="#" class="close" data-dismiss="alert">&times;</a>
                             {% for field in projectform %}
                                 {% for error in field.errors %} 
-                                <li>{{ error }}</li>
+                                <i class="fa"><li>{{ error }}</li></i>
                                 {% endfor %}
                             {% endfor %}
                         </div>
@@ -310,8 +310,8 @@ var mytable;
         </div>
         {% endfor %}
 
-        <button type="submit" class="btn btn-primary btn-lg" value="Create {{ type }}">
-            <span class="glyphicon glyphicon-plus"></span> New Project
+        <button type="submit" class="fa fa-lg btn btn-primary" value="Create {{ type }}">
+            <i class="fa fa-plus-square"></i> New Project
         </button>
     </form>
 
@@ -509,16 +509,6 @@ var mytable;
 
 </script>
 
-<style type="text/css">
-    .pull-right {
-        margin-right:1em
-    }
-
-    .modified {
-        margin-right:1em
-    }
-
-</style>
 
 <ul class="list-group">
         {% for obj in object_list %}
@@ -528,7 +518,7 @@ var mytable;
                 <div class="panel-heading" role="tab" id="heading_{{ obj.id }}">
 
                     <h4 class="panel-title">
-                        <a class="collapsed" 
+                        <a class="fa collapsed" 
                             role="button" 
                             data-toggle="collapse" 
                             data-parent="#accordion" 
@@ -536,12 +526,15 @@ var mytable;
                             aria-expanded="false" 
                             aria-controls="collapse_{{ obj.id }}" 
                             data-pid="{{ obj.id}}">
-                            
-                            <small>{{ obj.id}}. </small> <strong class="projectname">{{ obj.name}}</strong> <small class="projectdescription">{{ obj.description}}</small> 
+                            <div class="fa">
+                                <small>{{ obj.id}}. </small> 
+                                <i class="fa fa-lg"> {{ obj.name | title }} </i>
+                                <small class="projectdescription">{{ obj.description | title }}</small> 
+                            </div>
                         </a>
                             <div class="pull-right">
                                     
-                                        <small class="modified">modified: {{ obj.last_modified }}</small>
+                                        <p class="fa modified">modified: {{ obj.last_modified }}</p>
                                     
                                 
                                     <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ obj.id }}" >
@@ -637,6 +630,7 @@ var mytable;
                         <ul><b>Description:</b> {{ obj.description }} </ul>
                         <ul><b>Created:</b> {{ obj.created }} </ul>
                         <ul><b>Last Modified:</b> {{ obj.last_modified }} </ul>
+                        <div class="call-us center-text"> {{ obj.description }}</div>
 
                             <div id="tableplaceholder">
                             </div>
@@ -662,7 +656,7 @@ var mytable;
                                             {{ field|addcss:"form-control" }}
                                             {% endfor %}
 
-                                        <input type="submit" id="AddTagButton" class="btn btn-default" value="Add Tag"/>
+                                        <input type="submit" id="AddTagButton" class="btn btn-danger" value="Add Tag"/>
                                     </div>    
                                 </form>
                             </div>

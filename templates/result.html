@@ -91,7 +91,7 @@
         </div>
 
         <div class="form-group col-xs-2">
-            <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="text">
+            <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="number">
         </div>
 
         <div class="form-group col-xs-8">
@@ -103,6 +103,8 @@
             <input id="baseline" name="baseline" class="form-control" type="checkbox">
         </div>
 
+
+
         <div >
             <button type="submit" class="btn btn-warning btn-lg ">
                 <span class="glyphicon glyphicon-ok-sign"></span> Upload
@@ -111,6 +113,10 @@
 
         <div class="form-group col-xs-8">
             <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
+        </div>
+
+        <div class="form-group col-xs-2">
+            <input id="duration_minutes" name="duration_minutes" placeholder="Duration (minutes)" class="form-control" type="number" step="0.1">
         </div>
 
         <div class="input-group col-xs-8">
@@ -154,6 +160,7 @@
                                                       <th class="result-table-headers">version</th>
                                                       <th class="result-table-headers">baseline</th>
                                                       <th class="result-table-headers">users</th>
+                                                      <th class="result-table-headers">duration (min)</th>
                                                       <th class="result-table-headers" colspan="2">actions</th>
                                                       <!-- <td></td> -->
                                                     </tr>
@@ -169,13 +176,19 @@
                                                           
                                                           <td class="result-table-cells"><input id="baselineCheckBox_{{ result.id }}" name="baseline" data-id="{{ result.id }}" type="checkbox" {% if result.baseline %}checked{% endif %}> </td>
 
-                                                          <td class="result-table-cells"> {{ result.numberofusers|default_if_none:"-" }} </td>
+                                                          <td class="result-table-cells"> {{ result.numberofusers|default_if_none:"-" }} 
+                                                          </td>
+
+                                                          <td class="result-table-cells"> {{ result.duration_minutes }} </td>
+
+                                                          
                                                           <td>
                                                               <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >
                                                                           <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"> 
                                                                           </span>
                                                               </button>
                                                           </td>
+
                                                           <td> 
                                                               <button  id="deleteResultButton" class="btn btn-default btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ result.id }}" >
                                                                   <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash">
@@ -290,6 +303,7 @@
                         <tr>
                             <th>Version</th>
                             <th>Name</th>
+                            <th>qps</th>
                             <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
                             <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
                             <th>avg</th>
@@ -308,6 +322,7 @@
                             
                             <th>Version</th>
                             <th>Name</th>
+                            <th>qps</th>
                             <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
                             <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
                             <th>avg</th>
@@ -330,7 +345,11 @@
 
         <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading">Comparison (delta from baseline) table <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink">Chart</a></div>
+            <div class="panel-heading ">Comparison (delta from baseline) table 
+              <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink">
+               Line chart</span><i class="fa fa-line-chart text-danger"></i>
+              </a>
+            </div>
             <div class="panel-body" id="panel-body">
                 <p>Given below is a list of projects results for which exist in the repository</p>
 
@@ -340,6 +359,7 @@
                         <tr>
                             <th>Version</th>
                             <th>Name</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
                             <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
                             <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
@@ -358,6 +378,7 @@
                             
                             <th>Version</th>
                             <th>Name</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
                             <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
                             <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
@@ -439,8 +460,25 @@ function updateFormNameField(text)
   }
 }
 
-var NAME_POSITION = 2;
+function updateNewTestResultDuration(duration)
+{
+    // newResultform = document.getElementById('newResultForm');
+    // console.log($("input[name=name]").val())
+    // console.log(document.getElementById['version'])
+  
+  duration_minutes_field = $("input[name=duration_minutes]");
+  if (!duration_minutes_field.val())
+  {
+    duration_minutes_field.val(duration);
+    console.log("set value for duration_minutes field:", duration);
+  }
+}
+
+var RESULT_DELIMITER = ',';
+var TIMESTAMP_UNIT = 'ms';
+var TIMESTAMP_POSITION = 0;
 var RESPONSE_TIME_POSITION = 1;
+var NAME_POSITION = 2;
 var RESPONSE_CODE_POSITION = 3;
 
 var SUCCESS = 'successcount';
@@ -521,12 +559,23 @@ document.getElementById('newResultForm').onsubmit= function(event)
     else 
     {
       var dataarray = event.target.result.split('\n');
+
+      console.log("first line", dataarray[0]);
+      if (typeof parseInt(dataarray[0][TIMESTAMP_POSITION]) === "number" && dataarray[0][TIMESTAMP_POSITION])
+      {
+        test_start_timestamp = parseInt(dataarray[0].split(RESULT_DELIMITER)[TIMESTAMP_POSITION]);    
+        console.log("setting test_start_timestamp", test_start_timestamp);
+      }
+      else {
+        console.log("Error, invalid timestamp in row 0 of the result file");
+      }
+      
       
       for (line in dataarray)
       {
-        var name = dataarray[line].split(',')[NAME_POSITION]
-        var responsetime = dataarray[line].split(',')[RESPONSE_TIME_POSITION]
-        var responsecode = dataarray[line].split(',')[RESPONSE_CODE_POSITION]
+        var name = dataarray[line].split(RESULT_DELIMITER)[NAME_POSITION]
+        var responsetime = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_TIME_POSITION]
+        var responsecode = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_CODE_POSITION]
         
         // console.log(name, responsetime,dataarray[line])
         // console.log(typeof parseFloat(responsetime))
@@ -553,6 +602,8 @@ document.getElementById('newResultForm').onsubmit= function(event)
                 {
                     datadic[name][SUM_OF_RESPONSE_TIMES] = datadic[name][SUM_OF_RESPONSE_TIMES] + parseFloat(responsetime) || parseFloat(responsetime);
                 }
+
+                test_end_timestamp = dataarray[line].split(RESULT_DELIMITER)[TIMESTAMP_POSITION];  
             }
             else 
             {
@@ -563,19 +614,32 @@ document.getElementById('newResultForm').onsubmit= function(event)
         }
         
             // totallines = line
+            
+      }
+      test_end_timestamp = parseInt(test_end_timestamp); // doing it after loop to decrease processing
+      console.log('test_start_timestamp:',test_start_timestamp);
+      console.log('test_end_timestamp:',test_end_timestamp);
+
+      var timestamp_multiplier=0;
+      if (TIMESTAMP_UNIT == 'ms')
+      {
+        timestamp_multiplier = 0.001
+      } else if (TIMESTAMP_UNIT == 's') {
+        timestamp_multiplier = 1
+      }
+      else {
+        console.log("Invalid unit for result timestamp");
       }
 
-
-
+      var duration = (test_end_timestamp - test_start_timestamp) * timestamp_multiplier / 60 ; // divide by 60 to get duration in minutes
+      duration = Math.round (duration * 10)/10;
+      updateNewTestResultDuration(duration);
 
       progressNode.max = 1;
       progressNode.value = 1;
 
-
-
-
-
       console.log('datadic:', datadic);
+      console.log("last element", dataarray[dataarray.length-1]);
       // console.log('done:' );
       // console.log("Contents: " + contents);
       data = {}
@@ -583,7 +647,7 @@ document.getElementById('newResultForm').onsubmit= function(event)
       data["results"] = []
 
       // console.log(event);
-      data["results"].push (processRawData(datadic, resultname, resultdescription, resultfilename, resultversion, resultnumberofusers, "", resultisbaseline) );
+      data["results"].push (processRawData(datadic, resultname, resultdescription, resultfilename, resultversion, resultnumberofusers, duration, resultisbaseline) );
       // console.log(data);
       console.log("reading file took: ", (Date.now() -starttime)/1000, "seconds");
       filereadtime = (Date.now() -starttime)/1000;
@@ -658,7 +722,7 @@ function processRawData(dictionary, name, description, filename, version, number
   result['description'] = description;
   result['filename'] = filename;
   result['version'] = version;
-  result['duration'] = duration;
+  result['duration_minutes'] = duration;
   result['numberofusers'] = numberofusers;
   if (isbaseline==1)
   {
@@ -798,16 +862,23 @@ function create_result(formData, fileReadTime)
     .delta-headers {
         text-align: center
     }
+    .data-columns {
+      text-align: center
+    }
 </style>
 
-<link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css"> -->
-<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css"> -->
+<link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css">
 <script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js">
     </script>
 <script type="text/javascript">
     
 $(document).ready(function() 
 {
+
+  function numberWithCommas(x) 
+  {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
         x=JSON.parse('{{ object_list|safe }}');
         result_list=JSON.parse('{{ result_list|safe }}');
         txn_list=JSON.parse('{{ txn_list|safe }}');
@@ -850,24 +921,26 @@ $(document).ready(function()
                     // console.log(baseline_result[name]['successcount']);
                     if (baseline_result[name])
                     {
-                        other_txns[t]['delta-successcount'] = (other_txns[t]['successcount'] - baseline_result[name]['successcount']).toFixed(2);  
-                        other_txns[t]['delta-failurecount'] = (other_txns[t]['failurecount'] - baseline_result[name]['failurecount']).toFixed(2);
-                        other_txns[t]['delta-average'] = (baseline_result[name]['average'] - other_txns[t]['average']).toFixed(2);
-                        other_txns[t]['delta-maximum'] = (baseline_result[name]['maximum'] - other_txns[t]['maximum']).toFixed(2);
-                        other_txns[t]['delta-median'] = (baseline_result[name]['median'] - other_txns[t]['median']).toFixed(2);
-                        other_txns[t]['delta-minimum'] = (baseline_result[name]['minimum'] - other_txns[t]['minimum']).toFixed(2);
-                        other_txns[t]['delta-p90'] = (baseline_result[name]['p90'] - other_txns[t]['p90']).toFixed(2);
-                        other_txns[t]['delta-p95'] = (baseline_result[name]['p95'] - other_txns[t]['p95']).toFixed(2);
-                        other_txns[t]['delta-p99'] = (baseline_result[name]['p99'] - other_txns[t]['p99']).toFixed(2);
-                        other_txns[t]['delta-p99_99'] = (baseline_result[name]['p99_99'] - other_txns[t]['p99_99']).toFixed(2);
-                        other_txns[t]['delta-stddev'] = (baseline_result[name]['stddev'] - other_txns[t]['stddev']).toFixed(2);
+                        other_txns[t]['delta-qps'] = (other_txns[t]['success_qps'] - baseline_result[name]['success_qps']);  
+                        other_txns[t]['delta-successcount'] = (other_txns[t]['success_count'] - baseline_result[name]['success_count']);  
+                        other_txns[t]['delta-failurecount'] = (other_txns[t]['failure_count'] - baseline_result[name]['failure_count']);
+                        other_txns[t]['delta-average'] = (baseline_result[name]['average'] - other_txns[t]['average']);
+                        other_txns[t]['delta-maximum'] = (baseline_result[name]['maximum'] - other_txns[t]['maximum']);
+                        other_txns[t]['delta-median'] = (baseline_result[name]['median'] - other_txns[t]['median']);
+                        other_txns[t]['delta-minimum'] = (baseline_result[name]['minimum'] - other_txns[t]['minimum']);
+                        other_txns[t]['delta-p90'] = (baseline_result[name]['p90'] - other_txns[t]['p90']);
+                        other_txns[t]['delta-p95'] = (baseline_result[name]['p95'] - other_txns[t]['p95']);
+                        other_txns[t]['delta-p99'] = (baseline_result[name]['p99'] - other_txns[t]['p99']);
+                        other_txns[t]['delta-p99_99'] = (baseline_result[name]['p99_99'] - other_txns[t]['p99_99']);
+                        other_txns[t]['delta-stddev'] = (baseline_result[name]['stddev'] - other_txns[t]['stddev']);
 
                         // console.log('actual value',txn_list[t]);
                     }
 
                     else 
                     {
-                        // console.log('No match found in baseline for:', name);
+                        console.log('No match found in baseline for:', name);
+                        other_txns[t]['delta-qps'] = 0  
                         other_txns[t]['delta-successcount'] = 0  
                         other_txns[t]['delta-failurecount'] = 0
                         other_txns[t]['delta-average'] = 0
@@ -890,8 +963,9 @@ $(document).ready(function()
         "columns": [
         { "data": "version" },
         { "data": "name" },
-        { "data": "successcount" },
-        { "data": "failurecount" },
+        { "data": "success_qps" },
+        { "data": "success_count" },
+        { "data": "failure_count" },
         { "data": "average" },
         { "data": "minimum" },
         { "data": "maximum" },
@@ -903,7 +977,20 @@ $(document).ready(function()
         { "data": "p99_99" }
         ],
         "columnDefs": [
-            { "visible": false, "targets": 0 }
+            { "visible": false, "targets": 0 },
+            { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
+            { "render": function (data, type, row) 
+                        {
+                          return numberWithCommas(Math.round(data*10)/10); 
+                        },
+              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+            },
+            { "render": function (data, type, row) 
+                        {
+                          return "version=>"+data; 
+                        },
+              "targets": [0]
+            }            
         ],
         "order": [[ 0, 'asc' ],[ 1, 'asc' ]],
         "displayLength": 25,
@@ -919,7 +1006,7 @@ $(document).ready(function()
             {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                        '<tr class="group"><td colspan="12">'+group+'</td></tr>'
+                        '<tr class="group"><td colspan="13">'+group+'</td></tr>'
                     );
  
                     last = group;
@@ -953,6 +1040,7 @@ $(document).ready(function()
         "columns": [
         { "data": "version" },
         { "data": "name" },
+        { "data": "delta-qps" },
         { "data": "delta-successcount" },
         { "data": "delta-failurecount" },
         { "data": "delta-average" },
@@ -966,7 +1054,14 @@ $(document).ready(function()
         { "data": "delta-p99_99" }
         ],
         "columnDefs": [
-            { "visible": false, "targets": [0] }
+            { "visible": false, "targets": [0] },
+            { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
+            { "render": function (data, type, row) 
+                        {
+                          return numberWithCommas(Math.round(data*10)/10);
+                        },
+              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+            }            
         ],
         "order": [[ 0, 'asc' ],[ 10, 'asc' ]],
         "displayLength": 100,
@@ -986,7 +1081,7 @@ $(document).ready(function()
             {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                        '<tr class="group"><td colspan="12">'+group+'</td></tr>'
+                        '<tr class="group"><td colspan="13">'+group+'</td></tr>'
                     );
  
                     last = group;

@@ -334,7 +334,7 @@ def createResult(request, project_id, tagid):
 						result.version = resultData['version']
 						result.numberofusers = resultData.get('numberofusers')
 						result.filename = resultData.get('filename')
-						result.duration = resultData.get('duration')
+						result.duration_minutes = resultData.get('duration_minutes')
 						result.description = resultData.get('description')
 						if resultData.get('baseline'):
 							# print 'is baseline'
@@ -351,8 +351,8 @@ def createResult(request, project_id, tagid):
 							txn.name = txnData.get('name')
 							txn.description = txnData.get('description')
 
-							txn.successcount = txnData.get('successcount')
-							txn.failurecount = txnData.get('failurecount')
+							txn.success_count = txnData.get('successcount')
+							txn.failure_count = txnData.get('failurecount')
 							txn.average = txnData.get('average')
 							txn.median = txnData.get('median')
 							txn.minimum = txnData.get('minimum')
@@ -363,6 +363,9 @@ def createResult(request, project_id, tagid):
 							txn.p99 = txnData.get('p99')
 							txn.p99_9 = txnData.get('p99.9')
 							txn.p99_99 = txnData.get('p99.99')
+							txn.success_qps = txnData.get('successcount') / (result.duration_minutes * 60.0);
+							txn.failure_qps = txnData.get('failurecount') / (result.duration_minutes * 60.0);
+							# print ('successcount',txnData.get('successcount'),'duration_minutes:',result.duration_minutes, 'success qps:',txnData.get('successcount') / (3600 * 60.00));
 							# txn.save()
 							# print txn.as_json()
 							txns.append(txn)
