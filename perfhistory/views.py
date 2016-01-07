@@ -2,7 +2,7 @@ from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 from perfhistory.models import Project, Tag, Result, Transaction
 from .forms import ProjectForm, TagForm, EditProjectForm, UserForm
-from django.http import JsonResponse, HttpResponse, QueryDict, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, QueryDict, HttpResponseRedirect, Http404
 from django.db import transaction, IntegrityError
 from django.core import serializers
 import json,sys
@@ -309,6 +309,26 @@ def updateResult(request, resultId):
 		            	content_type="application/json")
 
 
+@login_required(login_url='/perfhistory/')
+def createResultByProjectTagName(request):
+	data = json.loads(request.body)
+	try:
+		print request.body
+		projectName = data.get('project_name')
+		project = Project.objects.get(name=projectName)
+	except Project.DoesNotExist as e:
+		print 'Invalid project name', e
+		raise Http404
+	try:
+		tagName = data.get('tag_name')
+		tag = Tag.objects.get(name=tagName, project_id=project.id)
+	except Tag.DoesNotExist as e:
+		print 'Invalid tag name', e
+		raise Http404
+
+	return createResult(request, project.id, tag.id)
+
+
 	
 
 @login_required(login_url='/perfhistory/')
@@ -316,7 +336,11 @@ def createResult(request, project_id, tagid):
 	if request.method == 'POST':
 		response_data = {}
 		insertionresult = []
-		
+		try:
+			existingResults = Result.objects.get(project_id=int(project_id), tag_id=int(tagid))
+		except Result.DoesNotExist as e:
+			existingResults = None
+			print 'Exception (ignorable?):', e
 
 		# print 'request.POST:',request.body, request
 		# print 'project_id:',project_id, 'tagid:',tagid
@@ -336,12 +360,13 @@ def createResult(request, project_id, tagid):
 						result.filename = resultData.get('filename')
 						result.duration_minutes = resultData.get('duration_minutes')
 						result.description = resultData.get('description')
-						if resultData.get('baseline'):
+						if resultData.get('baseline') or existingResults is None:
 							# print 'is baseline'
 							result.baseline = True
-							for res in Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
-								res.baseline = False
-								res.save()
+							if existingResults is not None:
+								for res in Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
+									res.baseline = False
+									res.save()
 						print result.save()
 						# insertionresultresult.id
 						

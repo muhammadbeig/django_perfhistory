@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^(?i)perfhistory/d3/$', perfhistory.views.d3),
     url(r'^(?i)perfhistory/project/(?P<project_id>[0-9]+)/createTag$', perfhistory.views.createTag),
     url(r'^(?i)perfhistory/project/(?P<project_id>[0-9]+)/tag/(?P<tagid>[0-9]+)/createResult$', perfhistory.views.createResult),
+    url(r'^(?i)perfhistory/project/createResult$', perfhistory.views.createResultByProjectTagName),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/result$', perfhistory.views.result),
     url(r'^(?i)perfhistory/result/(?P<resultId>[0-9]+)$', perfhistory.views.updateResult),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChart$', perfhistory.views.comparisonChart),

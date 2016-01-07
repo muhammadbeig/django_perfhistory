@@ -42,7 +42,7 @@
             </h2>
             <ol class="breadcrumb">
                 <li class="active">
-                    <i class="fa fa-dashboard"></i> Dashboard
+                    <i class="fa fa-dashboard"></i> New Result Form
                 </li>
             </ol>
         </div>
@@ -51,41 +51,12 @@
     </div>
 
 
-
-
-<!-- <div >
-    <h4>Upload Result</h4>
-    <div class="input-group">
-        <span class="input-group-btn">
-            <span class="btn btn-primary btn-file">
-                <small>
-                    <span class="glyphicon glyphicon-cloud-upload"></span>
-                </small>
-                        Browse&hellip; <input id="attached_file" type="file">
-            </span>
-        </span>
-        <input type="text" name="name" placeholder="Select a result file to continue" class="form-control" readonly>
-    </div>
-    <div class="progress" style="height: 5px;">
-        <div id="pbar" class="progress-bar progress-bar-warning progress-bar-striped" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;" >
-            <span class="sr-only">0% Complete</span>
-        </div>
-    </div>
-</div> -->
-        
-
-
-                               
-
-
-
-
-
-
 <div class="panel">
 <div id="form-container">
     <form   id="newResultForm">
       {% csrf_token %}
+
+      <div class="row">
         <div class="form-group col-xs-8">
             <input id="name" name="name" class="form-control" placeholder="Name" type="text"  required>
         </div>
@@ -93,33 +64,27 @@
         <div class="form-group col-xs-2">
             <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="number">
         </div>
+      </div>
 
+      <div class="row">
         <div class="form-group col-xs-8">
             <textarea id="description" name="description" placeholder="Description"rows="2" class="form-control" ></textarea>
-        </div>
-
-        <div class="form-group col-xs-2">
-            <label  type="text">Baseline:</label>
-            <input id="baseline" name="baseline" class="form-control" type="checkbox">
-        </div>
-
-
-
-        <div >
-            <button type="submit" class="btn btn-warning btn-lg ">
-                <span class="glyphicon glyphicon-ok-sign"></span> Upload
-            </button>
-        </div>
-
-        <div class="form-group col-xs-8">
-            <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
         </div>
 
         <div class="form-group col-xs-2">
             <input id="duration_minutes" name="duration_minutes" placeholder="Duration (minutes)" class="form-control" type="number" step="0.1">
         </div>
 
-        <div class="input-group col-xs-8">
+
+      </div>
+
+
+      <div class="row">
+        <div class="form-group col-xs-4">
+            <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
+        </div>
+        
+        <div class="input-group col-xs-6">
             <span class="input-group-btn">
                 <span class="btn btn-primary btn-file">
                     <small>
@@ -130,11 +95,35 @@
             </span>
             <input type="text" name="filename" placeholder="Select a result file to continue" class="form-control" readonly>
         </div>
-        <div class="progress col-xs-8" style="height: 5px;">
+        
+        <div class="progress col-xs-6" style="height: 5px;">
             <div id="pbar" class="progress-bar progress-bar-warning progress-bar-striped" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;" >
                 <span class="sr-only">0% Complete</span>
             </div>
         </div>
+
+      </div>
+
+
+
+
+
+
+
+      <div class="row">
+        <div class="form-group col-xs-2 col-md-offset-5">
+            <label  type="text">Baseline:</label>
+            <input id="baseline" name="baseline" class="form-control" aria-label="baseline" type="checkbox">
+        </div>
+      </div>
+
+      <div class="row">
+        <div >
+            <button type="submit" class="btn btn-warning btn-lg col-md-offset-5">
+                <span class="glyphicon glyphicon-ok-sign"></span> Upload
+            </button>
+        </div>
+      </div>
 
 
 
@@ -349,6 +338,9 @@
               <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink">
                Line chart</span><i class="fa fa-line-chart text-danger"></i>
               </a>
+              <div id="legendcolornegative" class="legendcolornegative pull-right">Degradation</div>
+              <div id="legendcolorpositive" class="legendcolorpositive pull-right">Improvement</div>
+              
             </div>
             <div class="panel-body" id="panel-body">
                 <p>Given below is a list of projects results for which exist in the repository</p>
@@ -416,6 +408,11 @@
 <script type="text/javascript" language="javascript" src="/static/math.min.js"></script>
 <script>
 
+var improvement_color =  "#8DE8FA"
+var regression_color =  "#DE6858"
+
+
+
 $(document).on('change', '.btn-file :file', function() {
   var input = $(this),
       numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -426,6 +423,12 @@ $(document).on('change', '.btn-file :file', function() {
 });
 
 $(document).ready( function() {
+
+    
+    $('div.legendcolorpositive').css({"background-color":improvement_color});
+    $('div.legendcolornegative').css({"background-color":regression_color});
+    
+
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
         
         var input = $(this).parents('.input-group').find(':text'),
@@ -859,12 +862,12 @@ function create_result(formData, fileReadTime)
 
 
 <style type="text/css">
-    .delta-headers {
+    /*.delta-headers {
         text-align: center
     }
     .data-columns {
       text-align: center
-    }
+    }*/
 </style>
 
 <link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css">
@@ -978,6 +981,8 @@ $(document).ready(function()
         ],
         "columnDefs": [
             { "visible": false, "targets": 0 },
+            // { className: "data-version", "targets": [0] },
+            { className: "data-labels", "targets": [1] },
             { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
             { "render": function (data, type, row) 
                         {
@@ -1006,7 +1011,7 @@ $(document).ready(function()
             {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                        '<tr class="group"><td colspan="13">'+group+'</td></tr>'
+                        '<tr class="group"><td class="data-version" colspan="13">'+group+'</td></tr>'
                     );
  
                     last = group;
@@ -1055,6 +1060,8 @@ $(document).ready(function()
         ],
         "columnDefs": [
             { "visible": false, "targets": [0] },
+            { className: "data-version", "targets": [0] },
+            { className: "data-labels", "targets": [1] },
             { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
             { "render": function (data, type, row) 
                         {
@@ -1079,15 +1086,38 @@ $(document).ready(function()
  
             api.column(0, {page:'current'} ).data().each( function ( group, i ) 
             {
+              // console.log('group',group, i);
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                        '<tr class="group"><td colspan="13">'+group+'</td></tr>'
+                        '<tr class="group"><td class="data-version" colspan="13">'+group+'</td></tr>'
                     );
  
                     last = group;
                 }
             } );
-        }
+        },
+
+        "fnRowCallback": function( nRow, aData, iDisplayIndex,iDisplayIndexFull) {
+
+                $(nRow).children().each(function(index, td) {
+
+                            if(index != 0)  {
+                              console.log('td',parseFloat($(td).html())>= 0, index );
+                                
+                                if (parseFloat($(td).html()) > 0) {
+                                    $(td).css("background-color", improvement_color);
+                                } 
+                                // else  if (parseFloat($(td).html()) == 0) {
+                                //     $(td).css("background-color", "#33C6C6");
+                                // }            
+                                else if (parseFloat($(td).html()) < 0) {
+                                    $(td).css("background-color", regression_color);
+                                }     
+
+                            }
+                });                       
+        return nRow;
+      },
 
     });
     
@@ -1366,6 +1396,7 @@ $(document).ready(function()
         }  
 
 
+
 </script>
 
 
@@ -1406,6 +1437,72 @@ $(document).ready(function()
     div.panel-heading {
         background-color: #BF9C67;
     }
+
+    div.legendcolorpositive {
+    width: 100px;
+    height: 30px;
+    padding: 4px;
+    border: 1px solid white;
+    margin: 0;
+    color: black;
+font-family: Helvetica;
+  font-size: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 100;
+  line-height: 24.2857px;
+  }
+
+  div.legendcolornegative {
+
+    width: 100px;
+    height: 30px;
+    padding: 4px;
+    border: 1px solid white;
+    margin: 4;
+font-family: Helvetica;
+  font-size: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 100;
+  line-height: 24.2857px;
+  }
+
+  td.data-columns {
+    text-align: center;
+    color : black;
+/*color: #adb7bd; */
+/*font-family: "Gill Sans / Gill Sans MT", sans-serif;*/
+font-size: 14px; 
+line-height: 22px; 
+
+margin: 0;
+  }
+
+
+    td.data-columns[class*="sorting_"] {
+    /*font-weight: bold;*/
+    font-size:16px;
+  }
+
+    td.data-version  {
+        font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #515151;
+    background-color: #eff1f2;
+  }
+
+  td.data-labels {
+    /*font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;*/
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #515151;
+
+    /*background-color: #eff1f2;*/
+  }
+
+
     
 </style>
 
