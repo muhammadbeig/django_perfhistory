@@ -40,19 +40,22 @@
                 {{ tagobj.name|capfirst }} 
                 <small>({{ tagobj.id }})</small>
             </h2>
-            <ol class="breadcrumb">
-                <li class="active">
-                    <i class="fa fa-dashboard"></i> New Result Form
-                </li>
-            </ol>
+
         </div>
     
     
     </div>
 
 
+{% if perms.perfhistory.create_result %}
+
 <div class="panel">
-<div id="form-container">
+  <ol class="breadcrumb">
+                <li class="active">
+                    <i class="fa fa-dashboard"></i> New Result Form
+                </li>
+  </ol>
+  <div id="form-container">
     <form   id="newResultForm">
       {% csrf_token %}
 
@@ -74,7 +77,6 @@
         <div class="form-group col-xs-2">
             <input id="duration_minutes" name="duration_minutes" placeholder="Duration (minutes)" class="form-control" type="number" step="0.1">
         </div>
-
 
       </div>
 
@@ -128,146 +130,145 @@
 
 
     </form>
+  </div>
 </div>
-</div>
+
+{% endif %}
 
 
 
 
-
-<div class="panel panel-default">
+<div class="panel panel-primary">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> Results table</h3>
                             </div>
                             <div class="panel-body">
-
-                                      
-                                              <table class="resulttable table compact">
-                                                
-                                                    <tr>
-                                                      <th class="result-table-headers">name</th>
-                                                      <th class="result-table-headers">version</th>
-                                                      <th class="result-table-headers">baseline</th>
-                                                      <th class="result-table-headers">users</th>
-                                                      <th class="result-table-headers">duration (min)</th>
-                                                      <th class="result-table-headers" colspan="2">actions</th>
-                                                      <!-- <td></td> -->
-                                                    </tr>
-                                                
-                                                
-                                                  {% for result in allresults %}
-                                                      <tr class="result-data-row" data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
-                                                      
-
-                                                          <!-- <td class="result-table-cells"> {{ result.id }} </td> -->
-                                                          <td class="result-table-cells"> <small> {{ result.name }} </small></td>
-                                                          <td class="result-table-cells"> <small>{{ result.version }}<small> </td>
-                                                          
-                                                          <td class="result-table-cells"><input id="baselineCheckBox_{{ result.id }}" name="baseline" data-id="{{ result.id }}" type="checkbox" {% if result.baseline %}checked{% endif %}> </td>
-
-                                                          <td class="result-table-cells"> {{ result.numberofusers|default_if_none:"-" }} 
-                                                          </td>
-
-                                                          <td class="result-table-cells"> {{ result.duration_minutes }} </td>
-
-                                                          
-                                                          <td>
-                                                              <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >
-                                                                          <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"> 
-                                                                          </span>
-                                                              </button>
-                                                          </td>
-
-                                                          <td> 
-                                                              <button  id="deleteResultButton" class="btn btn-default btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ result.id }}" >
-                                                                  <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash">
-                                                                  </span>
-                                                              </button>
-                                                          </td>
-
-
-                                                                          <!-- /.modal-delete --> 
-                                                      <div class="modal fade" id="delete_{{ result.id }}"  data-resultid="{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true" style="display: none;">
-                                                          <div class="modal-dialog">
-                                                              <div class="modal-content">
-                                                                      <div class="modal-header">
-                                                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                                                                          <h4 class="modal-title custom_align" id="Heading">Delete this Result</h4>
-                                                                      </div>
-                                                                 
-                                                                      <div class="modal-body">
-                                                                      
-                                                                          <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete this result?</div>
-                                                                      </div>
-                                                                      <div class="modal-footer ">
-                                                                          <button id="yesOnDelete" type="submit" class="btn btn-success">
-                                                                              <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Yes
-                                                                          </button>
-                                                                          <button type="button" class="btn btn-default" data-dismiss="modal">
-                                                                              <span class="glyphicon glyphicon-remove"></span>&nbsp;No
-                                                                          </button>
-                                                                      </div>
-                                                              </div>
-                                                          </div>
-                                                      </div>
-
-                                                      <!-- /.modal-edit --> 
-                                                      <div class="modal fade" id="edit_{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-                                                          <div class="modal-dialog">
-                                                              <div class="modal-content">
-                                                                  <div class="modal-header">
-                                                                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                                                                      <h4 class="modal-title custom_align" id="Heading">Edit Result</h4>
-                                                                  </div>
-                                                                  <div class="modal-body">
-
-                                                                      <form  id="updateResultForm_{{ result.id }}" >
-                                                                                  {% csrf_token %}
-                                                                          <input type="hidden" name="id" value="{{ result.id }}">
-                                                                          <div class="form-group">
-                                                                              <label type="text">Name:</label>
-                                                                              <input id="name" name="name" class="form-control" type="text" value="{{ result.name }}" required>
-                                                                          </div>
-                                                                          
-                                                                          <div class="form-group">
-                                                                              <label  type="text">Description:</label>
-                                                                              <textarea id="description" name="description" rows="2" class="form-control" >{{ result.description|default_if_none:"" }}</textarea>
-                                                                          </div>
-
-                                                                          <div class="form-group">
-                                                                              <label  type="text">Version:</label>
-                                                                              <input id="version" name="version" class="form-control" type="text" value="{{ result.version }}" required>
-                                                                          </div>
-
-                                                                          <div class="form-group">
-                                                                              <label  type="text">Number of Users:</label>
-                                                                             <input id="numberofusers" name="numberofusers" class="form-control" type="text" value="{{ result.numberofusers|default_if_none:"" }}">
-                                                                          </div>
-
-                                                                          <div class="form-group">
-                                                                              <label  type="text">Baseline:</label>
-                                                                             <input id="baseline" name="baseline" class="form-control" type="checkbox" {% if result.baseline %}checked{% endif %}>
-                                                                          </div>
-
-                                                                          <button type="submit" class="btn btn-warning btn-lg" style="width: 100%;">
-                                                                              <span class="glyphicon glyphicon-ok-sign"></span> Update
-                                                                          </button>
-                                                                      </form>
-                                                                      
-                                                                  </div>
-                                                                  <div class="modal-footer ">
-                                                                      
-                                                                  </div>
-                                                              </div>
-                                                          </div>
-                                                      </div>
-
-                                                      </tr>
-                                                  {% endfor %}
-                                                
-                                              </table>
+                              <p> List of performance test results
+                              </p>
                             </div>
+
+                            <table class="resulttable table compact">
+                               <tr>
+                                 <th class="result-table-headers">Result Name</th>
+                                 <th class="text-center">Version</th>
+                                 <th class="text-center">Is baseline</th>
+                                 <th class="text-center"># of users</th>
+                                 <th class="text-center">Duration (min)</th>
+                                {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
+                                 <th  colspan="2" class="text-center">Action(s)</th>
+                                {% endif %}
+                              </tr>
+                              
+                              {% for result in allresults %}
+                              <tr class="result-data-row {% if result.baseline %}active{% endif %}"  data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
+                              
+                                  <td class="result-table-cells"> <small> {{ result.name }} </small></td>
+                                  <td class="result-table-cells" align="center"> <small>{{ result.version }}<small> </td>
+                                  <td class="result-table-cells" align="center"><input id="baselineCheckBox_{{ result.id }}" name="baseline" data-id="{{ result.id }}" type="checkbox" {% if result.baseline %}checked{% endif %}> </td>
+                                  <td class="result-table-cells" align="center"> {{ result.numberofusers|default_if_none:"-" }} 
+                                  </td>
+                                  <td class="result-table-cells" align="center"> {{ result.duration_minutes }} </td>
+      
+                                  {% if perms.perfhistory.change_result %}
+                                  <td align="center">
+                                    <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >
+                                      <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                  </td>
+                                  {% endif %}
+                                  
+                                  {% if perms.perfhistory.delete_result %}
+                                  <td  align="center"> 
+                                    <button  id="deleteResultButton" class="btn btn-default btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ result.id }}" >
+                                      <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash"></span>
+                                    </button>
+                                  </td>
+                                  {% endif %}
+
+                                  <div class="modal fade" id="delete_{{ result.id }}"  data-resultid="{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                          </button>
+                                          <h4 class="modal-title custom_align" id="Heading">Delete this Result</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="alert alert-danger">
+                                            <span class="glyphicon glyphicon-warning-sign">
+                                            </span> Are you sure you want to delete this result?
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer ">
+                                          <button id="yesOnDelete" type="submit" class="btn btn-success">
+                                            <span class="glyphicon glyphicon-ok-sign">
+                                            </span>&nbsp;Yes
+                                          </button>
+                                          <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove">
+                                            </span>&nbsp;No
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- /.modal-edit --> 
+                                  <div class="modal fade" id="edit_{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true">
+                                            </span>
+                                          </button>
+                                          <h4 class="modal-title custom_align" id="Heading">Edit Result
+                                          </h4>
+                                        </div>
+                                        <div class="modal-body">
+                                          <form  id="updateResultForm_{{ result.id }}" >
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ result.id }}">
+                                            <div class="form-group">
+                                              <label type="text">Name:
+                                              </label>
+                                              <input id="name" name="name" class="form-control" type="text" value="{{ result.name }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Description:
+                                              </label>
+                                              <textarea id="description" name="description" rows="2" class="form-control" >{{ result.description|default_if_none:"" }}
+                                              </textarea>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Version:</label>
+                                              <input id="version" name="version" class="form-control" type="text" value="{{ result.version }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Number of Users:</label>
+                                              <input id="numberofusers" name="numberofusers" class="form-control" type="text" value="{{ result.numberofusers|default_if_none:"" }}">
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Baseline:</label>
+                                              <input id="baseline" name="baseline" class="form-control" type="checkbox" {% if result.baseline %}checked{% endif %}>
+                                            </div>
+                                            <button type="submit" class="btn btn-warning btn-lg" style="width: 100%;">
+                                              <span class="glyphicon glyphicon-ok-sign">
+                                              </span> Update
+                                              </button>
+                                          </form>
+                                        </div>
+                                        <div class="modal-footer ">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </tr>
+                              {% endfor %}
+                                                
+                            </table>
 </div>
+
                                       
 
 
@@ -279,9 +280,9 @@
 
 
     <div>
-        <div class="panel panel-info" id="panel-body">
+        <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading">All {{ type }} Table</div>
+            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3></div>
             <div class="panel-body" id="panel-body">
                 <p>Given below is a list of projects results for which exist in the repository</p>
 
@@ -334,10 +335,10 @@
 
         <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading ">Comparison (delta from baseline) table 
-              <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink">
-               Line chart</span><i class="fa fa-line-chart text-danger"></i>
-              </a>
+            <div class="panel-heading ">
+              <h3 class="panel-title">Regression from baseline <a class="panel-title" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><span> (Chart <i class="fa fa-line-chart text-danger"></i></span>) </a></h3>
+              
+
               <div id="legendcolornegative" class="legendcolornegative pull-right">Degradation</div>
               <div id="legendcolorpositive" class="legendcolorpositive pull-right">Improvement</div>
               
@@ -503,172 +504,175 @@ var DATA = 'response_time_data';
 
 var datadic = {};
 
-document.getElementById('newResultForm').onsubmit= function(event)
-{
-    event.preventDefault();
-  // console.log("submit", event.currentTarget.elements);
-  // console.log("submit", event.currentTarget.elements);
-
-  var resultname = $("input[name=name]").val();
-  var resultdescription = $("textarea[name=description]").val();
-  var resultfilename = $("input[name=filename]").val();
-  var resultversion = $("input[name=version]").val();
-  var resultnumberofusers = parseInt($("input[name=numberofusers]").val());
-  var resultisbaseline = $("input[name=baseline]")[0].checked ? 1:0 ;
-  // console.log(resultisbaseline);
-  console.log("parameters:",resultname,resultdescription, resultfilename,resultversion, resultnumberofusers, resultisbaseline);
-  // return;
-
-  
-  progressNode = document.getElementById("pbar");
-
-  // var files = document.getElementById('files').files;
-  var files = document.getElementById('attached_file').files;
-
-  if (!files.length) 
+if ($('#newResultForm').length) {
+  document.getElementById('newResultForm').onsubmit= function(event)
   {
-    alert('Please select a result file to upload!');
-    return;
-  }
+      event.preventDefault();
+    // console.log("submit", event.currentTarget.elements);
+    // console.log("submit", event.currentTarget.elements);
 
-  var file = files[0];
-  // console.log(file);
-  var reader = new FileReader();
-  datadic = {};
-  var starttime;
-  var totallines = 0;
+    var resultname = $("input[name=name]").val();
+    var resultdescription = $("textarea[name=description]").val();
+    var resultfilename = $("input[name=filename]").val();
+    var resultversion = $("input[name=version]").val();
+    var resultnumberofusers = parseInt($("input[name=numberofusers]").val());
+    var resultisbaseline = $("input[name=baseline]")[0].checked ? 1:0 ;
+    // console.log(resultisbaseline);
+    console.log("parameters:",resultname,resultdescription, resultfilename,resultversion, resultnumberofusers, resultisbaseline);
+    // return;
 
-  reader.onprogress = function(event) 
-  {
-      
-    if (event.lengthComputable) 
+    
+    progressNode = document.getElementById("pbar");
+
+    // var files = document.getElementById('files').files;
+    var files = document.getElementById('attached_file').files;
+
+    if (!files.length) 
     {
-      progressNode.max = 1;
-      var valeur = parseInt(event.loaded/event.total*100);
-      progressNode.valuenow = event.loaded/event.total;
-      $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
-
+      alert('Please select a result file to upload!');
+      return;
     }
-  };
 
-  reader.onloadend = function(event) 
-  {
-    // var contents = event.target.result,
-    error    = event.target.error;
-    if (error != null) 
-    {
-      console.error("File could not be read! Code " + error.code);
-    } 
-    else 
-    {
-      var dataarray = event.target.result.split('\n');
+    var file = files[0];
+    // console.log(file);
+    var reader = new FileReader();
+    datadic = {};
+    var starttime;
+    var totallines = 0;
 
-      console.log("first line", dataarray[0]);
-      if (typeof parseInt(dataarray[0][TIMESTAMP_POSITION]) === "number" && dataarray[0][TIMESTAMP_POSITION])
-      {
-        test_start_timestamp = parseInt(dataarray[0].split(RESULT_DELIMITER)[TIMESTAMP_POSITION]);    
-        console.log("setting test_start_timestamp", test_start_timestamp);
-      }
-      else {
-        console.log("Error, invalid timestamp in row 0 of the result file");
-      }
-      
-      
-      for (line in dataarray)
-      {
-        var name = dataarray[line].split(RESULT_DELIMITER)[NAME_POSITION]
-        var responsetime = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_TIME_POSITION]
-        var responsecode = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_CODE_POSITION]
+    reader.onprogress = function(event) 
+    {
         
-        // console.log(name, responsetime,dataarray[line])
-        // console.log(typeof parseFloat(responsetime))
+      if (event.lengthComputable) 
+      {
+        progressNode.max = 1;
+        var valeur = parseInt(event.loaded/event.total*100);
+        progressNode.valuenow = event.loaded/event.total;
+        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
 
-        if (name)
+      }
+    };
+
+    reader.onloadend = function(event) 
+    {
+      // var contents = event.target.result,
+      error    = event.target.error;
+      if (error != null) 
+      {
+        console.error("File could not be read! Code " + error.code);
+      } 
+      else 
+      {
+        var dataarray = event.target.result.split('\n');
+
+        console.log("first line", dataarray[0]);
+        if (typeof parseInt(dataarray[0][TIMESTAMP_POSITION]) === "number" && dataarray[0][TIMESTAMP_POSITION])
         {
-            if (typeof parseFloat(responsetime) === "number")
-            {
-                if (!datadic[name])//initialize if it doesn't exist, push in any case
-                {
-                    datadic[name] = {}
-                    datadic[name][DATA] = []
-                }
-                datadic[name][DATA].push(parseFloat(responsetime));    
-                if (parseInt(responsecode) == 200)
-                {
-                    datadic[name][SUCCESS] = ++datadic[name][SUCCESS]|| 1;
-                }
-                else
-                {
-                    datadic[name][FAILURE] = ++datadic[name][FAILURE]|| 1;
-                }
-                if (parseInt(responsecode) == 200 || include_failed_requests_in_calculation)
-                {
-                    datadic[name][SUM_OF_RESPONSE_TIMES] = datadic[name][SUM_OF_RESPONSE_TIMES] + parseFloat(responsetime) || parseFloat(responsetime);
-                }
-
-                test_end_timestamp = dataarray[line].split(RESULT_DELIMITER)[TIMESTAMP_POSITION];  
-            }
-            else 
-            {
-              // console.log(name, typeof parseFloat(responsetime) === "number")
-              alert('Invalid results file!');
-              return;
-            } 
+          test_start_timestamp = parseInt(dataarray[0].split(RESULT_DELIMITER)[TIMESTAMP_POSITION]);    
+          console.log("setting test_start_timestamp", test_start_timestamp);
+        }
+        else {
+          console.log("Error, invalid timestamp in row 0 of the result file");
         }
         
-            // totallines = line
-            
+        
+        for (line in dataarray)
+        {
+          var name = dataarray[line].split(RESULT_DELIMITER)[NAME_POSITION]
+          var responsetime = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_TIME_POSITION]
+          var responsecode = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_CODE_POSITION]
+          
+          // console.log(name, responsetime,dataarray[line])
+          // console.log(typeof parseFloat(responsetime))
+
+          if (name)
+          {
+              if (typeof parseFloat(responsetime) === "number")
+              {
+                  if (!datadic[name])//initialize if it doesn't exist, push in any case
+                  {
+                      datadic[name] = {}
+                      datadic[name][DATA] = []
+                  }
+                  datadic[name][DATA].push(parseFloat(responsetime));    
+                  if (parseInt(responsecode) == 200)
+                  {
+                      datadic[name][SUCCESS] = ++datadic[name][SUCCESS]|| 1;
+                  }
+                  else
+                  {
+                      datadic[name][FAILURE] = ++datadic[name][FAILURE]|| 1;
+                  }
+                  if (parseInt(responsecode) == 200 || include_failed_requests_in_calculation)
+                  {
+                      datadic[name][SUM_OF_RESPONSE_TIMES] = datadic[name][SUM_OF_RESPONSE_TIMES] + parseFloat(responsetime) || parseFloat(responsetime);
+                  }
+
+                  test_end_timestamp = dataarray[line].split(RESULT_DELIMITER)[TIMESTAMP_POSITION];  
+              }
+              else 
+              {
+                // console.log(name, typeof parseFloat(responsetime) === "number")
+                alert('Invalid results file!');
+                return;
+              } 
+          }
+          
+              // totallines = line
+              
+        }
+        test_end_timestamp = parseInt(test_end_timestamp); // doing it after loop to decrease processing
+        // console.log('test_start_timestamp:',test_start_timestamp);
+        // console.log('test_end_timestamp:',test_end_timestamp);
+
+        var timestamp_multiplier=0;
+        if (TIMESTAMP_UNIT == 'ms')
+        {
+          timestamp_multiplier = 0.001
+        } else if (TIMESTAMP_UNIT == 's') {
+          timestamp_multiplier = 1
+        }
+        else {
+          console.log("Invalid unit for result timestamp");
+        }
+
+        var duration = (test_end_timestamp - test_start_timestamp) * timestamp_multiplier / 60 ; // divide by 60 to get duration in minutes
+        duration = Math.round (duration * 10)/10;
+        updateNewTestResultDuration(duration);
+
+        progressNode.max = 1;
+        progressNode.value = 1;
+
+        console.log('datadic:', datadic);
+        console.log("last element", dataarray[dataarray.length-1]);
+        // console.log('done:' );
+        // console.log("Contents: " + contents);
+        data = {}
+        data["type"] = "summaryresults"
+        data["results"] = []
+
+        // console.log(event);
+        data["results"].push (processRawData(datadic, resultname, resultdescription, resultfilename, resultversion, resultnumberofusers, duration, resultisbaseline) );
+        // console.log(data);
+        console.log("reading file took: ", (Date.now() -starttime)/1000, "seconds");
+        filereadtime = (Date.now() -starttime)/1000;
+
+        
+        create_result(data, filereadtime);
+        // console.log("create result request took: ", (Date.now() -starttime)/1000, "seconds");
+
+        
       }
-      test_end_timestamp = parseInt(test_end_timestamp); // doing it after loop to decrease processing
-      console.log('test_start_timestamp:',test_start_timestamp);
-      console.log('test_end_timestamp:',test_end_timestamp);
+    };
 
-      var timestamp_multiplier=0;
-      if (TIMESTAMP_UNIT == 'ms')
-      {
-        timestamp_multiplier = 0.001
-      } else if (TIMESTAMP_UNIT == 's') {
-        timestamp_multiplier = 1
-      }
-      else {
-        console.log("Invalid unit for result timestamp");
-      }
+    starttime = Date.now();
+    reader.readAsText(file);
+    
+    
 
-      var duration = (test_end_timestamp - test_start_timestamp) * timestamp_multiplier / 60 ; // divide by 60 to get duration in minutes
-      duration = Math.round (duration * 10)/10;
-      updateNewTestResultDuration(duration);
-
-      progressNode.max = 1;
-      progressNode.value = 1;
-
-      console.log('datadic:', datadic);
-      console.log("last element", dataarray[dataarray.length-1]);
-      // console.log('done:' );
-      // console.log("Contents: " + contents);
-      data = {}
-      data["type"] = "summaryresults"
-      data["results"] = []
-
-      // console.log(event);
-      data["results"].push (processRawData(datadic, resultname, resultdescription, resultfilename, resultversion, resultnumberofusers, duration, resultisbaseline) );
-      // console.log(data);
-      console.log("reading file took: ", (Date.now() -starttime)/1000, "seconds");
-      filereadtime = (Date.now() -starttime)/1000;
-
-      
-      create_result(data, filereadtime);
-      // console.log("create result request took: ", (Date.now() -starttime)/1000, "seconds");
-
-      
-    }
   };
 
-  starttime = Date.now();
-  reader.readAsText(file);
-  
-  
-
-};
+}
 
 function processRawData(dictionary, name, description, filename, version, numberofusers, duration, isbaseline)
 {
@@ -691,7 +695,7 @@ function processRawData(dictionary, name, description, filename, version, number
       // everything else is going to be based on the response time data array so no need to have two different cases for it since the insertion into that array is conditional (based on the boolean)
       var sorted_data = dictionary[txnname][DATA].sort(function(a,b) {return a-b} );
        
-       console.log("length:",length); 
+       // console.log("length:",length); 
        dictionary[txnname][MAXIMUM] = sorted_data[length - 1];
        dictionary[txnname][MINIMUM] = sorted_data[0];
        dictionary[txnname][p50] = sorted_data[Math.round(length * 0.5) -1];
@@ -795,7 +799,9 @@ function processRawData(dictionary, name, description, filename, version, number
 
 function create_result(formData, fileReadTime)
 {
-  console.log("fileReadTime:", fileReadTime);
+  // console.log("fileReadTime:", fileReadTime);
+  // console.log("formData:", formData);
+  // return;
     // starttime = Date.now();
     // var resultid = formData['id'];
     // console.log("formData:",formData);
@@ -1102,7 +1108,7 @@ $(document).ready(function()
                 $(nRow).children().each(function(index, td) {
 
                             if(index != 0)  {
-                              console.log('td',parseFloat($(td).html())>= 0, index );
+                              // console.log('td',parseFloat($(td).html())>= 0, index );
                                 
                                 if (parseFloat($(td).html()) > 0) {
                                     $(td).css("background-color", improvement_color);

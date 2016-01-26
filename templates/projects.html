@@ -28,19 +28,24 @@ var mytable;
         function createTable(pid, object_list){
              
             // console.log('object list:',object_list);
-            mytable = $('<table></table>').attr({ id: "tagTable_"+pid,class: ["table",  "table-bordered", "table-striped"].join(' ') });
+            mytable = $('<table></table>').attr({ id: "tagTable_"+pid, class: ["table",  "table-inverse"].join(' ') });
 
             var tr = [];
             if (object_list.length > 0)
             {
-                $('<th></th>').text("#").attr({ align: "center"}).appendTo(mytable);
-                $('<th></th>').text("Name").attr({ align: "center"}).appendTo(mytable);
-                $('<th></th>').text("Description").attr({ align: "center"}).appendTo(mytable);    
+                var thead = $('<thead></thead>').attr({class:"thead-inverse"}).appendTo(mytable);
+                var headerRow = $('<tr></tr>').appendTo(thead);
+
+                $('<th></th>').text("#").attr({ align: "center"}).appendTo(headerRow);
+                $('<th></th>').text("Name").attr({ align: "center"}).appendTo(headerRow);
+                $('<th></th>').text("Description").attr({ align: "center"}).appendTo(headerRow);    
                 for (var i=0; i<object_list.length; i++)
                 {
                     add_tag_row(pid, object_list[i], mytable);
                 }
 
+                var placeholder = $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder');
+                $('<h6></h6>').text("List of tags").appendTo(placeholder);
                 // console.log("TTTTT:"+mytable.html());
                 $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder').append(mytable);  
 
@@ -139,6 +144,11 @@ var mytable;
 <script type="text/javascript">
         $(function()
         {
+            // var button =document.getElementsByClassName("sidebar-buttons-projects");
+            
+            $( ".sidebar-buttons-projects" ).addClass( "active" );
+            
+
             $('.collapsed').on('click', function(event)
                 { 
                     // console.log("collapsed clicked");
@@ -247,6 +257,9 @@ var mytable;
         }
 
         $(document).ready(function(){
+            
+
+
                 $(".close").click(function(){
                     $(".alert").toggle();
                 });
@@ -300,6 +313,8 @@ var mytable;
 
 
 
+{% if perms.perfhistory.create_project %}
+
     <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
         {% csrf_token %}
         {% load css_filter %}
@@ -310,11 +325,12 @@ var mytable;
         </div>
         {% endfor %}
 
-        <button type="submit" class="fa fa-lg btn btn-primary" value="Create {{ type }}">
-            <i class="fa fa-plus-square"></i> New Project
+        <button type="submit" class=" btn btn-primary btn-lg" value="Create {{ type }}">
+            <!-- <i class="fa fa-plus-square"></i> --> New Project
         </button>
+        <!-- <input type="submit" id="AddTagButton" class="btn btn-danger" value="Add Tag"/> -->
     </form>
-
+{% endif %}
 <!-- <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true"> -->
 
 
@@ -526,26 +542,30 @@ var mytable;
                             aria-expanded="false" 
                             aria-controls="collapse_{{ obj.id }}" 
                             data-pid="{{ obj.id}}">
-                            <div class="fa">
-                                <small>{{ obj.id}}. </small> 
-                                <i class="fa fa-lg"> {{ obj.name | title }} </i>
-                                <small class="projectdescription">{{ obj.description | title }}</small> 
-                            </div>
+                            <!-- <div class="fa"> -->
+                                <!-- <small>{{ obj.id}}. </small>  -->
+                                <!-- <i class="fa"> {{ obj.name | title }} </i> -->
+                                <h4 > {{ obj.name | title }} </h4>
+                                <!-- <div><small class="projectdescription">{{ obj.description | title }}</small> </div> -->
+                            <!-- </div> -->
                         </a>
                             <div class="pull-right">
                                     
-                                        <p class="fa modified">modified: {{ obj.last_modified }}</p>
+                                        <!-- <p class="fa fa-sm modified">modified: {{ obj.last_modified }}</p> -->
+                                        <small> last modified on {{ obj.last_modified }} </small>
                                     
-                                
+                                {% if perms.perfhistory.change_project %}
                                     <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ obj.id }}" >
                                         <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"></span>
                                     </button>
+                                {% endif %}
                                 
 
-                                
+                                {% if perms.perfhistory.delete_project %}
                                     <button  id="deleteButton" class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ obj.id }}" data-pid={{ obj.id }}>
                                         <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash"></span>
                                     </button>
+                                {% endif %}
 
                             </div>
                         
@@ -626,14 +646,17 @@ var mytable;
                 <div id="collapse_{{ obj.id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading_{{ obj.id }}">
                     <div class="panel-body">
                     
-                        <ul><b>Name:</b> <a href="project/{{ obj.id }}" > {{ obj.name }} </a> </ul>
-                        <ul><b>Description:</b> {{ obj.description }} </ul>
-                        <ul><b>Created:</b> {{ obj.created }} </ul>
-                        <ul><b>Last Modified:</b> {{ obj.last_modified }} </ul>
-                        <div class="call-us center-text"> {{ obj.description }}</div>
+                        <!-- <ul><b>Name:</b> <a href="project/{{ obj.id }}" > {{ obj.name }} </a> </ul> -->
+                        <!-- <ul><b>Description:</b> {{ obj.description }} </ul> -->
+                        <!-- <ul><b>Created:</b> {{ obj.created }} </ul> -->
+                        <!-- <ul><b>Last Modified:</b> {{ obj.last_modified }} </ul> -->
+                        <div class="call-us center-text" align="center"> {{ obj.description }}</div>
 
-                            <div id="tableplaceholder">
-                            </div>
+                            <!-- <div> -->
+                                <div id="tableplaceholder">
+
+                                </div>
+                            <!-- </div> -->
 
 
 
@@ -669,6 +692,7 @@ var mytable;
 </ul>
 
 
+{{ perms.perfhistory }}
 
 </div>
 {% endblock %}
