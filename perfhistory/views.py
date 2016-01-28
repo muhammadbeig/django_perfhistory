@@ -380,7 +380,7 @@ def createResult(request, project_id, tagid):
 							result.version = resultData['version']
 							result.numberofusers = resultData.get('numberofusers')
 							result.filename = resultData.get('filename')
-							result.duration_minutes = resultData.get('duration_minutes')
+							result.duration_minutes = round(resultData.get('duration_minutes'),1)
 							result.description = resultData.get('description')
 							if resultData.get('baseline') or existingResults is None:
 								# print 'is baseline'
@@ -563,16 +563,16 @@ def getTags(request, project_id):
 @login_required(login_url='/'+APPLICATION+'/')
 def getAllTags(request):
 	tags=Tag.objects.all().order_by("project_id")
-	results = [ob.as_json() for ob in tags]
+	# results = [ob.as_json() for ob in tags]
 	HttpResponse.status_code = 200
-	# print tags, results
-	# print json.dumps(tags.__dict__, default=encode_b)
-	# json_tags = [json.dumps(tags.__dict__)]
-	# print json_tags
-	# return JsonResponse({'tagname':tags.name})
-	# return JsonResponse(json_tags)
-	# return HttpResponse(json.dumps(results), content_type="application/json")
 	return render(request, 'tags.html', {'tags': tags})
+
+
+@login_required(login_url='/'+APPLICATION+'/')
+def getAllResults(request):
+	results=Result.objects.all().order_by("project_id", "tag_id")
+	HttpResponse.status_code = 200
+	return render(request, 'results_page.html', {'results': results})
 
 
 def returnJsonWithResponseTextCodeAndStatus(responseText, responseCode, responseStatus):
