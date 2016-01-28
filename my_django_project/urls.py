@@ -19,7 +19,9 @@ import perfhistory.views
 admin.autodiscover()
 
 urlpatterns = [
+
     url(r'^(?i)admin/', include(admin.site.urls)),
+    url(r'^(?i)/', perfhistory.views.loginView, name="Login"),
     url(r'^(?i)perfhistory/$', perfhistory.views.loginView, name="Login"),
     # url(r'^(?i)sample/$', perfhistory.views.sample),
     url(r'^(?i)perfhistory/logout$', perfhistory.views.logoutView, name="Logout"),
