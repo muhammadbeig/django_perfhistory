@@ -1,3 +1,3 @@
-# django_repo
+# Performance History - A django app
 
 This repo contains code for a django app being built for creating charts for performance benchmarks and trending. The app has a mysql server backend. Stay tuned for updates.
