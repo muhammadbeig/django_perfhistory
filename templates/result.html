@@ -162,7 +162,13 @@
                               
                                   <td class="result-table-cells"> <small> {{ result.name }} </small></td>
                                   <td class="result-table-cells" align="center"> <small>{{ result.version }}<small> </td>
+                                  
+                                  {% if perms.perfhistory.change_result %}
                                   <td class="result-table-cells" align="center"><input id="baselineCheckBox_{{ result.id }}" name="baseline" data-id="{{ result.id }}" type="checkbox" {% if result.baseline %}checked{% endif %}> </td>
+                                  {% else %}
+                                  <td class="result-table-cells" align="center">{% if result.baseline %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                  {% endif %}
+
                                   <td class="result-table-cells" align="center"> {{ result.numberofusers|default_if_none:"-" }} 
                                   </td>
                                   <td class="result-table-cells" align="center"> {{ result.duration_minutes }} </td>
