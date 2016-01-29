@@ -1,3 +1,3 @@
 # Performance History - A django app
 
-This repo contains code for a django app being built for creating charts for performance benchmarks and trending. The app has a mysql server backend. Stay tuned for updates.
+This simple django application is meant to keep aggregated performance metrics that can be stored as results for a project with a tag. The results in a project 'tag' can then be compared against a 'baseline' result. The results can also be charted against the baseline via a simple line chart.
