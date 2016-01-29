@@ -661,7 +661,7 @@ var mytable;
 
                                     
 
-
+                            {% if perms.perfhistory.create_tag %}
                             <div id="errorAlert_{{ obj.id }}" class="alert alert-danger fade in errorAlert_{{ obj.id }}">
                                     <a href="#" class="close" data-dismiss="alert">&times;</a>
                             </div>
@@ -680,6 +680,7 @@ var mytable;
                                     </div>    
                                 </form>
                             </div>
+                            {% endif %}
                     </div>
                 </div>
             </div>
