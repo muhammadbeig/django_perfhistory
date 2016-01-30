@@ -163,7 +163,7 @@ def comparisonChart(request, projectId, tagId):
 		result_list = [] 
 		alltxns = []
 		for result in results:
-			print result.id
+			# print result.id
 			txns = Transaction.objects.filter(result_id=result.id)
 			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
@@ -560,7 +560,7 @@ def getAllResults(request):
 
 
 def returnJsonWithResponseTextCodeAndStatus(responseText, responseCode, responseStatus):
-	print responseText, responseCode, responseStatus
+	# print responseText, responseCode, responseStatus
 	HttpResponse.status_code = responseCode
 	return HttpResponse(
 		json.dumps({'status':responseStatus,'message':responseText}),
