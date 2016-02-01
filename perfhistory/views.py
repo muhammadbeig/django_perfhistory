@@ -158,7 +158,7 @@ def comparisonChart(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -177,7 +177,7 @@ def result(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
 		data = []
 		result_list = [] 
 		alltxns = []

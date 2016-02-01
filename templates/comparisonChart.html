@@ -207,7 +207,7 @@ $(document).ready(function()
       // console.log(txn_list[t]['name'])
       baseline_result[txn_list[t]['name']]=txn_list[t]
       // delete txn_list[t]
-      txn_list[t]['version']= res[result_id]['version']+' {Baseline}'
+      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
     }
     else 
     {
@@ -276,7 +276,7 @@ svg.append("text")
         .attr("class", "chart-heading");
 ;
   var line = d3.svg.line()
-    .interpolate("basis")
+    .interpolate("monotone")
     .x(function(d) { return x(d.version); })
     .y(function(d) { return y(d[comparisonField]); });
 
