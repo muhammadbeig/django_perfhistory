@@ -57,7 +57,7 @@ def deleteProject (request, projectId):
 		allprojs= Project.objects.all()
 		project = Project.objects.get(id=projectId)
 		if request.method == 'DELETE': 
-			print 'method is delete'
+			# print 'method is delete'
 			if project:
 				try:
 					with transaction.atomic():
@@ -200,7 +200,7 @@ def updateResult(request, resultId):
 	if user.has_perm(APPLICATION+'.change_result'):
 		if request.method == 'PUT':
 			data = QueryDict(request.body)
-			print data
+			# print data
 
 			response_data = {}
 			try:
@@ -211,10 +211,10 @@ def updateResult(request, resultId):
 					if result:
 						updatedObjects = []
 						if data.get('baseline') is not None:
-							print 'data.get(baseline):',data.get('baseline')
-							print 'data.get(baseline):',data.get('baseline')
+							# print 'data.get(baseline):',data.get('baseline')
+							# print 'data.get(baseline):',data.get('baseline')
 							baseline = int(data.get('baseline'))
-							print 'data.get(baseline):',data.get('baseline')
+							# print 'data.get(baseline):',data.get('baseline')
 
 							if baseline is 1: # is TRUE
 								# print 'baseline is true:', baseline
@@ -240,11 +240,11 @@ def updateResult(request, resultId):
 							result.numberofusers = data['numberofusers'];
 
 						
-						print 'result =>', result.as_json()
+						# print 'result =>', result.as_json()
 						result.save()
 
 
-						print 'result.baseline =', result.baseline
+						# print 'result.baseline =', result.baseline
 						updatedObjects.append(result.as_json());
 
 						response_data['updated_objects'] = updatedObjects
@@ -279,7 +279,7 @@ def updateResult(request, resultId):
 
 	if user.has_perm(APPLICATION+'.delete_result'):
 		if request.method == 'DELETE':
-			print 'delete request for resultid:',resultId
+			# print 'delete request for resultid:',resultId
 
 			response_data = {}
 			try:
@@ -330,7 +330,7 @@ def createResultByProjectTagName(request):
 	if user.has_perm(APPLICATION+'.create_result'):	
 		data = json.loads(request.body)
 		try:
-			print request.body
+			# print request.body
 			projectName = data.get('project_name')
 			project = Project.objects.get(name=projectName)
 		except Project.DoesNotExist as e:
@@ -367,7 +367,7 @@ def createResult(request, project_id, tagid):
 			# print 'request.POST:',request.body, request
 			# print 'project_id:',project_id, 'tagid:',tagid
 			# print request.body
-			print 'file read time:',request.META.get('HTTP_FILEREADTIME')
+			# print 'file read time:',request.META.get('HTTP_FILEREADTIME')
 
 			data = json.loads(request.body)
 			if data.get('type') == 'summaryresults':			
@@ -389,7 +389,7 @@ def createResult(request, project_id, tagid):
 									for res in existingResults:#Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
 										res.baseline = False
 										res.save()
-							print result.save()
+							result.save()
 							# insertionresultresult.id
 							
 							for txnData in resultData['data']:
@@ -469,7 +469,7 @@ def createTag(request,project_id):
 		try:
 			if request.method == 'POST':
 				form = TagForm(request.POST)
-				print '****Request.POST:****',request.POST
+				# print '****Request.POST:****',request.POST
 				if form.is_valid():
 					response_data = {}
 					tag = form.save(commit=False)
@@ -488,7 +488,7 @@ def createTag(request,project_id):
 				        )
 				else:
 					print 'Invalid Tag Form'
-					print form.errors
+					# print form.errors
 					HttpResponse.status_code = 500
 					return HttpResponse(
 			            json.dumps({"status":False, 'project_id':project_id,
@@ -538,8 +538,8 @@ def d3(request):
 	# project=Project.objects.get(id=project_id)
 	data = request.body;
 	# print json.dumps(request.body)
-	print "**** d3 request was made:", request.method, "*****"
-	print request.body
+	# print "**** d3 request was made:", request.method, "*****"
+	# print request.body
 	# print request.POST
 	if request.method == "POST":
 		data=request.POST;
@@ -576,7 +576,7 @@ def getAllResults(request):
 
 
 def returnJsonWithResponseTextCodeAndStatus(responseText, responseCode, responseStatus):
-	print responseText, responseCode, responseStatus
+	# print responseText, responseCode, responseStatus
 	HttpResponse.status_code = responseCode
 	return HttpResponse(
 		json.dumps({'status':responseStatus,'message':responseText}),
