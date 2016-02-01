@@ -45,6 +45,117 @@
         margin: 0;
     -webkit-font-smoothing: antialiased;
     }
+
+      
+    .btn-file {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-file input[type=file] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      min-width: 100%;
+      min-height: 100%;
+      font-size: 100px;
+      text-align: right;
+      filter: alpha(opacity=0);
+      opacity: 0;
+      background: red;
+      cursor: inherit;
+      display: block;
+    }
+    input[readonly] {
+      background-color: white !important;
+      cursor: text !important;
+    }
+
+    .h3, .h4, .h5, .h6, h3, h4, h5, h6 {
+      font-family:     font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;
+      text-align: left;
+    }
+
+    .h1, .h2. h2, h1{
+      font-family:     font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;
+      text-align: center; 
+    }
+
+    .h1, .h2, .h3, h1, h2, h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .h3, h3 {
+      font-size: 24px;
+    }
+
+    h1, h2, h3 {
+      color: #2a2a2a;
+      font-weight: normal;
+    }
+    .content-section-header {
+      font-weight: 400;
+      padding-bottom: 5px;
+    }
+
+    .content-section-headings {
+      padding-bottom: 18px;
+      text-align: center;
+    }
+
+    body {
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+      color: #515151;
+    }
+
+    
+    .content-section-alternate:nth-of-type(odd), .content-section-dark {
+      background-color: #f7f7f7;
+    }
+
+    
+    .content-section {
+      padding-top: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #eaeaea;
+      background-color: #f7f7f7;
+    }
+
+    .roundify {
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .info-card {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      background-color: #fff;
+      border: 1px solid #d8d8d8;
+    }
+    
+    .info-card-padding {
+      padding: 15px;
+    }
+
+    div {
+      display: block;
+    }
+
+    .back-button {
+    padding-bottom: 5px;
+}
+  .container-fluid {
+    padding-top: 50px;
+  }
+
+  .page-header {
+    padding-bottom: 9px;
+    margin: 10px 0 10px;
+    border-bottom: 1px solid #eee;
+}
 </style>
 <body>
 
@@ -104,9 +215,9 @@
             <!-- /.navbar-collapse -->
         </nav>
 
-        <div id="page-wrapper" class="page-wrapper">
-
-            <div class="container-fluid">
+        <!-- <div id="page-wrapper" class="page-wrapper"> -->
+        <div class="content-section content-section-dark">
+            <div class="container-fluid content-section content-section-dark">
 
 
                 <!-- /.row -->

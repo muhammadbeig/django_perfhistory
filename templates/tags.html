@@ -3,11 +3,13 @@
 
 
 <div id="page-wrapper">
+  <div class="col-lg-12">
+            <h2 class="page-header  fa-2x">All Tags</h2>
+            </div>
   <div>
     <table class="table">
       <thead>
         <tr>
-          <th>#</th>
           <th>Tag</th>
           <th>Description</th>
           <th>Project</th>
@@ -17,10 +19,9 @@
 
         {% for tag in tags %}
         <tr>
-          <th scope="row">{{ tag.id }}</th>
-          <td>{{ tag.name }}</td>
+          <td><a href="/perfhistory/project/{{ tag.project.id }}/tag/{{ tag.id }}/result">{{ tag.name }}</a></td>
           <td>{{ tag.description }}</td>
-          <td>{{ tag.project }}</td>
+          <td>{{ tag.project.name }}</td>
         </tr>
         {% endfor %}
       </tbody>

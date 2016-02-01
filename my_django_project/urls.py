@@ -19,7 +19,9 @@ import perfhistory.views
 admin.autodiscover()
 
 urlpatterns = [
+
     url(r'^(?i)admin/', include(admin.site.urls)),
+    url(r'^$', perfhistory.views.loginView, name="Login"),
     url(r'^(?i)perfhistory/$', perfhistory.views.loginView, name="Login"),
     # url(r'^(?i)sample/$', perfhistory.views.sample),
     url(r'^(?i)perfhistory/logout$', perfhistory.views.logoutView, name="Logout"),
@@ -29,6 +31,7 @@ urlpatterns = [
     
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+]+)/getTags$', perfhistory.views.getTags),
     url(r'^(?i)perfhistory/tags$', perfhistory.views.getAllTags),
+    url(r'^(?i)perfhistory/results$', perfhistory.views.getAllResults),
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+])$', perfhistory.views.projectdetail),
     url(r'^(?i)perfhistory/chart/$', perfhistory.views.chart),
     url(r'^(?i)perfhistory/d3/$', perfhistory.views.d3),
