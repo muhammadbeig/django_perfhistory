@@ -158,7 +158,7 @@ def comparisonChart(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -177,7 +177,7 @@ def result(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('created');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -488,7 +488,7 @@ def createTag(request,project_id):
 				        )
 				else:
 					print 'Invalid Tag Form'
-					print form.errors
+					# print form.errors
 					HttpResponse.status_code = 500
 					return HttpResponse(
 			            json.dumps({"status":False, 'project_id':project_id,
@@ -530,6 +530,25 @@ def projectdetail(request,project_id):
 	project=Project.objects.get(id=project_id)
 	return render(request, 'project_details.html', {'project': project})
 
+<<<<<<< HEAD
+=======
+def chart(request):
+	# project=Project.objects.get(id=project_id)
+	return render(request, 'chart.html')	
+
+def d3(request):
+	# project=Project.objects.get(id=project_id)
+	data = request.body;
+	# print json.dumps(request.body)
+	# print "**** d3 request was made:", request.method, "*****"
+	# print request.body
+	# print request.POST
+	if request.method == "POST":
+		data=request.POST;
+
+	return render(request, 'd3-newexample.html', {'transactions': request.body})	
+
+>>>>>>> master
 
 
 def getTags(request, project_id):

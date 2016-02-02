@@ -11,12 +11,15 @@
 }*/
 
 .chart-heading {
-  font: 16px sans-serif;
+  font: 16px sans-serif;  
 }
 
 .x-axis, .y-axis {
-  font: 12px sans-serif;
-  stroke: #000;
+
+  font: 10px sans-serif;
+      display: block;
+      color: lightgray;
+
 }
 
 .x-axis, .y-axis, .axis path,
@@ -26,9 +29,6 @@
   shape-rendering: crispEdges;
 }
 
-.x.axis path {
-  display: none;
-}
 
 .line {
   fill: none;
@@ -36,31 +36,37 @@
   stroke-width: 1.5px;
 }
 
-.grid .tick {
-    stroke: lightgrey;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
+.d3-tip {
+  line-height: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 1px;
+
 }
 
-.overlay {
+
+/*.overlay {
   fill: none;
   pointer-events: all;
 }
-
-.focus circle {
+*/
+/*.focus circle {
   fill: none;
   stroke: steelblue;
-}
+}*/
 
 
 
 .legend rect {
   fill:white;
   stroke:black;
-  opacity:0.8;}
+  opacity:0.8;
+}
 
 </style>
 <link href="/static/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet">
+
 <body>
 
   <div id="page-wrapper">
@@ -121,8 +127,8 @@
             <li><a class="option" data-comparisonField="p99" >P99 Response Time</a></li>
             <li><a class="option" data-comparisonField="maximum" >Maximum Response Time</a></li>
             <li role="separator" class="divider"></li>
-            <li><a class="option" data-comparisonField="successcount" >Successful requests</a></li>
-            <li><a class="option" data-comparisonField="failurecount" >Failed requests</a></li>
+            <li><a class="option" data-comparisonField="success_count" >Successful requests</a></li>
+            <li><a class="option" data-comparisonField="failure_count" >Failed requests</a></li>
       </ul>
     </div>
 
@@ -148,8 +154,8 @@ function getText(fieldName)
     case "minimum": return "Minimum Response Time";
     case "average": return "Average Response Time";
     case "median": return "Median Response Time";
-    case "successcount": return "Successful Request Count";
-    case "failurecount": return "Failed Request Count";
+    case "success_count": return "Successful Request Count";
+    case "failure_count": return "Failed Request Count";
   }
 
 }
@@ -162,20 +168,22 @@ var txn_list;
 $(document).ready(function() {
           $("a.option").click(function(ev) {
             
-            console.log(this.dataset["comparisonfield"]);
+            // console.log(this.dataset["comparisonfield"]);
             var comparisonField = this.dataset["comparisonfield"];
-            console.log(txn_list);
+            // console.log(txn_list);
+            // console.log("comparison field", comparisonField)
             d3.select("svg").remove();
             drawChart(txn_list, comparisonField);
 
-            this.dropdown("toggle");
-              // $("a.dropdown-toggle").dropdown("toggle");
+            // this.dropdown("toggle");
+              $(".dropdown-menu").dropdown("toggle");
               // return false;
           });
-          $("ul.dropdown-menu a").click(function(ev) {
-              $("a.dropdown-toggle").dropdown("toggle");
-              return false;
-          });
+
+          // $("ul.dropdown-menu a").click(function(ev) {
+          //     $("a.dropdown-toggle").dropdown("toggle");
+          //     return false;
+          // });
       
       });
 
@@ -190,7 +198,7 @@ $(document).ready(function()
   res = {}
   for (r in result_list)
   {
-    console.log('r:',result_list[r]);
+    // console.log('r:',result_list[r]);
     res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
   }
   
@@ -207,7 +215,7 @@ $(document).ready(function()
       // console.log(txn_list[t]['name'])
       baseline_result[txn_list[t]['name']]=txn_list[t]
       // delete txn_list[t]
-      txn_list[t]['version']= res[result_id]['version']+' {Baseline}'
+      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
     }
     else 
     {
@@ -252,7 +260,7 @@ var xAxis = d3.svg.axis()
 var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left")
-    .tickPadding(10);
+    .tickPadding(4);
 
 
 
@@ -271,12 +279,12 @@ svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", 0)
         .attr("text-anchor", "middle")  
-        // .style("font-size", "14px") 
+        .style("font-size", "18px") 
         .text(getText(comparisonField) + " comparison")
         .attr("class", "chart-heading");
 ;
   var line = d3.svg.line()
-    .interpolate("basis")
+    .interpolate("cardinal")
     .x(function(d) { return x(d.version); })
     .y(function(d) { return y(d[comparisonField]); });
 
@@ -320,8 +328,17 @@ svg.append("text")
   x.domain(d3.keys(versions))
     .rangePoints([0, width]);
   y.domain([
-    d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
-    d3.max(txns, function(c) { return d3.max(c.values, function(v) { return v[comparisonField]; }); })
+    // d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
+    0,
+    d3.max(txns, function(c) 
+      { 
+        var maxvalue = d3.max(c.values, function(v) 
+          { 
+            return v[comparisonField];
+          });
+        if (maxvalue==0) return 10;
+        else return d3.max(c.values, function(v) { return v[comparisonField]; }); 
+      })
   ]);
   // console.log('x.domain:',x.domain)
   // console.log('y.domain:',y.domain)
@@ -335,16 +352,17 @@ svg.append("text")
   svg.append("g")
       .attr("class", "y-axis")
       .call(yAxis)
+
     .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
+      .style("font-size", "15px") 
       .text(getText(comparisonField));
 
   var city = svg.selectAll(".city")
       .data(txns)
-      // .data(cities1)
     .enter().append("g")
       .attr("class", "city");
 
@@ -407,17 +425,69 @@ svg.append("text")
 
 // });
 
-  var point = city.append("g")
-                .attr("class", "line-point");
+  var zetip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong>"+ d.name +":</strong> <span style='color:rgb(31, 119, 180)'>" + d[comparisonField] + "</span>";
+    // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
+  })
+
+  svg.call(zetip);
+
+  var point = city.append("g");
 
   point.selectAll('circle')
     .data(function(d){ return d.values})
     .enter().append('circle')
+    .attr("class", function(d) { return d.name+"-circle" })
     .attr("cx", function(d) { return x(d.version) })
     .attr("cy", function(d) { return y(d[comparisonField]) })
-    .attr("r", 1.5)
+    .attr("r", 2)
     .style("fill", function(d) { return color(d.name); })
-    .style("stroke", function(d) { return color(d.name); });
+    .style("stroke", function(d) { return color(d.name); })
+    // .attr('id',function(d){ return d.name; })
+    .style("opacity",1)
+    .on('mouseover', zetip.show)
+    .on('mouseout', zetip.hide);
+    // .on("mouseover", function (d) 
+    //   {  
+    //     // console.log("mouseover",this);                                
+    //     d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+    //       .style("stroke-width",'4px');
+          
+    //     var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+    //     d3.selectAll(selectthegraphs)
+    //         .style("opacity",0.2);
+          
+    //     var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+    //     var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+
+    //     d3.selectAll(selectlegend)    // drop opacity on other legend names
+    //         .style("opacity",.2);
+
+    //     d3.select(getname)
+    //         .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+    //         maketip
+    //   })
+    // .on("mouseout", function(d) {        //undo everything on the mouseout
+    //       d3.select(this)
+    //         .style("stroke-width",'2.5px');
+          
+    //       var selectthegraphs = $('.line').not(this);
+    //       d3.selectAll(selectthegraphs)
+    //         .style("opacity",1);
+          
+    //       var getname = document.getElementById(d.name);
+    //       var getname2= $('.legend[fakeclass="fakelegend"]')
+    //       var selectlegend = $('.legend').not(getname2).not(getname);
+
+    //       d3.selectAll(selectlegend)
+    //         .style("opacity",1);
+          
+    //       d3.select(getname)
+    //         .attr("class", "legend");         
+    //   });
 
      // Draw the x Grid lines
     svg.append("g")
@@ -446,11 +516,15 @@ svg.append("text")
         .append('g')
         .attr('class', 'legend')
         .attr('id',function(d){  return d.name; })
-        .on('click', function (d) {                           //onclick function to toggle off the lines          
-          if($(this).css("opacity") == 1){          //uses the opacity of the item clicked on to determine whether to turn the line on or off         
+        .on('click', function (d) 
+        { 
+            
+          if($(this).css("opacity") == 1)
+          {
             // id of the line 045_DELETE Service-line
             var elemented = document.getElementById(this.id +"-line");   //grab the line that has the same ID as this point along w/ "-line"  use get element cause ID has spaces
-            console.log("legend enter");
+            var dots = document.getElementsByClassName(this.id +"-circle")
+            
             d3.select(elemented)
               .transition()
               .duration(250)
@@ -462,10 +536,25 @@ svg.append("text")
             .transition()
               .duration(250)
               .style ("opacity", .2);
-          } else {
-          
+
+
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .transition()
+              .duration(250)
+              .style("opacity",0)
+              .style("display",'none'); 
+
+            }
+
+          } 
+          else 
+          {
             var elemented = document.getElementById(this.id +"-line");
-            // console.log(elemented);   
+            var dots = document.getElementsByClassName(this.id +"-circle")
+
             d3.select(elemented)
               .style("display", "block")
               .transition()
@@ -476,7 +565,19 @@ svg.append("text")
               .attr('fakeclass','legend')
               .transition()
               .duration(250)
-              .style ("opacity", 1);}
+              .style ("opacity", 1);
+
+            
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .style("display", "block")
+              .transition()
+              .style("opacity",1); 
+            }
+
+          }
     });
 
 var lastvalues = []
@@ -486,7 +587,7 @@ var lastvalues = []
     txnname[d.name]=""
 
   });
-  console.log(d3.keys(txnname));
+  // console.log(d3.keys(txnname));
   //create a scale to pass the legend items through
   var legendscale= d3.scale.ordinal()
         .domain(color.domain())
@@ -523,20 +624,12 @@ var lastvalues = []
         d1 = data3[i],
         d = x0 - d0.version > d1.version - x0 ? d1 : d0;
 
-        console.log("mouse-move",  x(d.version));
+        // console.log("mouse-move",  x(d.version));
     focus.attr("transform", "translate(" + x(d.version) + "," + y(d[comparisonField]) + ")");
     focus.select("text").text(formatResponseTime(d[comparisonField]));
 
-    // var circle = d3.select(this);
-    //     circle.transition().duration(500)
-    //       .attr("r", circle.attr("r") * 1 + 10 );
+
   }
-
-
-  var maketip = function (d) {                     
-         var tip = '<p class="tip3">' + d.name + '<p class="tip1">' + NumbType(d[comparisonField]) + '</p> <p class="tip3">'+  d.version+'</p>';
-             return tip;}
-
 
 }
 
@@ -556,7 +649,9 @@ function make_y_axis() {
       .orient("left")
       .ticks(5)
 }
+
 </script>
+<script src="/static/d3.tip.v0.6.3.min.js"></script>
 
 
 {% endblock %}
