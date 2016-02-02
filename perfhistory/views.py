@@ -38,7 +38,7 @@ def loginView(request):
 	            # else:
 	            # 	return HttpResponseRedirect("projects")# Redirect to a success page.
 	    else:
-	    	print 'in else', request.POST, form.is_valid(), form.errors
+	    	print form.errors
 
 	    nexturl = nexturl if nexturl else ''
 	    return render(request, 'login.html', {'userform': form, 'next':nexturl })
@@ -163,7 +163,7 @@ def comparisonChart(request, projectId, tagId):
 		result_list = [] 
 		alltxns = []
 		for result in results:
-			print result.id
+			# print result.id
 			txns = Transaction.objects.filter(result_id=result.id)
 			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
