@@ -530,26 +530,6 @@ def projectdetail(request,project_id):
 	project=Project.objects.get(id=project_id)
 	return render(request, 'project_details.html', {'project': project})
 
-<<<<<<< HEAD
-=======
-def chart(request):
-	# project=Project.objects.get(id=project_id)
-	return render(request, 'chart.html')	
-
-def d3(request):
-	# project=Project.objects.get(id=project_id)
-	data = request.body;
-	# print json.dumps(request.body)
-	# print "**** d3 request was made:", request.method, "*****"
-	# print request.body
-	# print request.POST
-	if request.method == "POST":
-		data=request.POST;
-
-	return render(request, 'd3-newexample.html', {'transactions': request.body})	
-
->>>>>>> master
-
 
 def getTags(request, project_id):
 	tags=Tag.objects.filter(project_id=project_id)
