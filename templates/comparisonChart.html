@@ -110,9 +110,8 @@
     </div> -->
 
     <div class="btn-group">
-      <a class="btn btn-primary" href="#"><i class="fa fa-cog fa-fw"></i> Compare by</a>
       <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
-        <span class="fa fa-caret-down"></span></a>
+      Compare by <span class="fa fa-caret-down"></span></a>
       <ul class="dropdown-menu">
         <!-- <li><a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
         <li><a href="#"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
@@ -429,7 +428,7 @@ svg.append("text")
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    return "<span style='color:"+color(d.name)+"'>"+ d.name+":</span> <strong style='color:white'>" + d[comparisonField] + "</strong>";
+    return "<strong style='color:"+color(d.name)+"'>"+ d.name+":</strong> <strong style='color:white'>" + d[comparisonField] + "</strong>";
     // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
   })
 
