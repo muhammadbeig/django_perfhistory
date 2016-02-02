@@ -429,7 +429,7 @@ svg.append("text")
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    return "<strong>"+ d.name +":</strong> <span style='color:rgb(31, 119, 180)'>" + d[comparisonField] + "</span>";
+    return "<strong>"+ d.name+":</strong> <span style='color:rgb(31, 119, 180)'>" + d[comparisonField] + "</span>";
     // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
   })
 
@@ -443,12 +443,11 @@ svg.append("text")
     .attr("class", function(d) { return d.name+"-circle" })
     .attr("cx", function(d) { return x(d.version) })
     .attr("cy", function(d) { return y(d[comparisonField]) })
-    .attr("r", 2)
+    .attr("r", 3)
     .style("fill", function(d) { return color(d.name); })
     .style("stroke", function(d) { return color(d.name); })
-    // .attr('id',function(d){ return d.name; })
     .style("opacity",1)
-    .on('mouseover', zetip.show)
+    .on('mouseout', zetip.show)
     .on('mouseout', zetip.hide);
     // .on("mouseover", function (d) 
     //   {  
