@@ -429,7 +429,7 @@ svg.append("text")
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    return "<span style='color:"+color(d.name)+"'>"+ d.name+":</span> <span style='color:white'>" + d[comparisonField] + "</span>";
+    return "<span style='color:"+color(d.name)+"'>"+ d.name+":</span> <strong style='color:white'>" + d[comparisonField] + "</strong>";
     // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
   })
 
