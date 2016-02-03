@@ -132,6 +132,22 @@
 </div>
 </div>
 
+<script type="text/javascript">
+  $('#version').keypress(function(event) {
+    if(event.which == 8 || event.which == 0){
+        return true;
+    }
+    if(event.which < 46 || event.which > 59) {
+        return false;
+        //event.preventDefault();
+    } // prevent if not number/dot
+    
+    if(event.which == 46 && $(this).val().indexOf('.') != -1) {
+        return false;
+        //event.preventDefault();
+    } // prevent if already dot
+});
+</script>
 
 {% endif %}
 
