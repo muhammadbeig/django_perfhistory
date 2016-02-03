@@ -50,6 +50,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
+AUTHENTICATION_BACKENDS = ('perfhistory.models.CaseInsensitiveModelBackend',)
 
 ROOT_URLCONF = 'my_django_project.urls'
 

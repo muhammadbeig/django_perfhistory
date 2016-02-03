@@ -11,8 +11,6 @@ from django.contrib.auth.decorators import login_required
 
 APPLICATION = 'perfhistory'
 # Create your views here.
-def sample(request):
-    return render(request, 'sistersample.html')
 
 
 def logoutView(request):
