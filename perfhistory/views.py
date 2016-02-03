@@ -329,18 +329,19 @@ def createResultByProjectTagName(request):
 
 	if user.has_perm(APPLICATION+'.create_result'):	
 		data = json.loads(request.body)
+		# print data
 		try:
 			# print request.body
 			projectName = data.get('project_name')
 			project = Project.objects.get(name=projectName)
 		except Project.DoesNotExist as e:
-			print 'Invalid project name', e
+			print 'Invalid project name:', projectName, 'Exception:', e
 			raise Http404
 		try:
 			tagName = data.get('tag_name')
 			tag = Tag.objects.get(name=tagName, project_id=project.id)
 		except Tag.DoesNotExist as e:
-			print 'Invalid tag name', e
+			print 'Invalid tag name:', tagName, 'Exception:', e
 			raise Http404
 
 		return createResult(request, project.id, tag.id)
@@ -382,8 +383,9 @@ def createResult(request, project_id, tagid):
 							result.filename = resultData.get('filename')
 							result.duration_minutes = round(resultData.get('duration_minutes'),1)
 							result.description = resultData.get('description')
-							if resultData.get('baseline') or existingResults is None:
-								# print 'is baseline'
+							# print 'here', existingResults, len(existingResults)
+							if resultData.get('baseline') or existingResults is None or len(existingResults) == 0:
+								print 'is baseline'
 								result.baseline = True
 								if existingResults is not None:
 									for res in existingResults:#Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
