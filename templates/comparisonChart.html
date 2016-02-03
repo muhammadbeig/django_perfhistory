@@ -232,9 +232,20 @@ function compare(a,b) {
   if (b.baseline) return 1;
 }
 
-var margin = {top: 20, right: 200, bottom: 30, left: 50},
-    width = 1200 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
+
+var x, y;
+
+
+
+function drawChart(data3, comparisonField)
+{
+
+  var parentWidth = $(".d3graph").parent().width(),
+parentHeight = parentWidth * .6;
+
+  var margin = {top: 50, right: 200, bottom: 80, left: 80},
+    width = parentWidth - margin.left - margin.right,
+    height = parentHeight - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%Y%m%d").parse;
     formatResponseTime = function(d) { return d+" ms"; };
@@ -243,10 +254,10 @@ var parseDate = d3.time.format("%Y%m%d").parse;
 
 // var x = d3.time.scale()
 //     .range([0, width]);
-var x = d3.scale.ordinal()
+x = d3.scale.ordinal()
     .range([0, width]);
 
-var y = d3.scale.linear()
+y = d3.scale.linear()
     .range([height, 0]);
 
 var color = d3.scale.category20();
@@ -263,9 +274,6 @@ var yAxis = d3.svg.axis()
 
 
 
-
-function drawChart(data3, comparisonField)
-{
 
   var svg = d3.select("body").selectAll("div.d3graph").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -323,8 +331,13 @@ svg.append("text")
 
   });
 
+  versionArray = d3.keys(versions);
+  versionArray.sort(function(a,b){
+    return parseFloat(a) - parseFloat(b);
+  })
+
   // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
-  x.domain(d3.keys(versions))
+  x.domain(versionArray)
     .rangePoints([0, width]);
   y.domain([
     // d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
@@ -346,7 +359,13 @@ svg.append("text")
   svg.append("g")
       .attr("class", "x-axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+      .call(xAxis)
+
+    .append("text")
+      .attr("dx", "30em")
+      .attr("y", 50)
+      .style("font-size", "15px") 
+      .text("Version");;
 
   svg.append("g")
       .attr("class", "y-axis")
@@ -354,7 +373,7 @@ svg.append("text")
 
     .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 6)
+      .attr("y", -50)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .style("font-size", "15px") 

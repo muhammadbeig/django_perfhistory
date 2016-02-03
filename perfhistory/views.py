@@ -158,7 +158,9 @@ def comparisonChart(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+		# sorting by version with assumption that version is an int/float and no other characters
+		results = sorted(results, key=lambda x: float(x.version), reverse=False)
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -169,15 +171,44 @@ def comparisonChart(request, projectId, tagId):
 			data.append(dictionary)
 			result_list.append(result.as_json())
 			alltxns.extend([t.as_json() for t in txns])
+
+
 	
 	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+
+
+@login_required(login_url='/'+APPLICATION+'/')
+def comparisonChartbyVersion(request, projectId, tagId):
+	if request.method == 'GET':
+		projectobj = Project.objects.get(id=projectId);
+		tagobj = Tag.objects.get(id=tagId);
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId)#.order_by("version");
+		# sorting by version with assumption that version is an int/float and no other characters
+		results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		data = []
+		result_list = [] 
+		alltxns = []
+		for result in results:
+			# print result.id
+			txns = Transaction.objects.filter(result_id=result.id)
+			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
+			data.append(dictionary)
+			result_list.append(result.as_json())
+			alltxns.extend([t.as_json() for t in txns])
+
+
+	
+	return render(request, 'comparisonChartbyVersion.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+
 
 @login_required(login_url='/'+APPLICATION+'/')
 def result(request, projectId, tagId):
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId).order_by('version');
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+		# sorting by version with assumption that version is an int/float and no other characters
+		results = sorted(results, key=lambda x: float(x.version), reverse=False)
 		data = []
 		result_list = [] 
 		alltxns = []
