@@ -146,15 +146,15 @@ function getText(fieldName)
 {
   switch(fieldName)
   {
-    case "p90": return "P90 Response Time";
-    case "p95": return "P95 Response Time";
-    case "p99": return "P99 Response Time";
-    case "maximum": return "Maximum Response Time";
-    case "minimum": return "Minimum Response Time";
-    case "average": return "Average Response Time";
-    case "median": return "Median Response Time";
-    case "success_count": return "Successful Request Count";
-    case "failure_count": return "Failed Request Count";
+    case "p90": return "90th Percentiles - Response Time";
+    case "p95": return "95th Percentiles - Response Time";
+    case "p99": return "99th Percentiles - Response Time";
+    case "maximum": return "Maximums - Response Time";
+    case "minimum": return "Minimums - Response Time";
+    case "average": return "Averages - Response Time";
+    case "median": return "Medians - Response Time";
+    case "success_count": return "Successful request counts";
+    case "failure_count": return "Failed request counts";
   }
 
 }
@@ -284,7 +284,7 @@ var yAxis = d3.svg.axis()
 
 svg.append("text")
         .attr("x", (width / 2))             
-        .attr("y", 0)
+        .attr("y", -20)
         .attr("text-anchor", "middle")  
         .style("font-size", "18px") 
         .text(getText(comparisonField) + " comparison")
@@ -373,7 +373,8 @@ svg.append("text")
 
     .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -50)
+      .attr("y", -65)
+      .attr("x", 0)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .style("font-size", "15px") 
@@ -387,7 +388,7 @@ svg.append("text")
 
 
   city.append("path")
-      .attr("class", "line")
+      .attr("class",function(d) { return "line "+d.name+"-line" })
       // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
       .attr("d", function(d) {   return line(d.values); })
       .style("stroke", function(d) {  return color(d.name); })
@@ -400,13 +401,17 @@ svg.append("text")
           
         var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
         d3.selectAll(selectthegraphs)
-            .style("opacity",0.2);
+            .style("opacity",0.1);
+        
+        var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+        d3.selectAll(other_line_circles)
+            .style("opacity",0.1);
           
         var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
         var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
 
         d3.selectAll(selectlegend)    // drop opacity on other legend names
-            .style("opacity",.2);
+            .style("opacity",.1);
 
         d3.select(getname)
             .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
@@ -417,6 +422,9 @@ svg.append("text")
           
           var selectthegraphs = $('.line').not(this);
           d3.selectAll(selectthegraphs)
+            .style("opacity",1);
+          var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+          d3.selectAll(other_line_circles)
             .style("opacity",1);
           
           var getname = document.getElementById(d.name);
@@ -467,44 +475,7 @@ svg.append("text")
     .style("opacity",1)
     .on('mouseover', zetip.show)
     .on('mouseout', zetip.hide);
-    // .on("mouseover", function (d) 
-    //   {  
-    //     // console.log("mouseover",this);                                
-    //     d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
-    //       .style("stroke-width",'4px');
-          
-    //     var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
-    //     d3.selectAll(selectthegraphs)
-    //         .style("opacity",0.2);
-          
-    //     var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
-    //     var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
 
-    //     d3.selectAll(selectlegend)    // drop opacity on other legend names
-    //         .style("opacity",.2);
-
-    //     d3.select(getname)
-    //         .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
-    //         maketip
-    //   })
-    // .on("mouseout", function(d) {        //undo everything on the mouseout
-    //       d3.select(this)
-    //         .style("stroke-width",'2.5px');
-          
-    //       var selectthegraphs = $('.line').not(this);
-    //       d3.selectAll(selectthegraphs)
-    //         .style("opacity",1);
-          
-    //       var getname = document.getElementById(d.name);
-    //       var getname2= $('.legend[fakeclass="fakelegend"]')
-    //       var selectlegend = $('.legend').not(getname2).not(getname);
-
-    //       d3.selectAll(selectlegend)
-    //         .style("opacity",1);
-          
-    //       d3.select(getname)
-    //         .attr("class", "legend");         
-    //   });
 
      // Draw the x Grid lines
     svg.append("g")
@@ -595,7 +566,52 @@ svg.append("text")
             }
 
           }
-    });
+    })
+          .on("mouseover", function (d) 
+      {  
+        // console.log("mouseover",this);                                
+        d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+          .style("stroke-width",'4px');
+          
+        var other_lines = $( "[class*='line']" ).not( "[class*='"+d.name+"-line']" );     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+        d3.selectAll(other_lines)
+            .style("opacity",0.1);
+        
+        var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+        d3.selectAll(other_line_circles)
+            .style("opacity",0.1);
+          
+        var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+        var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+
+        d3.selectAll(selectlegend)    // drop opacity on other legend names
+            .style("opacity",.1);
+
+        d3.select(getname)
+            .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+      })
+      .on("mouseout", function(d) {        //undo everything on the mouseout
+          d3.select(this)
+            .style("stroke-width",'2.5px');
+          
+        var other_lines = $( "[class*='line']" ).not( "[class*='"+d.name+"-line']" );    
+        d3.selectAll(other_lines)
+            .style("opacity",1);
+
+          var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+          d3.selectAll(other_line_circles)
+            .style("opacity",1);
+          
+          var getname = document.getElementById(d.name);
+          var getname2= $('.legend[fakeclass="fakelegend"]')
+          var selectlegend = $('.legend').not(getname2).not(getname);
+
+          d3.selectAll(selectlegend)
+            .style("opacity",1);
+          
+          d3.select(getname)
+            .attr("class", "legend");         
+      });
 
 var lastvalues = []
 
