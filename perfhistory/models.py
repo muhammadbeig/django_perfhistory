@@ -22,7 +22,7 @@ class CaseInsensitiveModelBackend(ModelBackend):
     except User.DoesNotExist:
       return None
 
-      
+
 class Project(models.Model):
 	name = models.CharField(max_length=200)
 	description = models.CharField(max_length=400,blank=True)
@@ -63,6 +63,7 @@ class Result(models.Model):
 	description = models.CharField(max_length=400, blank=True, null=True)
 	version = models.CharField(max_length=100)
 	filename = models.CharField(max_length=100, null=True)
+	start_time = models.DateTimeField(null=True)
 	duration_minutes = models.FloatField()
 	created = models.DateTimeField(auto_now_add=True)
 	last_modified = models.DateTimeField(auto_now=True)

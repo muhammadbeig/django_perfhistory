@@ -39,6 +39,7 @@ def loginView(request):
 	    	print form.errors
 
 	    nexturl = nexturl if nexturl else ''
+	    HttpResponse.status_code = 403
 	    return render(request, 'login.html', {'userform': form, 'next':nexturl })
     else:
 	    return project(request)
@@ -113,7 +114,7 @@ def project(request):
 	allprojs= Project.objects.all().order_by('-last_modified')
 	
 	if request.method == 'POST':
-		if user.has_perm(APPLICATION+'.create_project'):
+		if user.has_perm(APPLICATION+'.add_project'):
 			if projectform.is_valid():
 				project = projectform.save()
 			else:
@@ -153,12 +154,14 @@ def project(request):
 	
 @login_required(login_url='/'+APPLICATION+'/')
 def comparisonChart(request, projectId, tagId):
+	limit = 15
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
 		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
 		# sorting by version with assumption that version is an int/float and no other characters
 		results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		results = results[-limit:] if len(results) >= limit else results
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -356,7 +359,7 @@ def updateResult(request, resultId):
 def createResultByProjectTagName(request):
 	user = request.user
 
-	if user.has_perm(APPLICATION+'.create_result'):	
+	if user.has_perm(APPLICATION+'.add_result'):	
 		data = json.loads(request.body)
 		# print data
 		try:
@@ -375,7 +378,8 @@ def createResultByProjectTagName(request):
 
 		return createResult(request, project.id, tag.id)
 	else:
-		return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions', 403, False)
+		print user.user_permissions, user.username
+		return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions; can not create result', 403, False)
 
 
 	
@@ -384,7 +388,7 @@ def createResultByProjectTagName(request):
 def createResult(request, project_id, tagid):
 	user = request.user
 
-	if user.has_perm(APPLICATION+'.create_result'):	
+	if user.has_perm(APPLICATION+'.add_result'):	
 		if request.method == 'POST':
 			response_data = {}
 			insertionresult = []
@@ -407,7 +411,10 @@ def createResult(request, project_id, tagid):
 							result = Result(project_id=int(project_id), tag_id=int(tagid))
 							txns = []
 							result.name = resultData['name']
+							
 							result.version = resultData['version']
+							float(result.version) # should cause an exception if version isn't float
+							
 							result.numberofusers = resultData.get('numberofusers')
 							result.filename = resultData.get('filename')
 							result.duration_minutes = round(resultData.get('duration_minutes'),1)
@@ -495,7 +502,7 @@ def createResult(request, project_id, tagid):
 @login_required(login_url='/'+APPLICATION+'/')
 def createTag(request,project_id):
 	user = request.user
-	if user.has_perm(APPLICATION+'.create_tag'):	
+	if user.has_perm(APPLICATION+'.add_tag'):	
 		# print 'project_id in form', project_id
 		try:
 			if request.method == 'POST':
