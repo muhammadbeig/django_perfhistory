@@ -153,12 +153,14 @@ def project(request):
 	
 @login_required(login_url='/'+APPLICATION+'/')
 def comparisonChart(request, projectId, tagId):
+	limit = 15
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
 		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
 		# sorting by version with assumption that version is an int/float and no other characters
 		results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		results = results[-limit:] if len(results) > limit else results
 		data = []
 		result_list = [] 
 		alltxns = []
