@@ -5,7 +5,7 @@
 
 {% block content %}
 
-
+{% load humanize %}
 
 
 
@@ -28,7 +28,7 @@
     </div>
 
 
-{% if perms.perfhistory.create_result %}
+{% if perms.perfhistory.add_result %}
 
 <div class="row">
 <div class="col-xs-2">
@@ -170,7 +170,8 @@
                                  <th class="text-center">Is baseline</th>
                                  <th class="text-center"># of users</th>
                                  <th class="text-center">Duration (min)</th>
-                                {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
+                                 <th class="text-center">Start Time</th>
+                                 {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
                                  <th  colspan="2" class="text-center">Action(s)</th>
                                 {% endif %}
                               </tr>
@@ -178,7 +179,7 @@
                               {% for result in allresults %}
                               <tr class="result-data-row {% if result.baseline %}active{% endif %}"  data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
                               
-                                  <td class="result-table-cells"> <small> {{ result.name }} </small></td>
+                                  <td class="result-table-cells"> <small>{{ result.name }}</small></td>
                                   <td class="result-table-cells" align="center"> <small>{{ result.version }}<small> </td>
                                   
                                   {% if perms.perfhistory.change_result %}
@@ -187,10 +188,10 @@
                                   <td class="result-table-cells" align="center">{% if result.baseline %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
                                   {% endif %}
 
-                                  <td class="result-table-cells" align="center"> {{ result.numberofusers|default_if_none:"-" }} 
-                                  </td>
-                                  <td class="result-table-cells" align="center"> {{ result.duration_minutes }} </td>
-      
+                                  <td class="result-table-cells" align="center">{{ result.numberofusers|default_if_none:"-"|apnumber|title }}</td>
+                                  <td class="result-table-cells" align="center">{{ result.duration_minutes|floatformat }} minute{{ result.duration_minutes|pluralize }}</td>
+                                  <td class="result-table-cells" align="center">{{ result.start_time|default_if_none:""|naturaltime }}{{ result.start_time|default_if_none:""|date:" (d/m/y H:iO)" }}</td>
+
                                   {% if perms.perfhistory.change_result %}
                                   <td align="center">
                                     <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >

@@ -16,27 +16,30 @@ APPLICATION = 'perfhistory'
 def logoutView(request):
     logout(request)
     form = UserForm(request.POST or None)
+    HttpResponse.status_code = 200
+
     return render(request, 'login.html', {'userform': form })
 
 def loginView(request):
     if request.user.is_authenticated() is not True:
 	    form = UserForm(request.POST or None)
 	    nexturl = request.GET.get('next') or 'projects'
-	    if request.POST and form.is_valid():
-	        user = form.login(request)
-	        
-	        # if request.POST.get('next') is not None:
-	        nexturl = request.POST.get('next') or 'projects'
+	    if request.POST:
+	    	if form.is_valid():
+	        	user = form.login(request)
+	        	
+	        	# if request.POST.get('next') is not None:
+	        	nexturl = request.POST.get('next') or 'projects'
 
-	        if user:
-	            login(request, user)
-	            return HttpResponseRedirect(nexturl)
-	            # if nexturl is not None:
-	            # 	return HttpResponseRedirect(nexturl)
-	            # else:
-	            # 	return HttpResponseRedirect("projects")# Redirect to a success page.
-	    else:
-	    	print form.errors
+	        	if user:
+	        		login(request, user)
+	            	return HttpResponseRedirect(nexturl)
+	            	# if nexturl is not None:
+	            	# 	return HttpResponseRedirect(nexturl)
+	            	# else:
+	            	# 	return HttpResponseRedirect("projects")# Redirect to a success page.
+	    	else:
+	    		print form.errors
 
 	    nexturl = nexturl if nexturl else ''
 	    return render(request, 'login.html', {'userform': form, 'next':nexturl })
@@ -113,7 +116,7 @@ def project(request):
 	allprojs= Project.objects.all().order_by('-last_modified')
 	
 	if request.method == 'POST':
-		if user.has_perm(APPLICATION+'.create_project'):
+		if user.has_perm(APPLICATION+'.add_project'):
 			if projectform.is_valid():
 				project = projectform.save()
 			else:
@@ -358,7 +361,7 @@ def updateResult(request, resultId):
 def createResultByProjectTagName(request):
 	user = request.user
 
-	if user.has_perm(APPLICATION+'.create_result'):	
+	if user.has_perm(APPLICATION+'.add_result'):	
 		data = json.loads(request.body)
 		# print data
 		try:
@@ -386,7 +389,7 @@ def createResultByProjectTagName(request):
 def createResult(request, project_id, tagid):
 	user = request.user
 
-	if user.has_perm(APPLICATION+'.create_result'):	
+	if user.has_perm(APPLICATION+'.add_result'):	
 		if request.method == 'POST':
 			response_data = {}
 			insertionresult = []
@@ -413,10 +416,12 @@ def createResult(request, project_id, tagid):
 							result.numberofusers = resultData.get('numberofusers')
 							result.filename = resultData.get('filename')
 							result.duration_minutes = round(resultData.get('duration_minutes'),1)
+							if resultData.get('start_time'):
+								result.start_time = resultData['start_time']
 							result.description = resultData.get('description')
 							# print 'here', existingResults, len(existingResults)
 							if resultData.get('baseline') or existingResults is None or len(existingResults) == 0:
-								print 'is baseline'
+								# print 'is baseline'
 								result.baseline = True
 								if existingResults is not None:
 									for res in existingResults:#Result.objects.filter(project_id=int(project_id), tag_id=int(tagid)):
@@ -456,7 +461,11 @@ def createResult(request, project_id, tagid):
 					
 					except IntegrityError as e:
 						print 'integrity error',e.message
-						response_data['message'] = 'Database IntegrityError occurred; ', str(e)
+						response_data['detailed_message'] = 'Database IntegrityError occurred; ', str(e)
+						if "UNIQUE constraint failed" in e.message:
+							response_data['message'] = 'Duplicate result upload failed, another result with the same name and version exists in the same tag under the same project'
+						else:
+							response_data['message'] = 'Database integrity error while result upload, upload failed.'
 						response_data['status'] = False
 						HttpResponse.status_code = 500
 						response_data['created_objects'] = None
@@ -480,7 +489,7 @@ def createResult(request, project_id, tagid):
 				HttpResponse.status_code = 200
 
 			else:
-				response_data['message'] = 'Unknown result type; please set a "type" in the request data'
+				response_data['message'] = 'Unknown result type; please set a "type" in the request data (acceptable types: summaryresults)'
 				response_data['status'] = False
 				response_data['created_objects'] = None
 				HttpResponse.status_code = 500
@@ -497,7 +506,7 @@ def createResult(request, project_id, tagid):
 @login_required(login_url='/'+APPLICATION+'/')
 def createTag(request,project_id):
 	user = request.user
-	if user.has_perm(APPLICATION+'.create_tag'):	
+	if user.has_perm(APPLICATION+'.add_tag'):	
 		# print 'project_id in form', project_id
 		try:
 			if request.method == 'POST':
