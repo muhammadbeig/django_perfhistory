@@ -1,0 +1,1538 @@
+
+
+{% extends "base_index.html" %}
+
+
+{% block content %}
+
+
+
+
+
+
+<div id="page-wrapper content-section content-section-dark">
+     <!-- Page Heading -->
+
+    <div class="row">
+    <div class="back-button">
+      <a href="/perfhistory/">« Back</a>
+    </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">{{ projectobj.name|capfirst}}</h1>
+            <h2>{{ tagobj.name|capfirst }}</h2>
+            </div>
+    
+    
+    </div>
+
+
+{% if perms.perfhistory.create_result %}
+
+<div class="row">
+<div class="col-xs-2">
+</div>
+
+<div class="col-xs-8">
+
+<div>
+
+    <div class="info-card info-card-padding roundify">
+      <div class="content-section-headings">
+      <h3 class="content-section-header">Upload Result</h3>
+      </div>
+  <div id="form-container">
+
+    <form   id="newResultForm">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="form-group col-xs-8">
+            <input id="name" name="name" class="form-control" placeholder="Name" type="text"  required>
+        </div>
+
+        <div class="form-group col-xs-2">
+            <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="number">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group col-xs-8">
+            <textarea id="description" name="description" placeholder="Description"rows="2" class="form-control" ></textarea>
+        </div>
+
+        <div class="form-group col-xs-2">
+            <input id="duration_minutes" name="duration_minutes" placeholder="Duration (minutes)" class="form-control" type="number" step="0.1">
+        </div>
+
+      </div>
+
+
+      <div class="row">
+        <div class="form-group col-xs-4">
+            <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
+        </div>
+        
+        <div class="input-group col-xs-6">
+            <span class="input-group-btn">
+                <span class="btn btn-primary btn-file">
+                    <small>
+                        <span class="glyphicon glyphicon-cloud-upload"></span>
+                    </small>
+                            Browse&hellip; <input id="attached_file" type="file">
+                </span>
+            </span>
+            <input type="text" name="filename" placeholder="Select a result file to continue" class="form-control" readonly>
+        </div>
+        
+        <div class="progress col-xs-6" style="height: 5px;">
+            <div id="pbar" class="progress-bar progress-bar-warning progress-bar-striped" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;" >
+                <span class="sr-only">0% Complete</span>
+            </div>
+        </div>
+
+      </div>
+
+
+
+
+
+
+
+      <div class="row">
+        <div class="form-group col-xs-2 col-md-offset-5">
+            <label  type="text">Baseline:</label>
+            <input id="baseline" name="baseline" class="form-control" aria-label="baseline" type="checkbox">
+        </div>
+      </div>
+
+      <div class="row">
+        <div >
+            <button type="submit" class="btn btn-warning btn-lg col-md-offset-5">
+                <span class="glyphicon glyphicon-ok-sign"></span> Upload
+            </button>
+        </div>
+      </div>
+
+
+
+    </form>
+  </div>
+
+    </div>
+
+</div>
+</div>
+
+
+<div class="col-xs-2">
+</div>
+
+</div>
+</div>
+
+<script type="text/javascript">
+  $('#version').keypress(function(event) {
+    if(event.which == 8 || event.which == 0){
+        return true;
+    }
+    if(event.which < 46 || event.which > 59) {
+        return false;
+        //event.preventDefault();
+    } // prevent if not number/dot
+    
+    if(event.which == 46 && $(this).val().indexOf('.') != -1) {
+        return false;
+        //event.preventDefault();
+    } // prevent if already dot
+});
+</script>
+
+{% endif %}
+
+
+<div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> Results table</h3>
+                            </div>
+                            <div class="panel-body">
+                              <p> List of performance test results
+                              </p>
+                            </div>
+
+                            <table class="resulttable table compact">
+                               <tr>
+                                 <th class="result-table-headers">Result Name</th>
+                                 <th class="text-center">Version</th>
+                                 <th class="text-center">Is baseline</th>
+                                 <th class="text-center"># of users</th>
+                                 <th class="text-center">Duration (min)</th>
+                                {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
+                                 <th  colspan="2" class="text-center">Action(s)</th>
+                                {% endif %}
+                              </tr>
+                              
+                              {% for result in allresults %}
+                              <tr class="result-data-row {% if result.baseline %}active{% endif %}"  data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
+                              
+                                  <td class="result-table-cells"> <small> {{ result.name }} </small></td>
+                                  <td class="result-table-cells" align="center"> <small>{{ result.version }}<small> </td>
+                                  
+                                  {% if perms.perfhistory.change_result %}
+                                  <td class="result-table-cells" align="center"><input id="baselineCheckBox_{{ result.id }}" name="baseline" data-id="{{ result.id }}" type="checkbox" {% if result.baseline %}checked{% endif %}> </td>
+                                  {% else %}
+                                  <td class="result-table-cells" align="center">{% if result.baseline %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+                                  {% endif %}
+
+                                  <td class="result-table-cells" align="center"> {{ result.numberofusers|default_if_none:"-" }} 
+                                  </td>
+                                  <td class="result-table-cells" align="center"> {{ result.duration_minutes }} </td>
+      
+                                  {% if perms.perfhistory.change_result %}
+                                  <td align="center">
+                                    <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >
+                                      <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                  </td>
+                                  {% endif %}
+                                  
+                                  {% if perms.perfhistory.delete_result %}
+                                  <td  align="center"> 
+                                    <button  id="deleteResultButton" class="btn btn-default btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ result.id }}" >
+                                      <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash"></span>
+                                    </button>
+                                  </td>
+                                  {% endif %}
+
+                                  <div class="modal fade" id="delete_{{ result.id }}"  data-resultid="{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                          </button>
+                                          <h4 class="modal-title custom_align" id="Heading">Delete this Result</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="alert alert-danger">
+                                            <span class="glyphicon glyphicon-warning-sign">
+                                            </span> Are you sure you want to delete this result?
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer ">
+                                          <button id="yesOnDelete" type="submit" class="btn btn-success">
+                                            <span class="glyphicon glyphicon-ok-sign">
+                                            </span>&nbsp;Yes
+                                          </button>
+                                          <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove">
+                                            </span>&nbsp;No
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- /.modal-edit --> 
+                                  <div class="modal fade" id="edit_{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true">
+                                            </span>
+                                          </button>
+                                          <h4 class="modal-title custom_align" id="Heading">Edit Result
+                                          </h4>
+                                        </div>
+                                        <div class="modal-body">
+                                          <form  id="updateResultForm_{{ result.id }}" >
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ result.id }}">
+                                            <div class="form-group">
+                                              <label type="text">Name:
+                                              </label>
+                                              <input id="name" name="name" class="form-control" type="text" value="{{ result.name }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Description:
+                                              </label>
+                                              <textarea id="description" name="description" rows="2" class="form-control" >{{result.description|default_if_none:""}}</textarea>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Version:</label>
+                                              <input id="version" name="version" class="form-control" type="text" value="{{ result.version }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Number of Users:</label>
+                                              <input id="numberofusers" name="numberofusers" class="form-control" type="text" value="{{ result.numberofusers|default_if_none:"" }}">
+                                            </div>
+                                            <div class="form-group">
+                                              <label  type="text">Baseline:</label>
+                                              <input id="baseline" name="baseline" class="form-control" type="checkbox" {% if result.baseline %}checked{% endif %}>
+                                            </div>
+                                            <button type="submit" class="btn btn-warning btn-lg" style="width: 100%;">
+                                              <span class="glyphicon glyphicon-ok-sign">
+                                              </span> Update
+                                              </button>
+                                          </form>
+                                        </div>
+                                        <div class="modal-footer ">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </tr>
+                              {% endfor %}
+                                                
+                            </table>
+</div>
+
+                                      
+
+
+<!-- 
+                            </div>
+                        </div> -->
+                    <!-- </div> -->
+
+
+
+    <div>
+        <div class="panel panel-primary" id="panel-body">
+            
+            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3></div>
+            <div class="panel-body" id="panel-body">
+                <p>Given below is a list of projects results for which exist in the repository</p>
+
+                
+                <table id="txn-table" class="display compact cell-border row-border order-column" cellspacing="0" >
+
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th>qps</th>
+                            <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
+                            <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th>avg</th>
+                            <th>min</th>
+                            <th>max</th>
+                            <th>P50</th>
+                            <th>stddev</th>
+                            <th>P90</th>
+                            <th>P95</th>
+                            <th>P99</th>
+                            <th>P99.99</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th>qps</th>
+                            <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
+                            <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th>avg</th>
+                            <th>min</th>
+                            <th>max</th>
+                            <th>P50</th>
+                            <th>stddev</th>
+                            <th>P90</th>
+                            <th>P95</th>
+                            <th>P99</th>
+                            <th>P99.99</th>
+                        </tr>
+                    </tfoot>
+                    
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="panel panel-primary" id="panel-body">
+            
+            <div class="panel-heading ">
+              <h3 class="panel-title">Regression from baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
+
+
+              </h3>
+              
+
+              <div id="legendcolornegative" class="legendcolornegative pull-right">Degradation</div>
+              <div id="legendcolorpositive" class="legendcolorpositive pull-right">Improvement</div>
+              
+            </div>
+            <div class="panel-body" id="panel-body">
+                <p>Given below is a list of projects results for which exist in the repository</p>
+
+                <table id="delta-table" class="hover display compact order-column" cellspacing="0" >
+
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>min</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>max</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>P50</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>stddev</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p90</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p95</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p99</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p99.99</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            
+                            <th>Version</th>
+                            <th>Name</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>min</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>max</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>P50</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>stddev</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p90</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p95</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p99</th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span>p99.99</th>
+                        </tr>
+                    </tfoot>
+                    
+                </table>
+            </div>
+
+        </div>
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" language="javascript" src="/static/math.min.js"></script>
+<script>
+
+var improvement_color =  "#8DE8FA"
+var regression_color =  "#DE6858"
+
+
+
+$(document).on('change', '.btn-file :file', function() {
+  var input = $(this),
+      numFiles = input.get(0).files ? input.get(0).files.length : 1,
+      label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+  input.trigger('fileselect', [numFiles, label]);
+
+  console.log("file selected");
+});
+
+$(document).ready( function() {
+
+    
+    $('div.legendcolorpositive').css({"background-color":improvement_color});
+    $('div.legendcolornegative').css({"background-color":regression_color});
+    
+
+    $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+        
+        var input = $(this).parents('.input-group').find(':text'),
+            log = numFiles > 1 ? numFiles + ' files selected' : label;
+        
+        if( input.length ) {
+            input.val(log);
+        } else {
+            if( log ) alert(log);
+        }
+        
+        updateFormNameField(label);
+    });
+});
+
+function updateFormNameField(text)
+{
+    // newResultform = document.getElementById('newResultForm');
+    // console.log($("input[name=name]").val())
+    // console.log(document.getElementById['version'])
+  
+  nameField = $("input[name=name]");
+  versionField = $("input[name=version]");
+  if (!nameField.val())
+  {
+    nameField.val(text);
+    console.log("set value for nameField");
+  }
+  if (!versionField.val())
+  {
+    versionField.val( text );
+  }
+}
+
+function updateNewTestResultDuration(duration)
+{
+    // newResultform = document.getElementById('newResultForm');
+    // console.log($("input[name=name]").val())
+    // console.log(document.getElementById['version'])
+  
+  duration_minutes_field = $("input[name=duration_minutes]");
+  if (!duration_minutes_field.val())
+  {
+    duration_minutes_field.val(duration);
+    console.log("set value for duration_minutes field:", duration);
+  }
+}
+
+var RESULT_DELIMITER = ',';
+var TIMESTAMP_UNIT = 'ms';
+var TIMESTAMP_POSITION = 0;
+var RESPONSE_TIME_POSITION = 1;
+var NAME_POSITION = 2;
+var RESPONSE_CODE_POSITION = 3;
+
+var SUCCESS = 'successcount';
+var FAILURE = 'failurecount';
+var AVERAGE = 'average';
+var MINIMUM = 'minimum';
+var MAXIMUM = 'maximum';
+var p50 = 'median';
+var p90 = 'p90';
+var p95 = 'p95';
+var p99 = 'p99';
+var p99_9 = 'p99.9';
+var p99_99 = 'p99.99';
+var stddev = 'stddev';
+
+var include_failed_requests_in_calculation = true;
+var SUM_OF_RESPONSE_TIMES = 'sum_of_response_times';
+var DATA = 'response_time_data';
+
+var datadic = {};
+
+if ($('#newResultForm').length) {
+  document.getElementById('newResultForm').onsubmit= function(event)
+  {
+      event.preventDefault();
+    // console.log("submit", event.currentTarget.elements);
+    // console.log("submit", event.currentTarget.elements);
+
+    var resultname = $("input[name=name]").val();
+    var resultdescription = $("textarea[name=description]").val();
+    var resultfilename = $("input[name=filename]").val();
+    var resultversion = $("input[name=version]").val();
+    var resultnumberofusers = parseInt($("input[name=numberofusers]").val());
+    var resultisbaseline = $("input[name=baseline]")[0].checked ? 1:0 ;
+    // console.log(resultisbaseline);
+    console.log("parameters:",resultname,resultdescription, resultfilename,resultversion, resultnumberofusers, resultisbaseline);
+    // return;
+
+    
+    progressNode = document.getElementById("pbar");
+
+    // var files = document.getElementById('files').files;
+    var files = document.getElementById('attached_file').files;
+
+    if (!files.length) 
+    {
+      alert('Please select a result file to upload!');
+      return;
+    }
+
+    var file = files[0];
+    // console.log(file);
+    var reader = new FileReader();
+    datadic = {};
+    var starttime;
+    var totallines = 0;
+
+    reader.onprogress = function(event) 
+    {
+        
+      if (event.lengthComputable) 
+      {
+        progressNode.max = 1;
+        var valeur = parseInt(event.loaded/event.total*100);
+        progressNode.valuenow = event.loaded/event.total;
+        $('.progress-bar').css('width', valeur+'%').attr('aria-valuenow', valeur); 
+
+      }
+    };
+
+    reader.onloadend = function(event) 
+    {
+      // var contents = event.target.result,
+      error    = event.target.error;
+      if (error != null) 
+      {
+        console.error("File could not be read! Code " + error.code);
+      } 
+      else 
+      {
+        var dataarray = event.target.result.split('\n');
+
+        console.log("first line", dataarray[0]);
+        if (typeof parseInt(dataarray[0][TIMESTAMP_POSITION]) === "number" && dataarray[0][TIMESTAMP_POSITION])
+        {
+          test_start_timestamp = parseInt(dataarray[0].split(RESULT_DELIMITER)[TIMESTAMP_POSITION]);    
+          console.log("setting test_start_timestamp", test_start_timestamp);
+        }
+        else {
+          console.log("Error, invalid timestamp in row 0 of the result file");
+        }
+        
+        
+        for (line in dataarray)
+        {
+          var name = dataarray[line].split(RESULT_DELIMITER)[NAME_POSITION]
+          var responsetime = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_TIME_POSITION]
+          var responsecode = dataarray[line].split(RESULT_DELIMITER)[RESPONSE_CODE_POSITION]
+          
+          // console.log(name, responsetime,dataarray[line])
+          // console.log(typeof parseFloat(responsetime))
+
+          if (name)
+          {
+              if (typeof parseFloat(responsetime) === "number")
+              {
+                  if (!datadic[name])//initialize if it doesn't exist, push in any case
+                  {
+                      datadic[name] = {}
+                      datadic[name][DATA] = []
+                  }
+                  datadic[name][DATA].push(parseFloat(responsetime));    
+                  if (parseInt(responsecode) == 200)
+                  {
+                      datadic[name][SUCCESS] = ++datadic[name][SUCCESS]|| 1;
+                  }
+                  else
+                  {
+                      datadic[name][FAILURE] = ++datadic[name][FAILURE]|| 1;
+                  }
+                  if (parseInt(responsecode) == 200 || include_failed_requests_in_calculation)
+                  {
+                      datadic[name][SUM_OF_RESPONSE_TIMES] = datadic[name][SUM_OF_RESPONSE_TIMES] + parseFloat(responsetime) || parseFloat(responsetime);
+                  }
+
+                  test_end_timestamp = dataarray[line].split(RESULT_DELIMITER)[TIMESTAMP_POSITION];  
+              }
+              else 
+              {
+                // console.log(name, typeof parseFloat(responsetime) === "number")
+                alert('Invalid results file!');
+                return;
+              } 
+          }
+          
+              // totallines = line
+              
+        }
+        test_end_timestamp = parseInt(test_end_timestamp); // doing it after loop to decrease processing
+        // console.log('test_start_timestamp:',test_start_timestamp);
+        // console.log('test_end_timestamp:',test_end_timestamp);
+
+        var timestamp_multiplier=0;
+        if (TIMESTAMP_UNIT == 'ms')
+        {
+          timestamp_multiplier = 0.001
+        } else if (TIMESTAMP_UNIT == 's') {
+          timestamp_multiplier = 1
+        }
+        else {
+          console.log("Invalid unit for result timestamp");
+        }
+
+        var duration = (test_end_timestamp - test_start_timestamp) * timestamp_multiplier / 60 ; // divide by 60 to get duration in minutes
+        duration = Math.round (duration * 10)/10;
+        updateNewTestResultDuration(duration);
+
+        progressNode.max = 1;
+        progressNode.value = 1;
+
+        console.log('datadic:', datadic);
+        console.log("last element", dataarray[dataarray.length-1]);
+        // console.log('done:' );
+        // console.log("Contents: " + contents);
+        data = {}
+        data["type"] = "summaryresults"
+        data["results"] = []
+
+        // console.log(event);
+        data["results"].push (processRawData(datadic, resultname, resultdescription, resultfilename, resultversion, resultnumberofusers, duration, resultisbaseline) );
+        // console.log(data);
+        console.log("reading file took: ", (Date.now() -starttime)/1000, "seconds");
+        filereadtime = (Date.now() -starttime)/1000;
+
+        
+        create_result(data, filereadtime);
+        // console.log("create result request took: ", (Date.now() -starttime)/1000, "seconds");
+
+        
+      }
+    };
+
+    starttime = Date.now();
+    reader.readAsText(file);
+    
+    
+
+  };
+
+}
+
+function processRawData(dictionary, name, description, filename, version, numberofusers, duration, isbaseline)
+{
+  if (dictionary)
+  {
+    var resultArray = []
+    for (txnname in dictionary)
+    {
+      var length = dictionary[txnname][DATA].length; //length of the response time data array
+      if (include_failed_requests_in_calculation)
+      // we need to do this differently only for the case of average since we are dividing the sum of response time by passed request counts or total requests (depending on if we want to include failed requests)
+      {
+        dictionary[txnname][AVERAGE] = dictionary[txnname][SUM_OF_RESPONSE_TIMES] / length;
+      }
+      else
+      {
+        dictionary[txnname][AVERAGE] = dictionary[txnname][SUM_OF_RESPONSE_TIMES] / dictionary[txnname][SUCCESS];
+      }
+
+      // everything else is going to be based on the response time data array so no need to have two different cases for it since the insertion into that array is conditional (based on the boolean)
+      var sorted_data = dictionary[txnname][DATA].sort(function(a,b) {return a-b} );
+       
+       // console.log("length:",length); 
+       dictionary[txnname][MAXIMUM] = sorted_data[length - 1];
+       dictionary[txnname][MINIMUM] = sorted_data[0];
+       dictionary[txnname][p50] = sorted_data[Math.round(length * 0.5) -1];
+       dictionary[txnname][p90] = sorted_data[Math.round(length * 0.9) -1];
+       dictionary[txnname][p95] = sorted_data[Math.round(length * 0.95) -1];
+       dictionary[txnname][p99] = sorted_data[Math.round(length * 0.99) -1];
+       dictionary[txnname][p99_9] = sorted_data[Math.round(length * 0.999) -1];
+       dictionary[txnname][p99_99] = sorted_data[Math.round(length * 0.9999) -1];
+       dictionary[txnname][stddev] = math.std(sorted_data);
+
+       dictionary[txnname]['name'] = txnname;
+       delete dictionary[txnname][DATA]; // to cleanup for final output
+       delete dictionary[txnname][SUM_OF_RESPONSE_TIMES]; // to cleanup for final output
+        
+      // if failure or success counts not present, make them zero
+      if (!dictionary[txnname][FAILURE])
+        dictionary[txnname][FAILURE]=0
+      if (!dictionary[txnname][SUCCESS])
+        dictionary[txnname][SUCCESS]=0
+
+      resultArray.push(dictionary[txnname])
+    }
+  }
+  else
+  {
+    console.log('Input data is invalid');
+  }
+  
+  var result = {}
+  result['name'] = name;
+  result['description'] = description;
+  result['filename'] = filename;
+  result['version'] = version;
+  result['duration_minutes'] = duration;
+  result['numberofusers'] = numberofusers;
+  if (isbaseline==1)
+  {
+    result['baseline']=true
+  }
+
+  result['data'] = resultArray;
+
+  // var outputdictionary = {}
+  // outputdictionary['type'] = type;
+  // outputdictionary['results'] = []
+  // outputdictionary['results'].push(innerdic);
+
+  // console.log('-------- Result -------');
+
+ /* 
+ {  type: "summaryresults"
+    results: 
+    [
+        {   
+            "name": "result1", 
+            "filename":"filename1.jtl", 
+            "version":"version1", 
+            "data":
+            [
+                {
+                    "name":"Create this",
+                    "p50":2.1                    
+                    "p99":3.1
+                    "p95":2
+                }, 
+                {
+                    "name":"delete this",
+                    "p50":2.1
+                    "p99":3.1
+                    "p95":2                    
+                }
+            ]
+        },
+        {   
+            "name": "result2", 
+            "filename":"filename2.jtl", 
+            "version":"version2", 
+            "data":
+            [
+                {
+                    "name":"Create this",
+                    "p99":3.1
+                }, 
+                {
+                    "name":"delete this",
+                    "p50":2.1
+                }
+            ],
+            "baseline": true
+        }
+    ]
+}
+*/
+
+  // console.log(result);
+
+  return result;
+
+}
+
+
+function create_result(formData, fileReadTime)
+{
+  // console.log("fileReadTime:", fileReadTime);
+  // console.log("formData:", formData);
+  // return;
+    // starttime = Date.now();
+    // var resultid = formData['id'];
+    // console.log("formData:",formData);
+    // closestparent = event.currentTarget.closest(".result-data-row");
+    var csrftoken = getCookie('csrftoken');
+
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) 
+        {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) 
+            {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader("fileReadTime", fileReadTime);
+            }
+        }
+    });
+
+    var jqxhr= $.ajax({
+                // url: '/perfhistory/result/'+resultid,
+                url: '/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id}}/createResult',
+                type:'post',
+                data: JSON.stringify(formData)
+
+                });
+    jqxhr.success (function(data) 
+    {
+        document.getElementById('newResultForm').reset();
+        window.location.reload(true); 
+        // console.log('Update Result Table with ->', data);
+
+    });
+    jqxhr.done(function() 
+    {
+                    
+    });
+    jqxhr.fail(function() 
+    {
+        console.log("Error while creating result");
+    });
+    jqxhr.always(function(data) 
+    {
+
+    });
+
+}
+
+</script>
+
+
+
+
+
+
+
+             
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+    /*.delta-headers {
+        text-align: center
+    }
+    .data-columns {
+      text-align: center
+    }*/
+</style>
+
+<link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css">
+<script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js">
+    </script>
+<script type="text/javascript">
+    
+$(document).ready(function() 
+{
+
+  function numberWithCommas(x) 
+  {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+        x=JSON.parse('{{ object_list|safe }}');
+        result_list=JSON.parse('{{ result_list|safe }}');
+        txn_list=JSON.parse('{{ txn_list|safe }}');
+
+        res = {}
+        for (r in result_list)
+        {
+            res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
+        }
+
+        baseline_result = {}
+        other_txns = []
+        // console.log(txn_list);
+        for (t in txn_list) 
+        {
+            result_id = txn_list[t]['result_id']
+
+            txn_list[t]['version']= res[result_id]['version']
+            txn_list[t]['baseline'] = res[result_id]['baseline']
+            if (txn_list[t]['baseline'])
+            {
+                // console.log(txn_list[t]['name'])
+                baseline_result[txn_list[t]['name']]=txn_list[t]
+                // delete txn_list[t]
+
+            }
+            else 
+            {
+                other_txns.push(txn_list[t]);
+                // console.log(txn_list[t])
+            }
+
+        }
+
+
+        for (t in other_txns) 
+            {
+                    name = other_txns[t]['name']
+                    
+                    // console.log(baseline_result[name]['successcount']);
+                    if (baseline_result[name])
+                    {
+                        other_txns[t]['delta-qps'] = (other_txns[t]['success_qps'] - baseline_result[name]['success_qps']);  
+                        other_txns[t]['delta-successcount'] = (other_txns[t]['success_count'] - baseline_result[name]['success_count']);  
+                        other_txns[t]['delta-failurecount'] = (other_txns[t]['failure_count'] - baseline_result[name]['failure_count']);
+                        other_txns[t]['delta-average'] = (baseline_result[name]['average'] - other_txns[t]['average']);
+                        other_txns[t]['delta-maximum'] = (baseline_result[name]['maximum'] - other_txns[t]['maximum']);
+                        other_txns[t]['delta-median'] = (baseline_result[name]['median'] - other_txns[t]['median']);
+                        other_txns[t]['delta-minimum'] = (baseline_result[name]['minimum'] - other_txns[t]['minimum']);
+                        other_txns[t]['delta-p90'] = (baseline_result[name]['p90'] - other_txns[t]['p90']);
+                        other_txns[t]['delta-p95'] = (baseline_result[name]['p95'] - other_txns[t]['p95']);
+                        other_txns[t]['delta-p99'] = (baseline_result[name]['p99'] - other_txns[t]['p99']);
+                        other_txns[t]['delta-p99_99'] = (baseline_result[name]['p99_99'] - other_txns[t]['p99_99']);
+                        other_txns[t]['delta-stddev'] = (baseline_result[name]['stddev'] - other_txns[t]['stddev']);
+
+                        // console.log('actual value',txn_list[t]);
+                    }
+
+                    else 
+                    {
+                        console.log('No match found in baseline for:', name);
+                        other_txns[t]['delta-qps'] = 0  
+                        other_txns[t]['delta-successcount'] = 0  
+                        other_txns[t]['delta-failurecount'] = 0
+                        other_txns[t]['delta-average'] = 0
+                        other_txns[t]['delta-maximum'] = 0
+                        other_txns[t]['delta-median'] = 0
+                        other_txns[t]['delta-minimum'] = 0
+                        other_txns[t]['delta-p90'] = 0
+                        other_txns[t]['delta-p95'] = 0
+                        other_txns[t]['delta-p99'] = 0
+                        other_txns[t]['delta-p99_99'] = 0
+                        other_txns[t]['delta-stddev'] = 0
+                    }
+            }
+
+
+
+    txnTable= $('#txn-table').DataTable(
+    {
+        "data": txn_list,
+        "columns": [
+        { "data": "version" },
+        { "data": "name" },
+        { "data": "success_qps" },
+        { "data": "success_count" },
+        { "data": "failure_count" },
+        { "data": "average" },
+        { "data": "minimum" },
+        { "data": "maximum" },
+        { "data": "median" },
+        { "data": "stddev" },
+        { "data": "p90" },
+        { "data": "p95" },
+        { "data": "p99" },
+        { "data": "p99_99" }
+        ],
+        "columnDefs": [
+            { "visible": false, "targets": 0 },
+            // { className: "data-version", "targets": [0] },
+            { className: "data-labels", "targets": [1] },
+            { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
+            { "render": function (data, type, row) 
+                        {
+                          return numberWithCommas(Math.round(data*10)/10); 
+                        },
+              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+            },
+            { "render": function (data, type, row) 
+                        {
+                          return "version=>"+data; 
+                        },
+              "targets": [0]
+            }            
+        ],
+        "order": [[ 0, 'asc' ],[ 1, 'asc' ]],
+        "displayLength": 25,
+
+
+        "drawCallback": function ( settings ) 
+        {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(0, {page:'current'} ).data().each( function ( group, i ) 
+            {
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                        '<tr class="group"><td class="data-version" colspan="13">'+group+'</td></tr>'
+                    );
+ 
+                    last = group;
+                }
+            } );
+        }
+
+    });
+
+
+
+        // Order by the grouping
+    $('#txn-table tbody').on( 'click', 'tr.group', function () 
+    {
+        var currentOrder = txnTable.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
+            txnTable.order( [ 0, 'desc' ],[ 1, 'asc' ] ).draw();
+        }
+        else {
+            txnTable.order( [ 0, 'asc' ],[ 1, 'asc' ] ).draw();
+        }
+    } );
+    
+
+
+
+
+    deltaTable= $('#delta-table').DataTable(
+    {
+        "data": other_txns,
+        "columns": [
+        { "data": "version" },
+        { "data": "name" },
+        { "data": "delta-qps" },
+        { "data": "delta-successcount" },
+        { "data": "delta-failurecount" },
+        { "data": "delta-average" },
+        { "data": "delta-minimum" },
+        { "data": "delta-maximum" },
+        { "data": "delta-median" },
+        { "data": "delta-stddev" },
+        { "data": "delta-p90" },
+        { "data": "delta-p95" },
+        { "data": "delta-p99" },
+        { "data": "delta-p99_99" }
+        ],
+        "columnDefs": [
+            { "visible": false, "targets": [0] },
+            { className: "data-version", "targets": [0] },
+            { className: "data-labels", "targets": [1] },
+            { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
+            { "render": function (data, type, row) 
+                        {
+                          return numberWithCommas(Math.round(data*10)/10);
+                        },
+              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+            }            
+        ],
+        "order": [[ 0, 'asc' ],[ 10, 'asc' ]],
+        "displayLength": 100,
+        "language": {
+            "thousands": ","
+        },
+
+
+
+        "drawCallback": function ( settings ) 
+        {
+            var api = this.api();
+            var rows = api.rows( {page:'current'} ).nodes();
+            var last=null;
+ 
+            api.column(0, {page:'current'} ).data().each( function ( group, i ) 
+            {
+              // console.log('group',group, i);
+                if ( last !== group ) {
+                    $(rows).eq( i ).before(
+                        '<tr class="group"><td class="data-version" colspan="13">'+group+'</td></tr>'
+                    );
+ 
+                    last = group;
+                }
+            } );
+        },
+
+        "fnRowCallback": function( nRow, aData, iDisplayIndex,iDisplayIndexFull) {
+
+                $(nRow).children().each(function(index, td) {
+
+                            if(index != 0)  {
+                              // console.log('td',parseFloat($(td).html())>= 0, index );
+                                
+                                if (parseFloat($(td).html()) > 0) {
+                                    $(td).css("background-color", improvement_color);
+                                } 
+                                // else  if (parseFloat($(td).html()) == 0) {
+                                //     $(td).css("background-color", "#33C6C6");
+                                // }            
+                                else if (parseFloat($(td).html()) < 0) {
+                                    $(td).css("background-color", regression_color);
+                                }     
+
+                            }
+                });                       
+        return nRow;
+      },
+
+    });
+    
+
+
+        // Order by the grouping
+    $('#delta-table tbody').on( 'click', 'tr.group', function () 
+    {
+        var currentOrder = deltaTable.order()[0];
+        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) 
+        {
+            deltaTable.order( [ 0, 'desc' ],[ 1, 'asc' ] ).draw();
+        }
+        else 
+        {
+            deltaTable.order( [ 0, 'asc' ],[ 1, 'asc' ] ).draw();
+        }
+    });
+
+
+
+    
+  $("#comparisonChartLink").on("click",function(e) 
+  {
+    // e.preventDefault(); // cancel the link itself
+    var csrftoken = getCookie('csrftoken');
+
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) 
+        {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) 
+            {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    var jqxhr= $.ajax({
+                // url: '/perfhistory/result/'+resultid,
+                url: this.href,
+                type:'get',
+                // data: JSON.stringify(txn_list)
+
+                });
+    jqxhr.success (function(data) 
+    {
+        // document.location = href;
+        // document.getElementById('newResultForm').reset();
+        
+        // console.log('Update Result Table with ->', data);
+
+    });
+    jqxhr.done(function() 
+    {
+                    
+    });
+    jqxhr.fail(function() 
+    {
+        console.log("Error while creating result");
+    });
+    jqxhr.always(function(data) 
+    {
+
+    });
+
+
+
+  });
+    
+
+});
+
+
+
+
+
+
+
+
+        function delete_result(result_Id)
+        {
+            // var jqxhr = $.put( "/perfhistory/project/"+projectid,data )
+
+
+               var jqxhr= $.ajax({
+                            url: '/perfhistory/result/'+result_Id,
+                            type:'delete',
+                            
+                            // success: function(result) {
+                            //     // Do something with the result
+                            // }
+                        });
+                jqxhr.success (function(data) 
+                {
+                    // console.log("Success" );
+                    console.log(data);
+                    $('[id^=delete_]').modal('hide');
+                    window.location.reload(true); 
+
+
+                });
+                jqxhr.done(function() 
+                {
+                    
+                 });
+                 jqxhr.fail(function() 
+                 {
+                 });
+                jqxhr.always(function(data) 
+                {
+
+                });
+
+        }
+
+
+
+
+
+            $("button#yesOnDelete").on("click", function(event)
+            {
+
+                var resultid = event.currentTarget.closest("[id^=delete_]").attributes['data-resultid'].value;
+                var csrftoken = getCookie('csrftoken');
+
+                $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+                });
+
+                
+                delete_result(resultid);
+                
+
+            });
+
+
+
+
+
+
+
+        function update_result(event, formData)
+        {
+            var resultid = formData['id'];
+            closestparent = event.currentTarget.closest(".result-data-row");
+
+            var csrftoken = getCookie('csrftoken');
+
+                $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+                });
+
+               var jqxhr= $.ajax({
+                            url: '/perfhistory/result/'+resultid,
+                            type:'put',
+                            data: formData
+                            // success: function(result) {
+                            //     // Do something with the result
+                            // }
+                        });
+                jqxhr.success (function(data) 
+                {
+                    $('[id^=edit_]').modal('hide');
+                    
+                    window.location.reload(true); 
+                    // console.log('Update Result Table with ->', data);
+
+                });
+                jqxhr.done(function() 
+                {
+                    
+                    // console.log("second success" );
+                 });
+                 jqxhr.fail(function() 
+                 {
+                   console.log("Error" );
+                 });
+                jqxhr.always(function(data) 
+                {
+                    // console.log("Finished" );
+                    // console.log(data);
+                });
+
+        }
+            $("[id^=updateResultForm_]").submit(function(e) {
+                // console.log(e);
+                // closestparent = e.currentTarget.closest(".result-data-row");
+                // console.log("event.currentTarget:",e.currentTarget[0].name);
+                var resultid, formData={};
+                for (var i=0;i < e.currentTarget.length; i++)
+                {
+                    // console.log(e.currentTarget[i].name);
+                    if (e.currentTarget[i].name == 'id')
+                    {
+                        resultid = e.currentTarget[i].value
+                    }
+                    if (event.currentTarget[i].value)
+                    {
+                        if (event.currentTarget[i].name == 'baseline')
+                        {
+                            formData[String(event.currentTarget[i].name)] = event.currentTarget[i].checked?1:0;    
+                        }
+                        else {
+                            formData[String(event.currentTarget[i].name)] =  $.trim(event.currentTarget[i].value);    
+                        }
+                        
+                    }
+
+                }
+
+                if (resultid)
+                {
+                    // console.log("Result ID:",resultid, formData);
+                    update_result(e,formData);
+                    e.preventDefault();
+                }
+                else
+                {
+                    console.log("Result id not found in the form");
+                }
+
+
+
+            });
+
+            $("[id^=baselineCheckBox_]").change(function(e)
+            {
+                // var projectid=e.currentTarget.dataset.projectId;
+                // console.log(e);
+                // console.log(e.currentTarget.attributes);
+
+                var resultid;
+                for (var i=0;i < e.currentTarget.attributes.length; i++)
+                {
+                    if (e.currentTarget.attributes[i].name == "data-id")
+                    {
+                        resultid = e.currentTarget.attributes[i].value;
+                    }
+
+                }
+                // console.log(resultid, e.currentTarget.value, this.checked?1:0);
+
+                update_result(e, {"id":resultid, "baseline":e.currentTarget.checked?1:0});
+            });
+
+        function getCookie(name) 
+        {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function csrfSafeMethod(method) 
+        {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }  
+
+
+
+</script>
+
+
+
+
+
+
+<style type="text/css">
+    .container-fluid {
+    /*height:150px;*/
+    /*border:1px solid pink;*/
+    min-width:1050px; // set the minimum width of the container to 1100px
+    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+}
+    .zero {
+        background-color: yellow
+    }
+
+    .positive {
+        background-color: green
+    }
+
+    .negative {
+        background-color: red
+    }
+
+    .page-wrapper  {
+    /*height:150px;*/
+    /*border:1px solid pink;*/
+    min-width:1100px; // set the minimum width of the container to 1100px
+    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+}
+    tr.group td {
+        background-color: #D3EAFC;
+        color: #444A4F;
+    }
+
+    div.panel-heading {
+        background-color: #BF9C67;
+    }
+
+    div.legendcolorpositive {
+    width: 100px;
+    height: 30px;
+    padding: 4px;
+    border: 1px solid white;
+    margin: 0;
+    color: black;
+font-family: Helvetica;
+  font-size: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 100;
+  line-height: 24.2857px;
+  }
+
+  div.legendcolornegative {
+
+    width: 100px;
+    height: 30px;
+    padding: 4px;
+    border: 1px solid white;
+    margin: 4;
+font-family: Helvetica;
+  font-size: 15px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 100;
+  line-height: 24.2857px;
+  }
+
+  td.data-columns {
+    text-align: center;
+    color : black;
+/*color: #adb7bd; */
+/*font-family: "Gill Sans / Gill Sans MT", sans-serif;*/
+font-size: 14px; 
+line-height: 22px; 
+
+margin: 0;
+  }
+
+
+    td.data-columns[class*="sorting_"] {
+    /*font-weight: bold;*/
+    font-size:16px;
+  }
+
+    td.data-version  {
+        font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #515151;
+    background-color: #eff1f2;
+  }
+
+  td.data-labels {
+    /*font-family: ProximaNova,"Helvetica Neue",Helvetica,Arial,sans-serif;*/
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #515151;
+
+    /*background-color: #eff1f2;*/
+  }
+
+
+  
+</style>
+
+    
+{% endblock %}
