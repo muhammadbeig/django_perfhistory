@@ -23,7 +23,10 @@ urlpatterns = [
     url(r'^(?i)admin/', include(admin.site.urls)),
     url(r'^$', perfhistory.views.loginView, name="Login"),
     url(r'^(?i)perfhistory/$', perfhistory.views.loginView, name="Login"),
-    # url(r'^(?i)sample/$', perfhistory.views.sample),
+    
+    url(r'^(?i)d3/$', perfhistory.views.d3),
+    url(r'^(?i)chart/$', perfhistory.views.chart),
+
     url(r'^(?i)perfhistory/logout$', perfhistory.views.logoutView, name="Logout"),
     # url(r'^(?i)perfhistory/home$', HomeView.as_view(template_name='login.html'), name='home'),
     url(r'^(?i)perfhistory/projects$', perfhistory.views.project, name="Project list"),

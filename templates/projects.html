@@ -1,6 +1,8 @@
 {% extends "base_index.html" %}
 {% block content %}
 
+{% load humanize %}
+{% load tz %}
 
     
 <script type="text/javascript">
@@ -306,31 +308,6 @@ var mytable;
                         {% endif %}
 
 
-
-
-
-
-{% if perms.perfhistory.create_project %}
-
-    <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
-        {% csrf_token %}
-        {% load css_filter %}
-
-        {% for field in projectform %}
-        <div class="form-group">
-        {{ field|addcss:"form-control" }}
-        </div>
-        {% endfor %}
-
-        <button type="submit" class=" btn btn-primary btn-lg" value="Create {{ type }}">
-            <!-- <i class="fa fa-plus-square"></i> --> New Project
-        </button>
-        <!-- <input type="submit" id="AddTagButton" class="btn btn-danger" value="Add Tag"/> -->
-    </form>
-{% endif %}
-<!-- <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true"> -->
-
-
 <script type="text/javascript">
           $(document).ready(function() 
           {
@@ -549,7 +526,7 @@ var mytable;
                             <div class="pull-right">
                                     
                                         <!-- <p class="fa fa-sm modified">modified: {{ obj.last_modified }}</p> -->
-                                        <small> last modified on {{ obj.last_modified }} </small>
+                                        <small>modified {{ obj.last_modified|localtime|naturaltime }}</small>
                                     
                                 {% if perms.perfhistory.change_project %}
                                     <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ obj.id }}" >
@@ -691,4 +668,21 @@ var mytable;
 
 
 </div>
+
+
+{% if perms.perfhistory.create_project %}
+
+    <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
+        {% csrf_token %}
+        {% load css_filter %}
+
+        {% for field in projectform %}
+        <div class="form-group">
+        {{ field|addcss:"form-control" }}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class=" btn btn-primary btn-lg" value="Create {{ type }}">New Project</button>
+    </form>
+{% endif %}
 {% endblock %}

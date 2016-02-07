@@ -6,6 +6,7 @@
 {% block content %}
 
 {% load humanize %}
+{% load tz %}
 
 
 
@@ -48,21 +49,22 @@
       {% csrf_token %}
 
       <div class="row">
-        <div class="form-group col-xs-8">
+        <div class="form-group">
             <input id="name" name="name" class="form-control" placeholder="Name" type="text"  required>
         </div>
 
-        <div class="form-group col-xs-2">
+
+        <div class="form-group">
             <input id="numberofusers" name="numberofusers" placeholder="# of Users" class="form-control" type="number">
         </div>
       </div>
 
       <div class="row">
-        <div class="form-group col-xs-8">
+        <div class="form-group">
             <textarea id="description" name="description" placeholder="Description"rows="2" class="form-control" ></textarea>
         </div>
 
-        <div class="form-group col-xs-2">
+        <div class="form-group">
             <input id="duration_minutes" name="duration_minutes" placeholder="Duration (minutes)" class="form-control" type="number" step="0.1">
         </div>
 
@@ -70,11 +72,11 @@
 
 
       <div class="row">
-        <div class="form-group col-xs-4">
+        <div class="form-group">
             <input id="version" name="version" placeholder="Version" class="form-control" type="text" required>
         </div>
         
-        <div class="input-group col-xs-6">
+        <div class="input-group">
             <span class="input-group-btn">
                 <span class="btn btn-primary btn-file">
                     <small>
@@ -86,7 +88,7 @@
             <input type="text" name="filename" placeholder="Select a result file to continue" class="form-control" readonly>
         </div>
         
-        <div class="progress col-xs-6" style="height: 5px;">
+        <div class="progress" style="height: 5px;">
             <div id="pbar" class="progress-bar progress-bar-warning progress-bar-striped" aria-valuenow="0" role="progressbar"  aria-valuemin="0" aria-valuemax="100" style="width: 0%;" >
                 <span class="sr-only">0% Complete</span>
             </div>
@@ -101,7 +103,7 @@
 
 
       <div class="row">
-        <div class="form-group col-xs-2 col-md-offset-5">
+        <div class="form-group">
             <label  type="text">Baseline:</label>
             <input id="baseline" name="baseline" class="form-control" aria-label="baseline" type="checkbox">
         </div>
@@ -109,7 +111,7 @@
 
       <div class="row">
         <div >
-            <button type="submit" class="btn btn-warning btn-lg col-md-offset-5">
+            <button type="submit" class="btn btn-warning btn-lg">
                 <span class="glyphicon glyphicon-ok-sign"></span> Upload
             </button>
         </div>
@@ -190,7 +192,9 @@
 
                                   <td class="result-table-cells" align="center">{{ result.numberofusers|default_if_none:"-"|apnumber|title }}</td>
                                   <td class="result-table-cells" align="center">{{ result.duration_minutes|floatformat }} minute{{ result.duration_minutes|pluralize }}</td>
-                                  <td class="result-table-cells" align="center">{{ result.start_time|default_if_none:""|naturaltime }}{{ result.start_time|default_if_none:""|date:" (d/m/y H:iO)" }}</td>
+                                  
+                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|default_if_none:""|localtime|naturaltime }}{{ result.start_time|localtime |default_if_none:""|date:" (d/m/y H:iO)" }}</td>
+                                  
 
                                   {% if perms.perfhistory.change_result %}
                                   <td align="center">
@@ -662,7 +666,10 @@ if ($('#newResultForm').length) {
         }
 
         var duration = (test_end_timestamp - test_start_timestamp) * timestamp_multiplier / 60 ; // divide by 60 to get duration in minutes
+        
         duration = Math.round (duration * 10)/10;
+        console.log("Duration:", duration, duration == 0);
+        if (duration == 0) duration = 1; // to avoid division by zero
         updateNewTestResultDuration(duration);
 
         progressNode.max = 1;
@@ -755,6 +762,7 @@ function processRawData(dictionary, name, description, filename, version, number
   result['filename'] = filename;
   result['version'] = version;
   result['duration_minutes'] = duration;
+
   result['numberofusers'] = numberofusers;
   if (isbaseline==1)
   {
@@ -973,7 +981,7 @@ $(document).ready(function()
 
                     else 
                     {
-                        console.log('No match found in baseline for:', name);
+                        // console.log('No match found in baseline for:', name);
                         other_txns[t]['delta-qps'] = 0  
                         other_txns[t]['delta-successcount'] = 0  
                         other_txns[t]['delta-failurecount'] = 0
@@ -1436,11 +1444,10 @@ $(document).ready(function()
 
 
 <style type="text/css">
-    .container-fluid {
-    /*height:150px;*/
-    /*border:1px solid pink;*/
-    min-width:1050px; // set the minimum width of the container to 1100px
-    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+    .container-fluid  {
+    
+    max-width: 100%
+    
 }
     .zero {
         background-color: yellow
@@ -1457,8 +1464,9 @@ $(document).ready(function()
     .page-wrapper  {
     /*height:150px;*/
     /*border:1px solid pink;*/
-    min-width:1100px; // set the minimum width of the container to 1100px
-    /*width: 100%; // if the window size is bigger than 1100px, then make the container span the entire window*/
+    
+    max-width: 100%;
+    
 }
     tr.group td {
         background-color: #D3EAFC;
@@ -1471,6 +1479,7 @@ $(document).ready(function()
 
     div.legendcolorpositive {
     width: 100px;
+    
     height: 30px;
     padding: 4px;
     border: 1px solid white;
@@ -1487,6 +1496,7 @@ font-family: Helvetica;
   div.legendcolornegative {
 
     width: 100px;
+    
     height: 30px;
     padding: 4px;
     border: 1px solid white;

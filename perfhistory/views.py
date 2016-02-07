@@ -206,22 +206,30 @@ def comparisonChartbyVersion(request, projectId, tagId):
 
 @login_required(login_url='/'+APPLICATION+'/')
 def result(request, projectId, tagId):
-	if request.method == 'GET':
-		projectobj = Project.objects.get(id=projectId);
-		tagobj = Tag.objects.get(id=tagId);
-		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
-		# sorting by version with assumption that version is an int/float and no other characters
-		results = sorted(results, key=lambda x: float(x.version), reverse=False)
-		data = []
-		result_list = [] 
-		alltxns = []
-		for result in results:
-			# print result.id
-			txns = Transaction.objects.filter(result_id=result.id)
-			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
-			data.append(dictionary)
-			result_list.append(result.as_json())
-			alltxns.extend([t.as_json() for t in txns])
+	try:
+		if request.method == 'GET':
+			projectobj = Project.objects.get(id=projectId);
+			tagobj = Tag.objects.get(id=tagId);
+			results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+			try:
+			# sorting by version with assumption that version is an int/float and no other characters
+				results = sorted(results, key=lambda x: float(x.version), reverse=False)
+			except Exception as e:
+				print e.message, 'so sorting results by modified date instead of version'
+				results = sorted(results, key=lambda x: x.last_modified, reverse=True)
+			data = []
+			result_list = [] 
+			alltxns = []
+			for result in results:
+				# print result.id
+				txns = Transaction.objects.filter(result_id=result.id)
+				dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
+				data.append(dictionary)
+				result_list.append(result.as_json())
+				alltxns.extend([t.as_json() for t in txns])
+	except Exception as e:
+		raise Http404
+		# return returnJsonWithResponseTextCodeAndStatus(e.message, 500, False)
 
 	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
 
@@ -586,7 +594,7 @@ def d3(request):
 	if request.method == "POST":
 		data=request.POST;
 
-	return render(request, 'd3-newexample.html', {'transactions': request.body})	
+	return render(request, 'my_base.html', {'transactions': request.body})	
 
 
 

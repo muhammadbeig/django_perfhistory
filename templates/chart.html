@@ -1,134 +1,694 @@
-{% extends "base.html" %}
+{% extends "my_base.html" %}
 {% block content %}
- 
- 
-<style>
-  #byte_content {
-    margin: 5px 0;
-    max-height: 100px;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  #byte_range { margin-top: 5px; }
-</style>
-
-<input type="file" id="files" name="file" /> Read bytes: 
-<span class="readBytesButtons">
-  <button data-startbyte="0" data-endbyte="4">1-5</button>
-  <button data-startbyte="5" data-endbyte="14">6-15</button>
-  <button data-startbyte="6" data-endbyte="7">7-8</button>
-  <button>entire file</button>
-</span>
-<div id="byte_range"></div>
-<div id="byte_content"></div>
-
-<script>
-  function readBlob(opt_startByte, opt_stopByte) {
-
-    var files = document.getElementById('files').files;
-    if (!files.length) 
-    {
-      alert('Please select a file!');
-      return;
-    }
-
-    var file = files[0];
-    parseFile(file,callback);
-  
-  }
-  
-  document.querySelector('.readBytesButtons').addEventListener('click', function(evt) 
-  {
-    if (evt.target.tagName.toLowerCase() == 'button') 
-    {
-      var startByte = evt.target.getAttribute('data-startbyte');
-      var endByte = evt.target.getAttribute('data-endbyte');
-      readBlob(startByte, endByte);
-    }
-  }, false);
 
 
-
-function parseFile(file, callback) {
-    var fileSize   = file.size;
-    var chunkSize  = 64 * 1024; // bytes
-    var offset     = 0;
-    var self       = this; // we need a reference to the current object
-    var block      = null;
-
-    var foo = function(evt) {
-        if (evt.target.error == null) {
-            offset += evt.target.result.length;
-            callback(evt.target.result); // callback for handling read chunk
-        } else {
-            console.log("Read error: " + evt.target.error);
-            return;
-        }
-        if (offset >= fileSize) {
-            console.log("Done reading file");
-            return;
-        }
-
-        block(offset, chunkSize, file);
-    }
-
-    block = function(_offset, length, _file) {
-        var r = new FileReader();
-        var blob = _file.slice(_offset, length + _offset);
-        r.onload = foo;
-        r.readAsText(blob);
-    }
-
-    block(offset, chunkSize, file);
-}
-
-function callback(text) {
-  console.log("=>"+text);
-}
-
-
-</script>
-
-<canvas id="myChart" width="400" height="400"></canvas>
- <script src="//code.jquery.com/jquery-1.10.1.min.js" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+    
 <script type="text/javascript">
-  // Get the context of the canvas element we want to select
-var ctx = document.getElementById("myChart").getContext("2d");
 
-
-
-var myLineChart = new Chart(ctx).Line(data);
-var data = {
-    labels: ["January", "February", "March", "April", "May", "June", "July"],
-    datasets: [
+var mytable;
+        function addTagtoTagTable(projectid, tagData)
         {
-            label: "My First dataset",
-            fillColor: "rgba(220,220,220,0.2)",
-            strokeColor: "rgba(220,220,220,1)",
-            pointColor: "rgba(220,220,220,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-            data: [65, 59, 80, 81, 56, 55, 40]
-        },
-        {
-            label: "My Second dataset",
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(151,187,205,1)",
-            data: [28, 48, 40, 19, 86, 27, 90]
+            // console.log($("#tagTable_"+projectid))
+            mytable = $("#tagTable_"+projectid)
+            // console.log('table exist', mytable.length);
+            if (mytable.length)
+            {
+                add_tag_row(projectid, tagData, mytable);
+            }
+            else {
+                // console.log('table doesnt exist, creating new');
+                createTable(projectid, [tagData]);
+            }
         }
-    ]
-};
+
+        function removeTagTable(pid)
+        {
+            $("#tagTable_"+pid).remove();
+        }
+        function createTable(pid, object_list){
+             
+            // console.log('object list:',object_list);
+            mytable = $('<table></table>').attr({ id: "tagTable_"+pid, class: ["table",  "table-inverse"].join(' ') });
+
+            var tr = [];
+            if (object_list.length > 0)
+            {
+                var thead = $('<thead></thead>').attr({class:"thead-inverse"}).appendTo(mytable);
+                var headerRow = $('<tr></tr>').appendTo(thead);
+
+                $('<th></th>').text("#").attr({ align: "center"}).appendTo(headerRow);
+                $('<th></th>').text("Name").attr({ align: "center"}).appendTo(headerRow);
+                $('<th></th>').text("Description").attr({ align: "center"}).appendTo(headerRow);    
+                for (var i=0; i<object_list.length; i++)
+                {
+                    add_tag_row(pid, object_list[i], mytable);
+                }
+
+                var placeholder = $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder');
+                $('<h6></h6>').text("List of tags").appendTo(placeholder);
+                // console.log("TTTTT:"+mytable.html());
+                $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder').append(mytable);  
+
+            }
+            else {
+                console.log('else: object list:',object_list);
+            }
+          
+        }
+
+        function add_tag_row(projectId, tagData, tagTable)
+        {
+            tagId = tagData["tag_id"]
+            var row = $('<tr class="clickable-tagrow" data-tid='+tagId+' data-href="/perfhistory/project/'+projectId+'/tag/'+tagId+'/result" style="cursor: pointer"></tr>').appendTo(tagTable);
+                    
+                    // $('<a href=""></a>').appendTo(row);
+            $('<td></td>').text(tagData["tag_id"]).appendTo(row); 
+            $('<td></td>').text(tagData["tag_name"]).appendTo(row); 
+            $('<td></td>').text(tagData["tag_description"]).appendTo(row); 
+        }
+
+
+        function ajax_get_tags_in_project (project_id)
+        {
+            // var pid=e.currentTarget.dataset.pid;
+                        console.log('tagtable exists?',$("#tagTable_"+project_id).length);
+                        if ($("#tagTable_"+project_id).length)
+                        {
+                            console.log('table already exists');
+                            return;
+                        }
+                        var jqxhr = $.get( "/perfhistory/project/"+project_id+"/getTags",function(f) 
+                        {
+                          // console.log('dats', f );
+                            removeTagTable(project_id);
+                            createTable(project_id, f);
+                        })
+                        .done(function(d) {
+                            // console.log( d );
+                        })
+                        .fail(function(e) {
+                            // console.log( "error",e );
+                        })
+                        .always(function() {
+                            // console.log( "finished" );
+                        });
+
+                    // Perform other work here ...
+
+                    // Set another completion function for the request above
+                    jqxhr.always(function() {
+                      // console.log( "second finished" );
+                    });
+
+                    
+        }
+
+        
+
+        $(document).ready(function() {
+
+            var originalColor;
+
+                $('div#tableplaceholder').on('mouseenter', '.clickable-tagrow', function() {
+                        // $(this).addClass('hover');
+                        // console.log('current color:'+ $(this).css( "background" ))
+                        originalColor = $(this).css( "background" )
+                        $(this).css("background","");
+                        $(this).css("background","lightblue");
+
+                        // console.log("mouse enter");
+
+                    });
+                $('div#tableplaceholder').on('mouseleave', '.clickable-tagrow', function() {
+                        // $(this).removeClass('hover');
+                        $(this).css("background",originalColor);
+                        // console.log("mouseleave");
+                    });
+
+                $("div#tableplaceholder").on('click', '.clickable-tagrow',  function() {
+
+                    console.log("row clicked: " + $(this).data("href"));
+                    href = $(this).data("href")
+                    window.location.href = href
+                    // $.get( href, function( data ) {
+                    //       $( ".result" ).html( data );
+                    //       // alert( "Load was performed." );
+                    //     });
+                });
+
+
+
+        });
+</script>
+
+<script type="text/javascript">
+        $(function()
+        {
+            // var button =document.getElementsByClassName("sidebar-buttons-projects");
+            
+            $( ".sidebar-buttons-projects" ).addClass( "active" );
+            
+
+            $('.collapsed').on('click', function(event)
+                { 
+                    // console.log("collapsed clicked");
+                    ajax_get_tags_in_project(event.currentTarget.dataset.pid)
+                });
+
+        });
+
+
+          $(document).ready(function() 
+          {
+            
+                
+            $("[id^=tagform_]").submit(function(e,data)
+            {
+                var projectid=e.currentTarget.dataset.projectId;
+                var csrftoken = getCookie('csrftoken');
+
+                e.preventDefault();
+                formdata = {}
+                for (i=0; i<e.currentTarget.length-1; i++)
+                {
+                    if (e.currentTarget[i].value)
+                        formdata[String(e.currentTarget[i].name)] = e.currentTarget[i].value
+                }
+
+                $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+                });
+                create_tag(projectid, formdata);
+                this.reset();
+            });
+
+        });
+
+        // var errormess;
+        function create_tag(projectid, data)
+        {
+            var jqxhr = $.post( "/perfhistory/project/"+projectid+"/createTag",data )
+
+                jqxhr.success (function(data) 
+                {
+                    // console.log("Success" );
+                    // console.log(data);
+                    
+                    if (data['status'])
+                    {
+                        var projectid=data['project_id'];
+                        // console.log(data);
+                        // removeTagTable(projectid);
+                        // ajax_get_tags_in_project(projectid);
+                        addTagtoTagTable(projectid, data);
+
+                    }
+
+
+                });
+                jqxhr.done(function() 
+                {
+                    
+                    // console.log("second success" );
+                 });
+                 jqxhr.fail(function(data) 
+                 {
+                   // console.log("Error:",data, data.responseJSON.message );
+                   errormess = data.responseJSON.message;
+                   errorMessages = data.responseJSON.message;
+                   project_id = data.responseJSON.project_id;
+                   displayTagCreationErrorMessages(project_id, errorMessages);
+                 });
+                jqxhr.always(function(data) 
+                {
+                    // console.log("Finished" );
+                    // console.log(data);
+                });
+        }
+
+
+            
+
+        function getCookie(name) 
+        {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function csrfSafeMethod(method) 
+        {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $(document).ready(function(){
+            
+
+
+                $(".close").click(function(){
+                    $(".alert").toggle();
+                });
+            });          
+</script>
+
+
+
+
+<div>
+
+                <!-- Page Heading -->
+                <div class="row">
+
+                          <div class="col-lg-12">
+                            <h2 class="page-header fa-2x">Projects</h2>
+                            </div>
+
+                </div>
+
+
+                <div class="col-lg-2">
+                </div>
+
+                {% if projectform.non_field_errors %}
+                     <div class="alert alert-danger fade in">
+                        <a href="#" class="close" data-dismiss="alert">&times;</a>
+                        {% for error in projectform.non_field_errors %}
+                            <i class="fa"><li>{{ error }}</li></i>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+
+                        {% if projectform.errors %}
+                        <div class="alert alert-danger fade in">
+                            <a href="#" class="close" data-dismiss="alert">&times;</a>
+                            {% for field in projectform %}
+                                {% for error in field.errors %} 
+                                <i class="fa"><li>{{ error }}</li></i>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+
+
+
+
+
+{% if perms.perfhistory.create_project %}
+
+    <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
+        {% csrf_token %}
+        {% load css_filter %}
+
+        {% for field in projectform %}
+        <div class="form-group">
+        {{ field|addcss:"form-control" }}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class=" btn btn-primary btn-lg" value="Create {{ type }}">
+            <!-- <i class="fa fa-plus-square"></i> --> New Project
+        </button>
+        <!-- <input type="submit" id="AddTagButton" class="btn btn-danger" value="Add Tag"/> -->
+    </form>
+{% endif %}
+<!-- <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true"> -->
+
+
+<script type="text/javascript">
+          $(document).ready(function() 
+          {
+           
+            $(".createprojectform").submit(function(e,data){
+                // console.log("new project creation");
+                // e.preventDefault();
+                // addCreatedProjectinTable('1', 'name', 'description');
+
+            })
+                
+            $("[id^=updateProjectForm_]").submit(function(e,data)
+            {
+                // var projectid=e.currentTarget.dataset.projectId;
+                var projectid= event.currentTarget.closest(".list-group-item").attributes['data-pid'].value;
+                var csrftoken = getCookie('csrftoken');
+
+                e.preventDefault();
+                formdata = {}
+
+                for (i=0; i<e.currentTarget.length-1; i++)
+                {
+                    console.log(e.currentTarget[i].name, e.currentTarget[i].value)
+                    if (e.currentTarget[i].value)
+                        formdata[String(e.currentTarget[i].name)] = e.currentTarget[i].value
+                }
+
+                $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+                });
+                // console.log('formdata->',formdata);
+                // console.log(event.currentTarget.closest(".list-group-item").attributes['data-pid'].value);
+                update_project(formdata);
+                
+                // this.reset();
+            });
+
+            $("button#yesOnDelete").on("click", function(event)
+            {
+                var csrftoken = getCookie('csrftoken');
+
+                $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+                });
+
+                projectid = event.currentTarget.closest(".list-group-item").attributes['data-pid'].value;
+                delete_project(projectid);
+                // refresh_project_page();
+
+            });
+
+            $('[id^=errorAlert_]').hide();
+        });
+
+        function displayTagCreationErrorMessages(projectId, errorMessages){
+            alert=$('#errorAlert_'+projectId)
+            // for (i in errorMessages){
+            //     alert.append('<p>'+errorMessages[i]+'</p>')
+            // }
+            alert.show();
+
+            for (field in errormess) {  
+                // console.log(field); 
+                alert.append('<li>'+capitalizeFirstLetter(field)+'</li>')
+                for (m in errormess[field]) { 
+                    // console.log(errormess[field][m]);
+                    alert.append('<p>'+errormess[field][m]+'</p>')
+                }  
+            }
+
+
+        }
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        var mypanel;
+        function update_project(data)
+        {
+            // var jqxhr = $.put( "/perfhistory/project/"+projectid,data )
+
+
+               var jqxhr= $.ajax({
+                            url: '/perfhistory/projects',
+                            type:'put',
+                            data: data
+                            // success: function(result) {
+                            //     // Do something with the result
+                            // }
+                        });
+                jqxhr.success (function(data) 
+                {
+
+                    $('[id^=edit_]').modal('hide');
+                    // console.log(data);
+                    mypanel = $('.projectpanel_'+data.updated_object.id);
+                    // console.log($('.projectpanel_'+data.updated_object.id));
+                    mypanel.find('.projectname').text(data.updated_object.name);
+                    mypanel.find('.projectdescription').text(data.updated_object.description);
+                    // refresh_project_page();
+
+
+                });
+                jqxhr.done(function() 
+                {
+                    
+                    // console.log("second success" );
+                 });
+                 jqxhr.fail(function() 
+                 {
+                   console.log("Error" );
+                 });
+                jqxhr.always(function(data) 
+                {
+                    // console.log("Finished" );
+                    // console.log(data);
+                });
+
+        }
+
+        function delete_project(project_Id)
+        {
+            // var jqxhr = $.put( "/perfhistory/project/"+projectid,data )
+
+
+               var jqxhr= $.ajax({
+                            url: '/perfhistory/project/'+project_Id,
+                            type:'delete',
+                            
+                            // success: function(result) {
+                            //     // Do something with the result
+                            // }
+                        });
+                jqxhr.success (function(data) 
+                {
+                    // console.log("Success" );
+                    // console.log(data);
+
+                    // $('[id^=delete_]').modal('hide');
+                    $('#delete_'+data.project_id).modal('hide');
+                    $('.modal-backdrop').remove();
+                    $('.projectpanel_'+data.project_id).remove();
+                    // $('[id^=delete_]').parent().removeClass("open");
+                    // refresh_project_page();
+
+                });
+                jqxhr.done(function(data) 
+                {
+                    
+                 });
+
+                 jqxhr.fail(function() 
+                 {
+                 });
+                jqxhr.always(function(data) 
+                {
+
+                });
+
+        }
+
+        function refresh_project_page()
+        {
+            console.log('refresh');
+            // window.location.href = '/perfhistory/projects';
+            // window.location.method = 'get';
+            // location.reload();
+            // window.location.reload(true); 
+                            $.ajax({
+                            url: '/perfhistory/projects',
+                            type:'get',
+                            
+                            // success: function(result) {
+                            //     // Do something with the result
+                            // }
+                        });
+        }
+
 
 
 </script>
 
 
- 
+<ul class="list-group">
+        {% for obj in object_list %}
 
+    <li class="list-group-item projectpanel_{{ obj.id }}" data-pid="{{ obj.id }}"> 
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="heading_{{ obj.id }}">
+
+                    <h4 class="panel-title">
+                        <a class="fa collapsed" 
+                            role="button" 
+                            data-toggle="collapse" 
+                            data-parent="#accordion" 
+                            href="#collapse_{{ obj.id }}" 
+                            aria-expanded="false" 
+                            aria-controls="collapse_{{ obj.id }}" 
+                            data-pid="{{ obj.id}}">
+                            <!-- <div class="fa"> -->
+                                <!-- <small>{{ obj.id}}. </small>  -->
+                                <!-- <i class="fa"> {{ obj.name | title }} </i> -->
+                                <h4 > {{ obj.name | title }} </h4>
+                                <!-- <div><small class="projectdescription">{{ obj.description | title }}</small> </div> -->
+                            <!-- </div> -->
+                        </a>
+                            <div class="pull-right">
+                                    
+                                        <!-- <p class="fa fa-sm modified">modified: {{ obj.last_modified }}</p> -->
+                                        <small> last modified on {{ obj.last_modified }} </small>
+                                    
+                                {% if perms.perfhistory.change_project %}
+                                    <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ obj.id }}" >
+                                        <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                {% endif %}
+                                
+
+                                {% if perms.perfhistory.delete_project %}
+                                    <button  id="deleteButton" class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#delete_{{ obj.id }}" data-pid={{ obj.id }}>
+                                        <span data-placement="top" data-toggle="tooltip" title="Delete" class="glyphicon glyphicon-trash"></span>
+                                    </button>
+                                {% endif %}
+
+                            </div>
+                        
+                    </h4>
+
+                </div>
+
+                <!-- /.modal-delete --> 
+                    <div class="modal fade" id="delete_{{ obj.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true" style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                        <h4 class="modal-title custom_align" id="Heading">Delete this {{ type|lower }}</h4>
+                                    </div>
+                               
+                                    <div class="modal-body">
+                                    
+                                        <div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete this {{ type|lower }}?</div>
+                                    </div>
+                                    <div class="modal-footer ">
+                                        <button id="yesOnDelete" type="submit" class="btn btn-success">
+                                            <span class="glyphicon glyphicon-ok-sign"></span>&nbsp;Yes
+                                        </button>
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove"></span>&nbsp;No
+                                        </button>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- /.modal-edit --> 
+                    <div class="modal fade" id="edit_{{ obj.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                    <h4 class="modal-title custom_align" id="Heading">Edit Project</h4>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form  id="updateProjectForm_{{ obj.id }}" >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="id" value="{{ obj.id }}">
+                                                <!-- {% load css_filter %}
+
+                                                {% for field in projectform %}
+                                                {{ field|addcss:"form-control" }}
+                                                {% endfor %} -->
+                                        
+                                        <div class="form-group">
+
+                                            <label type="text">Name:</label>
+                                            <!-- {{ editprojectform.name }} -->
+                                            <input id="name" name="name" class="form-control" type="text" value="{{ obj.name }}" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label  type="text">Description:</label>
+                                            <!-- {{ editprojectform.name }} -->
+                                            <textarea id="description" name="description" rows="2" class="form-control" >{{ obj.description }}</textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-lg" style="width: 100%;">
+                                        <span class="glyphicon glyphicon-ok-sign"></span> Update
+                                        </button>
+                                    </form>
+                                    
+                                </div>
+                                <div class="modal-footer ">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                <div id="collapse_{{ obj.id }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading_{{ obj.id }}">
+                    <div class="panel-body">
+                    
+                        <!-- <ul><b>Name:</b> <a href="project/{{ obj.id }}" > {{ obj.name }} </a> </ul> -->
+                        <!-- <ul><b>Description:</b> {{ obj.description }} </ul> -->
+                        <!-- <ul><b>Created:</b> {{ obj.created }} </ul> -->
+                        <!-- <ul><b>Last Modified:</b> {{ obj.last_modified }} </ul> -->
+                        <div class="call-us center-text" align="center"> {{ obj.description }}</div>
+
+                            <!-- <div> -->
+                                <div id="tableplaceholder">
+
+                                </div>
+                            <!-- </div> -->
+
+
+
+                                    
+
+                                    
+
+
+                            <div id="errorAlert_{{ obj.id }}" class="alert alert-danger fade in errorAlert_{{ obj.id }}">
+                                    <a href="#" class="close" data-dismiss="alert">&times;</a>
+                            </div>
+
+                            <div id="tag_form_div">
+                                <form id="tagform_{{ obj.id }}" data-project-id="{{ obj.id }}" class="form-inline" method="post" action="">
+                                    <div align="center">
+                                           {% csrf_token %}
+                                            {% load css_filter %}
+
+                                            {% for field in tagForm %}                        
+                                            {{ field|addcss:"form-control" }}
+                                            {% endfor %}
+
+                                        <input type="submit" id="AddTagButton" class="btn btn-danger" value="Add Tag"/>
+                                    </div>    
+                                </form>
+                            </div>
+                    </div>
+                </div>
+            </div>
+    </li>
+
+        {% endfor %}
+</ul>
+
+
+
+</div>
 {% endblock %}
