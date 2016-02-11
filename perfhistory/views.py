@@ -5,7 +5,7 @@ from .forms import ProjectForm, TagForm, EditProjectForm, UserForm
 from django.http import JsonResponse, HttpResponse, QueryDict, HttpResponseRedirect, Http404
 from django.db import transaction, IntegrityError
 from django.core import serializers
-import json,sys
+import json,sys,datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
@@ -21,7 +21,35 @@ def logoutView(request):
     return render(request, 'login.html', {'userform': form })
 
 def loginView(request):
-    if request.user.is_authenticated() is not True:
+	# request.session.set_test_cookie()
+	# visits = int( request.COOKIES.get('visits', '0') )
+	# if request.COOKIES.has_key('last_visit' ):
+	# 	last_visit = request.COOKIES['last_visit']
+	# 	# the cookie is a string - convert back to a datetime type
+	# 	last_visit_time = datetime.strptime(last_visit[:-7], "%Y-%m-%d %H:%M:%S")
+	# 	curr_time = datetime.now()
+	# 	if (curr_time-last_visit_time).days > 0:
+	# 	# if at least one day has gone by then inc the visit count.
+	# 		response.set_cookie('visits', visits + 1 )
+	# 		response.set_cookie('last_visit', datetime.now())
+	# 	else:
+	# 		response.set_cookie('last_visit', datetime.now())
+	
+	# if request.COOKIES.has_key( 'visits' ):
+	# 	v = request.COOKIES[ 'visits' ]
+	# else:
+	# 	v = 0
+	# print v
+
+	# if request.COOKIES.has_key( 'last_visit' ):
+	# 	lv = request.COOKIES[ 'last_visit' ]
+	# else:
+	# 	lv = datetime.datetime.now().strftime( "%Y-%m-%d %H:%M:%S")
+	# 	# response.set_cookie('last_visit', lv)
+	
+
+
+	if request.user.is_authenticated() is not True:
 	    form = UserForm(request.POST or None)
 	    nexturl = request.GET.get('next') or 'projects'
 	    if request.POST:
@@ -42,8 +70,8 @@ def loginView(request):
 	    		print form.errors
 
 	    nexturl = nexturl if nexturl else ''
-	    return render(request, 'login.html', {'userform': form, 'next':nexturl })
-    else:
+	    return render(request, 'login.html', {'userform': form,  'next':nexturl }) #'visits':v, 'lastvisit':lv,
+	else:
 	    return project(request)
 
 
@@ -108,6 +136,9 @@ def deleteProject (request, projectId):
 @login_required(login_url='/'+APPLICATION+'/')
 def project(request):
 	# print request.user.has_perm('perfhistory.change_project')
+	# if request.session.test_cookie_worked():
+	# 	print "The test cookie worked!!!"
+	# 	request.session.delete_test_cookie()
 	user = request.user
 	# print 'user:',request.user.email
 	tagForm = TagForm()
@@ -154,6 +185,60 @@ def project(request):
 	
 	return render(request, 'projects.html', {'projectform':projectform,  'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
 	
+
+@login_required(login_url='/'+APPLICATION+'/')
+def comparisonChartWithLimit(request, projectId, tagId, limit):
+	limit = int(limit)
+	if request.method == 'GET':
+		projectobj = Project.objects.get(id=projectId);
+		tagobj = Tag.objects.get(id=tagId);
+		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+		# print results
+		baseline_result = None 
+		new_results = []
+		
+		# print len(results)
+		for r in results:
+			# print r.version, r.baseline,
+			if r.baseline:
+				baseline_result = r
+			else:
+				new_results.append(r)
+		# print len(new_results)
+		results = new_results
+
+		# sorting by version with assumption that version is an int/float and no other characters
+		try:
+			results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		except Exception as e:
+			print e.message, 'so sorting results by create date instead of version'
+			results = sorted(results, key=lambda x: x.version, reverse=False)			
+		results = results[-limit:] if len(results) > limit else results
+		if limit > 99: 
+			limit = "all results"
+		else:
+			limit = "last %s results" % limit
+
+		if baseline_result and results:
+			results.insert(0,baseline_result)
+
+		data = []
+		result_list = [] 
+		alltxns = []
+		for result in results:
+			# print result.id
+			txns = Transaction.objects.filter(result_id=result.id)
+			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
+			data.append(dictionary)
+			result_list.append(result.as_json())
+			alltxns.extend([t.as_json() for t in txns])
+
+
+	
+	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'limit': limit, 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+
+
+
 @login_required(login_url='/'+APPLICATION+'/')
 def comparisonChart(request, projectId, tagId):
 	limit = 15
@@ -161,9 +246,27 @@ def comparisonChart(request, projectId, tagId):
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
 		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
+		# print results
+		baseline_result = None 
+		new_results = []
+		
+		print len(results)
+		for r in results:
+			# print r.version, r.baseline,
+			if r.baseline:
+				baseline_result = r
+			else:
+				new_results.append(r)
+		print len(new_results)
+		results = new_results
+
 		# sorting by version with assumption that version is an int/float and no other characters
 		results = sorted(results, key=lambda x: float(x.version), reverse=False)
 		results = results[-limit:] if len(results) > limit else results
+
+		if baseline_result and results:
+			results.insert(0,baseline_result)
+
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -187,7 +290,11 @@ def comparisonChartbyVersion(request, projectId, tagId):
 		tagobj = Tag.objects.get(id=tagId);
 		results = Result.objects.filter(project_id=projectId, tag_id=tagId)#.order_by("version");
 		# sorting by version with assumption that version is an int/float and no other characters
-		results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		try:
+			results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		except Exception as e:
+				print e.message, 'so sorting results by create date instead of version'
+				results = sorted(results, key=lambda x: x.version, reverse=False)
 		data = []
 		result_list = [] 
 		alltxns = []
@@ -215,8 +322,8 @@ def result(request, projectId, tagId):
 			# sorting by version with assumption that version is an int/float and no other characters
 				results = sorted(results, key=lambda x: float(x.version), reverse=False)
 			except Exception as e:
-				print e.message, 'so sorting results by modified date instead of version'
-				results = sorted(results, key=lambda x: x.last_modified, reverse=True)
+				print e.message, 'so sorting results by create date instead of version'
+				results = sorted(results, key=lambda x: x.version, reverse=False)
 			data = []
 			result_list = [] 
 			alltxns = []

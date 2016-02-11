@@ -14,18 +14,24 @@
 <div id="page-wrapper content-section content-section-dark">
      <!-- Page Heading -->
 
-    <div class="row">
-    <div class="back-button">
-      <a href="/perfhistory/">« Back</a>
-    </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <h1 class="page-header">{{ projectobj.name|capfirst}}</h1>
-            <h2>{{ tagobj.name|capfirst }}</h2>
+        <div class="row">
+        
+            <!-- <div style="display: inline-block">
+              <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result" style="text-decoration: none">
+              <i class="fa fa-arrow-circle-left text-primary"></i>«
+              </a>
+            </div> -->
+
+
+
+            <div class="back-button">
+            <a href="/perfhistory/"><i class="fa fa-arrow-circle-left text-primary"></i> Back</a> 
             </div>
-    
-    
+
+            <div class="page-header" >
+              <h1>{{ tagobj.name|capfirst }} <small>({{ projectobj.name|capfirst}})</small></h1>
+              <h2><i>Results</i></h2>
+            </div>        
     </div>
 
 
@@ -149,16 +155,54 @@
         //event.preventDefault();
     } // prevent if already dot
 });
+
+
+$(document).ready(function() {
+          $("a.option").click(function(ev) {
+            
+            
+            var limit = this.dataset["resultlimit"];
+
+            var parent_href = $(this).parents('.btn-group').find('#comparisonChartWithLimitLink').attr('href');
+            openChartPage(parent_href+'/'+limit);
+              // $(".dropdown-menu").dropdown("toggle");
+              // console.log(limit)
+
+
+          });
+
+          // $("a.option").on("click", openChartPage);
+      
+      });
+
+
+
 </script>
 
 {% endif %}
+
+
 
 
 <div class="panel panel-primary">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> Results table
 
-                                <a class="btn btn-danger pull-right" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart</a></h3>
+                                <!-- <a class="btn btn-danger pull-right" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart</a> -->
+
+                                
+                                <div class="btn-group pull-right">
+                                  <a class="btn btn-danger pull-right dropdown-toggle"  data-toggle="dropdown" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit" id="comparisonChartWithLimitLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart <span class="fa fa-caret-down"></span></a>
+                                      <ul class="dropdown-menu">
+                                              <li><a class="option" data-resultlimit=3 >Last 3</a></li>
+                                              <li><a class="option" data-resultlimit=5 >Last 5</a></li>
+                                              <li><a class="option" data-resultlimit=10 >Last 10</a></li>
+                                              <li><a class="option" data-resultlimit=20 >Last 20</a></li>
+                                              <li><a class="option" data-resultlimit=99999 >All</a></li>
+                                        </ul>
+                                </div>
+                              </h3>
+
                             </div>
                             <div class="panel-body">
                               <p> List of performance test results
@@ -374,7 +418,7 @@
             </div>
             <div class="panel-body" id="panel-body">
                 <p>Given below is a list of projects results for which exist in the repository</p>
-
+                
                 <table id="delta-table" class="hover display compact order-column" cellspacing="0" >
 
                     <thead>
@@ -1077,7 +1121,6 @@ $(document).ready(function()
 
 
 
-
     deltaTable= $('#delta-table').DataTable(
     {
         "data": other_txns,
@@ -1162,6 +1205,7 @@ $(document).ready(function()
     
 
 
+
         // Order by the grouping
     $('#delta-table tbody').on( 'click', 'tr.group', function () 
     {
@@ -1178,9 +1222,59 @@ $(document).ready(function()
 
 
 
+    $("#comparisonChartLink").on("click", openChartPage);
+//   $("#comparisonChartLink").on("click",function(e) 
+//   {
+//     // e.preventDefault(); // cancel the link itself
+//     var csrftoken = getCookie('csrftoken');
+
+
+//     $.ajaxSetup({
+//         beforeSend: function(xhr, settings) 
+//         {
+//             if (!csrfSafeMethod(settings.type) && !this.crossDomain) 
+//             {
+//                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
+//             }
+//         }
+//     });
+
+//     var jqxhr= $.ajax({
+//                 // url: '/perfhistory/result/'+resultid,
+//                 url: this.href,
+//                 type:'get',
+//                 // data: JSON.stringify(txn_list)
+
+//                 });
+//     jqxhr.success (function(data) 
+//     {
+//         // document.location = href;
+//         // document.getElementById('newResultForm').reset();
+        
+//         // console.log('Update Result Table with ->', data);
+
+//     });
+//     jqxhr.done(function() 
+//     {
+                    
+//     });
+//     jqxhr.fail(function() 
+//     {
+//         console.log("Error while creating result");
+//     });
+//     jqxhr.always(function(data) 
+//     {
+
+//     });
+
+
+
+//   });
     
-  $("#comparisonChartLink").on("click",function(e) 
-  {
+
+});
+
+function openChartPage (href_override) {
     // e.preventDefault(); // cancel the link itself
     var csrftoken = getCookie('csrftoken');
 
@@ -1195,16 +1289,22 @@ $(document).ready(function()
         }
     });
 
+    var url = this.href
+    if (href_override) {
+      url = href_override
+    }
+    console.log("url:", url);
+
     var jqxhr= $.ajax({
                 // url: '/perfhistory/result/'+resultid,
-                url: this.href,
+                url: url,
                 type:'get',
                 // data: JSON.stringify(txn_list)
 
                 });
     jqxhr.success (function(data) 
     {
-        // document.location = href;
+        document.location = url;
         // document.getElementById('newResultForm').reset();
         
         // console.log('Update Result Table with ->', data);
@@ -1223,14 +1323,7 @@ $(document).ready(function()
 
     });
 
-
-
-  });
-    
-
-});
-
-
+}
 
 
 

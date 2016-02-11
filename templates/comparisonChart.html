@@ -71,22 +71,26 @@
 
   <div id="page-wrapper">
      <!-- Page Heading -->
-    <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result" style="text-decoration: none"
-    <i class="fa fa-arrow-circle-left fa-2x text-primary"></i>
-    </a>
+    
      
     <div class="row">
-        <div class="col-lg-12">
-            <h1 class="page-header">
-                {{ projectobj.name|capfirst}} 
-                <small>{{ tagobj.name|capfirst }}</small>
-            </h1>
-            <!-- <ol class="breadcrumb">
-                <li class="active">
-                    <i class="fa fa-dashboard"></i> Dashboard
-                </li>
-            </ol> -->
-        </div>
+        
+            <!-- <div style="display: inline-block">
+              <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result" style="text-decoration: none">
+              <i class="fa fa-arrow-circle-left text-primary"></i>«
+              </a>
+            </div> -->
+
+
+
+            <div class="back-button">
+            <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result"><i class="fa fa-arrow-circle-left text-primary"></i> Back</a> 
+            </div>
+
+            <div class="page-header" >
+              <h1>{{ tagobj.name|capfirst }} <small>({{ projectobj.name|capfirst}})</small></h1>
+              <h2><i>Comparison Chart</i></h2>
+            </div>        
     </div>
 
     <!-- <div class="btn-group">
@@ -109,7 +113,7 @@
           </ul>
     </div> -->
 
-    <div class="btn-group">
+    <div class="btn-group pull-right">
       <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
       Compare by <span class="fa fa-caret-down"></span></a>
       <ul class="dropdown-menu">
@@ -225,6 +229,7 @@ $(document).ready(function()
 
   
   drawChart(txn_list, "p90");
+  console.log(txn_list);
 });
 
 function compare(a,b) {
@@ -260,7 +265,7 @@ x = d3.scale.ordinal()
 y = d3.scale.linear()
     .range([height, 0]);
 
-var color = d3.scale.category20();
+var color = d3.scale.category20c();
 
 var xAxis = d3.svg.axis()
     .scale(x)
@@ -287,7 +292,7 @@ svg.append("text")
         .attr("y", -20)
         .attr("text-anchor", "middle")  
         .style("font-size", "18px") 
-        .text(getText(comparisonField) + " comparison")
+        .text(getText(comparisonField) + " comparison ({{ limit }})")
         .attr("class", "chart-heading");
 ;
   var line = d3.svg.line()
@@ -331,10 +336,26 @@ svg.append("text")
 
   });
 
+  
   versionArray = d3.keys(versions);
+
+  console.log("VersionArray:", versionArray)
+  // versionArray.sort(function(a,b){
+  //   // console.log(a +" "+ b)
+  //   if (a.indexOf('baseline') > -1)
+  //     return -1;
+  //   else if (b.indexOf('baseline') > -1)
+  //     return 1;
+  //   else
+  //     return parseFloat(a) - parseFloat(b);
+  // })
+
   versionArray.sort(function(a,b){
     return parseFloat(a) - parseFloat(b);
   })
+
+
+  console.log("txns:", txns);
 
   // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
   x.domain(versionArray)
