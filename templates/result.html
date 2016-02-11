@@ -164,9 +164,10 @@ $(document).ready(function() {
             var limit = this.dataset["resultlimit"];
 
             var parent_href = $(this).parents('.btn-group').find('#comparisonChartWithLimitLink').attr('href');
+            console.log("limit:" + limit);
             openChartPage(parent_href+'/'+limit);
               // $(".dropdown-menu").dropdown("toggle");
-              // console.log(limit)
+              
 
 
           });
