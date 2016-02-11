@@ -1,0 +1,676 @@
+<!-- {% extends "base_index.html" %}
+{% block content %}
+
+
+
+
+<style>
+
+/*body {
+  font: 10px sans-serif;
+}*/
+
+.chart-heading {
+  font: 16px sans-serif;  
+}
+
+.x-axis, .y-axis {
+
+  font: 10px sans-serif;
+      display: block;
+      color: lightgray;
+
+}
+
+.x-axis, .y-axis, .axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.d3-tip {
+  line-height: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 1px;
+
+}
+
+
+/*.overlay {
+  fill: none;
+  pointer-events: all;
+}
+*/
+/*.focus circle {
+  fill: none;
+  stroke: steelblue;
+}*/
+
+
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;
+}
+
+</style>
+<link href="/static/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet">
+
+<body>
+
+  <div id="page-wrapper">
+     <!-- Page Heading -->
+    <a href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/result" style="text-decoration: none"
+    <i class="fa fa-arrow-circle-left fa-2x text-primary"></i>
+    </a>
+     
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                {{ projectobj.name|capfirst}} 
+                <small>{{ tagobj.name|capfirst }}</small>
+            </h1>
+            <!-- <ol class="breadcrumb">
+                <li class="active">
+                    <i class="fa fa-dashboard"></i> Dashboard
+                </li>
+            </ol> -->
+        </div>
+    </div>
+
+    <!-- <div class="btn-group">
+          <a class="btn btn-primary" href="#"><i class="fa fa-user fa-fw"></i>
+            Compare by
+            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+            <span class="fa fa-caret-down"></span>
+          
+          <ul class="dropdown-menu">
+            <li><a class="option" data-comparisonField="minimum" >Minimum Response Time</a></li>
+            <li><a class="option" data-comparisonField="average"  >Average Response Time</a></li>
+            <li><a class="option" data-comparisonField="median" >Median Response Time</a></li>
+            <li><a class="option" data-comparisonField="p90" >P90 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p95" >P95 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p99" >P99 Response Time</a></li>
+            <li><a class="option" data-comparisonField="maximum" >Maximum Response Time</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a class="option" data-comparisonField="successcount" >Successful requests</a></li>
+            <li><a class="option" data-comparisonField="failurecount" >Failed requests</a></li>
+          </ul>
+    </div> -->
+
+    <div class="btn-group">
+      <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+      Compare by <span class="fa fa-caret-down"></span></a>
+      <ul class="dropdown-menu">
+        <!-- <li><a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
+        <li><a href="#"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
+        <li><a href="#"><i class="fa fa-ban fa-fw"></i> Ban</a></li>
+        <li class="divider"></li> -->
+        
+            <li><a class="option" data-comparisonField="minimum" >Minimum Response Time</a></li>
+            <li><a class="option" data-comparisonField="average"  >Average Response Time</a></li>
+            <li><a class="option" data-comparisonField="median" >Median Response Time</a></li>
+            <li><a class="option" data-comparisonField="p90" >P90 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p95" >P95 Response Time</a></li>
+            <li><a class="option" data-comparisonField="p99" >P99 Response Time</a></li>
+            <li><a class="option" data-comparisonField="maximum" >Maximum Response Time</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a class="option" data-comparisonField="success_count" >Successful requests</a></li>
+            <li><a class="option" data-comparisonField="failure_count" >Failed requests</a></li>
+      </ul>
+    </div>
+
+    <div class="d3graph">
+
+    </div>
+
+</body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+
+
+
+<script>
+
+function getText(fieldName)
+{
+  switch(fieldName)
+  {
+    case "p90": return "P90 Response Time";
+    case "p95": return "P95 Response Time";
+    case "p99": return "P99 Response Time";
+    case "maximum": return "Maximum Response Time";
+    case "minimum": return "Minimum Response Time";
+    case "average": return "Average Response Time";
+    case "median": return "Median Response Time";
+    case "success_count": return "Successful Request Count";
+    case "failure_count": return "Failed Request Count";
+  }
+
+}
+
+
+var txn_list;
+
+
+
+$(document).ready(function() {
+          $("a.option").click(function(ev) {
+            
+            // console.log(this.dataset["comparisonfield"]);
+            var comparisonField = this.dataset["comparisonfield"];
+            // console.log(txn_list);
+            // console.log("comparison field", comparisonField)
+            d3.select("svg").remove();
+            drawChart(txn_list, comparisonField);
+
+            // this.dropdown("toggle");
+              $(".dropdown-menu").dropdown("toggle");
+              // return false;
+          });
+
+          // $("ul.dropdown-menu a").click(function(ev) {
+          //     $("a.dropdown-toggle").dropdown("toggle");
+          //     return false;
+          // });
+      
+      });
+
+
+
+$(document).ready(function() 
+{
+  var x= JSON.parse('{{ transactions|safe }}');
+  result_list=JSON.parse('{{ result_list|safe }}');
+  txn_list=JSON.parse('{{ transactions|safe }}');
+
+  res = {}
+  for (r in result_list)
+  {
+    // console.log('r:',result_list[r]);
+    res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
+  }
+  
+  baseline_result = {}
+  other_txns = []
+  for (t in txn_list) 
+  {
+    result_id = txn_list[t]['result_id']
+    
+    txn_list[t]['version']= res[result_id]['version']
+    txn_list[t]['baseline'] = res[result_id]['baseline']
+    if (txn_list[t]['baseline'])
+    {
+      // console.log(txn_list[t]['name'])
+      baseline_result[txn_list[t]['name']]=txn_list[t]
+      // delete txn_list[t]
+      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+    }
+    else 
+    {
+      other_txns.push(txn_list[t]);
+      // console.log(txn_list[t])
+    }
+  }
+
+
+  drawChart(txn_list, "p90");
+});
+
+function compare(a,b) {
+  if (a.baseline) return -1;
+  if (b.baseline) return 1;
+}
+
+
+
+  // console.log("width:" + $(".d3graph").parent().width() )
+
+
+var x, y;
+
+function drawChart(data3, comparisonField)
+{
+
+var parentWidth = $(".d3graph").parent().width(),
+parentHeight = parentWidth * .6;
+
+  var margin = {top: 50, right: 200, bottom: 80, left: 80},
+    width = parentWidth - margin.left - margin.right,
+    height = parentHeight - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%Y%m%d").parse;
+
+formatResponseTime = function(d) { return d+" ms"; };
+
+// var comparisonField = "p90"
+
+// var x = d3.time.scale()
+//     .range([0, width]);
+ x = d3.scale.ordinal()
+    .range([0, width]);
+
+ y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category20();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .tickPadding(10);
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickPadding(4);
+
+
+
+
+  var svg = d3.select("body").selectAll("div.d3graph").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "18px") 
+        .text(getText(comparisonField) + " comparison")
+        .attr("class", "chart-heading");
+;
+  var line = d3.svg.line()
+    .interpolate("cardinal")
+    .x(function(d) { return x(d.version); })
+    .y(function(d) { return y(d[comparisonField]); });
+
+/* newer code */
+  mytxns = {}
+  data3.filter(function(key) { mytxns[key.name]=1;} )
+  color.domain(d3.keys(mytxns));
+
+  // data3.forEach(function(d) {
+  //   d.last_modified = parseDate(d.last_modified);
+  // });
+
+  var txns = color.domain().map(function(name) 
+  {
+
+    return {
+      name: name,
+      values: data3.filter(function(d)
+      {
+        // console.log(d);
+        if (name == d.name)
+        {
+          // console.log({date: d.date, temperature: +d.temperature});
+          return 1;//{date: d.date, temperature: +d.temperature};  
+        }
+        // else return null;
+        
+      })
+    };
+  });
+
+  // console.log('txns:',txns);
+  // x.domain(d3.extent(data3, function(d) { return d.version; }));
+  var versions = {}
+  data3.forEach(function (d){
+    // console.log(d.version)
+    versions[d.version]=""
+
+  });
+  versionArray = d3.keys(versions);
+  versionArray.sort(function(a,b){
+    return parseFloat(a) - parseFloat(b);
+  })
+
+  // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
+  x.domain(versionArray)
+    .rangePoints([0, width]);
+  y.domain([
+    // d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
+    0,
+    d3.max(txns, function(c) 
+      { 
+        var maxvalue = d3.max(c.values, function(v) 
+          { 
+            return v[comparisonField];
+          });
+        if (maxvalue==0) return 10;
+        else return d3.max(c.values, function(v) { return v[comparisonField]; }); 
+      })
+  ]);
+  // console.log('x.domain:',x.domain)
+  // console.log('y.domain:',y.domain)
+/***********/
+
+  svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("dx", "30em")
+      .attr("y", 50)
+      .style("font-size", "15px") 
+      .text("Version");
+
+  svg.append("g")
+      .attr("class", "y-axis")
+      .call(yAxis)
+
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -50)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .style("font-size", "15px") 
+      .text(getText(comparisonField));
+
+  var city = svg.selectAll(".city")
+      .data(txns)
+    .enter().append("g")
+      .attr("class", "city");
+
+
+
+  city.append("path")
+      .attr("class", "line")
+      // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
+      .attr("d", function(d) {   return line(d.values); })
+      .style("stroke", function(d) {  return color(d.name); })
+      .attr('id',function(d){ return d.name+"-line"; })
+      .on("mouseover", function (d) 
+      {  
+        // console.log("mouseover",this);                                
+        d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+          .style("stroke-width",'4px');
+          
+        var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+        d3.selectAll(selectthegraphs)
+            .style("opacity",0.2);
+          
+        var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+        var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+
+        d3.selectAll(selectlegend)    // drop opacity on other legend names
+            .style("opacity",.2);
+
+        d3.select(getname)
+            .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+      })
+      .on("mouseout", function(d) {        //undo everything on the mouseout
+          d3.select(this)
+            .style("stroke-width",'2.5px');
+          
+          var selectthegraphs = $('.line').not(this);
+          d3.selectAll(selectthegraphs)
+            .style("opacity",1);
+          
+          var getname = document.getElementById(d.name);
+          var getname2= $('.legend[fakeclass="fakelegend"]')
+          var selectlegend = $('.legend').not(getname2).not(getname);
+
+          d3.selectAll(selectlegend)
+            .style("opacity",1);
+          
+          d3.select(getname)
+            .attr("class", "legend");         
+      });
+
+  city.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y(d.value[comparisonField]) + ")"; })
+      .attr("x", 3)
+      .attr("dy", ".35em")
+      // .text(function(d) { return d.name; })
+      // .style("stroke", function(d) {  return color(d.name); })
+      // .style("stroke-width",".04em")
+      // .style("text-anchor", "start");
+
+// });
+
+  var zetip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong style='color:"+color(d.name)+"'>"+ d.name+":</strong> <strong style='color:white'>" + d[comparisonField] + "</strong>";
+    // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
+  })
+
+  svg.call(zetip);
+
+  var point = city.append("g");
+
+  point.selectAll('circle')
+    .data(function(d){ return d.values})
+    .enter().append('circle')
+    .attr("class", function(d) { return d.name+"-circle" })
+    .attr("cx", function(d) { return x(d.version) })
+    .attr("cy", function(d) { return y(d[comparisonField]) })
+    .attr("r", 3)
+    .style("fill", function(d) { return color(d.name); })
+    .style("stroke", function(d) { return color(d.name); })
+    .style("opacity",1)
+    .on('mouseover', zetip.show)
+    .on('mouseout', zetip.hide);
+    // .on("mouseover", function (d) 
+    //   {  
+    //     // console.log("mouseover",this);                                
+    //     d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+    //       .style("stroke-width",'4px');
+          
+    //     var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+    //     d3.selectAll(selectthegraphs)
+    //         .style("opacity",0.2);
+          
+    //     var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+    //     var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+
+    //     d3.selectAll(selectlegend)    // drop opacity on other legend names
+    //         .style("opacity",.2);
+
+    //     d3.select(getname)
+    //         .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+    //         maketip
+    //   })
+    // .on("mouseout", function(d) {        //undo everything on the mouseout
+    //       d3.select(this)
+    //         .style("stroke-width",'2.5px');
+          
+    //       var selectthegraphs = $('.line').not(this);
+    //       d3.selectAll(selectthegraphs)
+    //         .style("opacity",1);
+          
+    //       var getname = document.getElementById(d.name);
+    //       var getname2= $('.legend[fakeclass="fakelegend"]')
+    //       var selectlegend = $('.legend').not(getname2).not(getname);
+
+    //       d3.selectAll(selectlegend)
+    //         .style("opacity",1);
+          
+    //       d3.select(getname)
+    //         .attr("class", "legend");         
+    //   });
+
+     // Draw the x Grid lines
+    svg.append("g")
+        .attr("class", "grid")
+        .attr("transform", "translate(0," + height + ")")
+        .call(make_x_axis()
+            .tickSize(-height, 0, 0)
+            .tickFormat("")
+        )
+
+    // Draw the y Grid lines
+    svg.append("g")            
+        .attr("class", "grid")
+        .call(make_y_axis()
+            .tickSize(-width, 0, 0)
+            .tickFormat("")
+        )
+
+
+//append the legend
+    var legend = svg.selectAll('.legend')
+        .data(txns);
+    
+    var legendEnter=legend
+        .enter()
+        .append('g')
+        .attr('class', 'legend')
+        .attr('id',function(d){  return d.name; })
+        .on('click', function (d) 
+        { 
+            
+          if($(this).css("opacity") == 1)
+          {
+            // id of the line 045_DELETE Service-line
+            var elemented = document.getElementById(this.id +"-line");   //grab the line that has the same ID as this point along w/ "-line"  use get element cause ID has spaces
+            var dots = document.getElementsByClassName(this.id +"-circle")
+            
+            d3.select(elemented)
+              .transition()
+              .duration(250)
+              .style("opacity",0)
+              .style("display",'none');
+          
+            d3.select(this)
+              .attr('fakeclass', 'fakelegend')
+            .transition()
+              .duration(250)
+              .style ("opacity", .2);
+
+
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .transition()
+              .duration(250)
+              .style("opacity",0)
+              .style("display",'none'); 
+
+            }
+
+          } 
+          else 
+          {
+            var elemented = document.getElementById(this.id +"-line");
+            var dots = document.getElementsByClassName(this.id +"-circle")
+
+            d3.select(elemented)
+              .style("display", "block")
+              .transition()
+              .duration(250)
+              .style("opacity",1);
+          
+            d3.select(this)
+              .attr('fakeclass','legend')
+              .transition()
+              .duration(250)
+              .style ("opacity", 1);
+
+            
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .style("display", "block")
+              .transition()
+              .style("opacity",1); 
+            }
+
+          }
+    });
+
+var lastvalues = []
+
+  var txnname = {}
+  txns.forEach(function (d){
+    txnname[d.name]=""
+
+  });
+  // console.log(d3.keys(txnname));
+  //create a scale to pass the legend items through
+  var legendscale= d3.scale.ordinal()
+        .domain(color.domain())
+        // .range([0,30,60,90,120,150,180,210]);
+
+  //actually add the circles to the created legend container
+    // legendEnter.append('circle')
+    //     .attr('cx', width +20)
+    //     .attr('cy', function(d){return legendscale(d.values[d.values.length-1].value);})
+    //     .attr('r', 7)
+    //     .style('fill', function(d) { 
+    //         return color(d.name);
+    //     });
+                    
+  //add the legend text
+    legendEnter.append('text')
+        .attr('x', width+35)
+        .attr('y', function(d,i ){ return i*10;})
+        // .attr('y', function(d,i ){ console.log(legendscale(d.values[d.values.length-1].value)); return legendscale(d.values[d.values.length-1].value);})
+        .text(function(d){ return d.name; })
+        .style("font-size", "10px") 
+        .style('fill', function(d) { 
+            return color(d.name);
+        });;
+  
+  bisectDate = d3.bisector(function(d) { return d.version; }).left;
+
+  function mousemove() {
+    
+    // var x0 = x.invert(d3.mouse(this)[0]),
+    var x0 = x.domain(d3.mouse(this)[0]),
+        i = bisectDate(data3, x0, 1),
+        d0 = data3[i - 1],
+        d1 = data3[i],
+        d = x0 - d0.version > d1.version - x0 ? d1 : d0;
+
+        // console.log("mouse-move",  x(d.version));
+    focus.attr("transform", "translate(" + x(d.version) + "," + y(d[comparisonField]) + ")");
+    focus.select("text").text(formatResponseTime(d[comparisonField]));
+
+
+  }
+
+}
+
+
+// function for the x grid lines
+function make_x_axis() {
+    return d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .ticks(5)
+}
+
+// function for the y grid lines
+function make_y_axis() {
+  return d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(5)
+}
+
+</script>
+<script src="/static/d3.tip.v0.6.3.min.js"></script>
+
+
+{% endblock %} -->
