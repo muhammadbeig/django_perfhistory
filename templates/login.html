@@ -35,6 +35,9 @@
         <div class="heading">
         Performance History
         </div>
+        <div class="subheading">
+        <small> a repository for performance testing metrics </small>
+        </div>
     </div>
     <div class="row">
         <div class="col-sm-6 col-md-4 col-md-offset-4">
@@ -81,9 +84,18 @@ $(document).ready(function(){
     }
 
 .heading {
+    font-family: AlteHaasRegular;
     font-size: 5vmax;
-    color:white;
+    color:#CCFFFF;
     text-align: center;
+    margin: 0vmax 0vmax 0vmax 0vmax;
+}
+.subheading {
+    font-family: mbf;
+    font-size: 2vmax;
+    color:  #E0E0E0 ;
+    text-align: center;
+    margin: 0vmax 0vmax 5vmax 0vmax;
 }
 
 .login-title {
@@ -92,8 +104,16 @@ $(document).ready(function(){
     font-size: 1.4vmax;
 }
 
+@font-face {
+  font-family: mbf;
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lobster Two'), local('LobsterTwo'), url(/static/lob2.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+
 body {
-    font-family: AlteHaasRegular;    
+    font-family: mbf;    
 }
 
 </style>

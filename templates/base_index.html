@@ -22,9 +22,6 @@
 
     <!-- jQuery -->
     <script src="/static/jquery-2.1.4.min.js"></script>
-
-</head>
-
     <style type="text/css">
     .page-header {
         .page-header 
@@ -34,9 +31,65 @@
         margin-left: 0px;
         text-align: center;
     }
+    @font-face {
+      font-family: mbf;
+      font-style: normal;
+      font-weight: 400;
+      src: local('Lobster Two'), local('LobsterTwo'), url(/static/lob2.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+    }
+
+    @font-face {
+        font-family: AlteHaasRegular;
+        src: url(/static/alte_haas/AlteHaasGroteskRegular.ttf);
+    }
+    @font-face {
+        font-family: AlteHaasBold;
+        src: url(/static/alte_haas/AlteHaasGroteskBold.ttf);
+    }
+
+    .navbar  {
+    font-family: mbf;
+    font-size: 2vmax;
+    color:  #E0E0E0 ;
+    text-align: center;
+    margin: 0vmax 0vmax 0vmax 0vmax;
+    }
+
+    .navbar-brand {
+        font-family: AlteHaasBold;
+        font-size: 2.5vmax;
+    }
+
+    .side-nav {
+        font-size: 1.5vmax;
+        width: 12%;
+        text-align: left;
+    }
+    .side-nav>li>a  {
+        color: #9d9d9d;
+
+    }
+    .menu-item>li>a {
+        font-size: 1.2vmax;
+    }
+
+    .user {
+        font-size: 1.5vmax;
+    }
+    .page-header {
+        font-family: AlteHaasBold;
+        color:#505050;
+        font-weight: 100;
+        font-size: 2vmax;
+    }
+
 
         
         </style>
+</head>
+
+
 <body>
 
     <div id="wrapper">
@@ -58,18 +111,8 @@
                 
                 <li class="dropdown">
                     <!-- <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a> -->
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{ request.user.first_name |title }} {{ request.user.last_name|title }} ({{ request.user.username}}) <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <!-- <li>
-                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-envelope"></i> Inbox</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
-                        </li> -->
-                        <li class="divider"></li>
+                    <a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="fa fa-user"></i> {{ request.user.first_name |title }} {{ request.user.last_name|title }} ({{ request.user.username}}) <b class="caret"></b></a>
+                    <ul class="dropdown-menu menu-item">
                         <li>
                             <a href="/perfhistory/logout"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
                         </li>
@@ -77,8 +120,7 @@
                 </li>
             </ul>
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
-            <div class="collapse navbar-collapse navbar-ex1-collapse">
-                <ul class="nav navbar-nav side-nav">
+                <ul class="nav side-nav">
 
                     <li class="sidebar-buttons-projects">
                         <a href="/perfhistory/projects"><i class="fa fa-fw fa-dashboard"></i> Projects</a>
@@ -91,7 +133,7 @@
                         <a href="/perfhistory/results"><i class="fa fa-fw fa-table"></i> Results</a>
                     </li>
                 </ul>
-            </div>
+            
             <!-- /.navbar-collapse -->
         </nav>
 
@@ -120,5 +162,7 @@
     <script src="/static/startbootstrap/js/bootstrap.min.js"></script>
 
 </body>
+
+
 
 </html>

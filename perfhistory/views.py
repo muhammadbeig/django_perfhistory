@@ -525,6 +525,8 @@ def createResult(request, project_id, tagid):
 					try:
 						with transaction.atomic():
 							result = Result(project_id=int(project_id), tag_id=int(tagid))
+							Project.objects.get(id=int(project_id)).save()
+							Tag.objects.get(id=int(tagid)).save()
 							txns = []
 							result.name = resultData['name']
 							result.version = resultData['version']

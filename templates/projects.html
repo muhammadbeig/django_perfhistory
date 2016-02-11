@@ -38,12 +38,14 @@ var mytable;
                 var thead = $('<thead></thead>').attr({class:"thead-inverse"}).appendTo(mytable);
                 var headerRow = $('<tr></tr>').appendTo(thead);
 
-                $('<th></th>').text("#").attr({ align: "center"}).appendTo(headerRow);
+                // $('<th></th>').text("#").attr({ align: "center"}).appendTo(headerRow);
                 $('<th></th>').text("Name").attr({ align: "center"}).appendTo(headerRow);
                 $('<th></th>').text("Description").attr({ align: "center"}).appendTo(headerRow);    
+                $('<th></th>').text("Last Modified").attr({ align: "center"}).appendTo(headerRow);
                 for (var i=0; i<object_list.length; i++)
                 {
                     add_tag_row(pid, object_list[i], mytable);
+                    // console.log(object_list[i])
                 }
 
                 var placeholder = $('#collapse_'+pid).children('.panel-body').children('#tableplaceholder');
@@ -64,9 +66,10 @@ var mytable;
             var row = $('<tr class="clickable-tagrow" data-tid='+tagId+' data-href="/perfhistory/project/'+projectId+'/tag/'+tagId+'/result" style="cursor: pointer"></tr>').appendTo(tagTable);
                     
                     // $('<a href=""></a>').appendTo(row);
-            $('<td></td>').text(tagData["tag_id"]).appendTo(row); 
+            // $('<td></td>').text(tagData["tag_id"]).appendTo(row); 
             $('<td></td>').text(tagData["tag_name"]).appendTo(row); 
             $('<td></td>').text(tagData["tag_description"]).appendTo(row); 
+            $('<td></td>').text(tagData["tag_last_modified"] ).appendTo(row); 
         }
 
 
@@ -276,9 +279,7 @@ var mytable;
                 <!-- Page Heading -->
                 <div class="row">
 
-                          <div >
-                            <h2 class="page-header">Projects</h2>
-                            </div>
+                          <div class="page-header">Projects</div>
 
                 </div>
 
@@ -516,12 +517,9 @@ var mytable;
                             aria-expanded="false" 
                             aria-controls="collapse_{{ obj.id }}" 
                             data-pid="{{ obj.id}}">
-                            <!-- <div class="fa"> -->
-                                <!-- <small>{{ obj.id}}. </small>  -->
-                                <!-- <i class="fa"> {{ obj.name | title }} </i> -->
+                            
                                 <h4 > {{ obj.name | title }} </h4>
-                                <!-- <div><small class="projectdescription">{{ obj.description | title }}</small> </div> -->
-                            <!-- </div> -->
+                                
                         </a>
                             <div class="pull-right">
                                     
