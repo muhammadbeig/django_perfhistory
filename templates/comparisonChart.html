@@ -229,7 +229,7 @@ $(document).ready(function()
 
   
   drawChart(txn_list, "p90");
-  console.log(txn_list);
+  // console.log(txn_list);
 });
 
 function compare(a,b) {
@@ -339,7 +339,7 @@ svg.append("text")
   
   versionArray = d3.keys(versions);
 
-  console.log("VersionArray:", versionArray)
+  // console.log("VersionArray:", versionArray)
   // versionArray.sort(function(a,b){
   //   // console.log(a +" "+ b)
   //   if (a.indexOf('baseline') > -1)
@@ -355,7 +355,7 @@ svg.append("text")
   })
 
 
-  console.log("txns:", txns);
+  // console.log("txns:", txns);
 
   // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
   x.domain(versionArray)

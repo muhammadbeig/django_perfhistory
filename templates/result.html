@@ -140,6 +140,7 @@
 </div>
 </div>
 
+
 <script type="text/javascript">
   $('#version').keypress(function(event) {
     if(event.which == 8 || event.which == 0){
@@ -155,8 +156,10 @@
         //event.preventDefault();
     } // prevent if already dot
 });
+</script>
+{% endif %}
 
-
+<script>
 $(document).ready(function() {
           $("a.option").click(function(ev) {
             
@@ -164,23 +167,19 @@ $(document).ready(function() {
             var limit = this.dataset["resultlimit"];
 
             var parent_href = $(this).parents('.btn-group').find('#comparisonChartWithLimitLink').attr('href');
-            console.log("limit:" + limit);
+            
             openChartPage(parent_href+'/'+limit);
-              // $(".dropdown-menu").dropdown("toggle");
-              
-
-
+            
+            
           });
 
-          // $("a.option").on("click", openChartPage);
-      
+          
       });
 
 
 
 </script>
 
-{% endif %}
 
 
 
@@ -944,16 +943,6 @@ function create_result(formData, fileReadTime)
 
 
 
-
-<style type="text/css">
-    /*.delta-headers {
-        text-align: center
-    }
-    .data-columns {
-      text-align: center
-    }*/
-</style>
-
 <link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css">
 <script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js">
     </script>
@@ -1223,55 +1212,7 @@ $(document).ready(function()
 
 
 
-    $("#comparisonChartLink").on("click", openChartPage);
-//   $("#comparisonChartLink").on("click",function(e) 
-//   {
-//     // e.preventDefault(); // cancel the link itself
-//     var csrftoken = getCookie('csrftoken');
-
-
-//     $.ajaxSetup({
-//         beforeSend: function(xhr, settings) 
-//         {
-//             if (!csrfSafeMethod(settings.type) && !this.crossDomain) 
-//             {
-//                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
-//             }
-//         }
-//     });
-
-//     var jqxhr= $.ajax({
-//                 // url: '/perfhistory/result/'+resultid,
-//                 url: this.href,
-//                 type:'get',
-//                 // data: JSON.stringify(txn_list)
-
-//                 });
-//     jqxhr.success (function(data) 
-//     {
-//         // document.location = href;
-//         // document.getElementById('newResultForm').reset();
-        
-//         // console.log('Update Result Table with ->', data);
-
-//     });
-//     jqxhr.done(function() 
-//     {
-                    
-//     });
-//     jqxhr.fail(function() 
-//     {
-//         console.log("Error while creating result");
-//     });
-//     jqxhr.always(function(data) 
-//     {
-
-//     });
-
-
-
-//   });
-    
+    $("#comparisonChartLink").on("click", openChartPage);    
 
 });
 
@@ -1294,7 +1235,7 @@ function openChartPage (href_override) {
     if (href_override) {
       url = href_override
     }
-    console.log("url:", url);
+    // console.log("url:", url);
 
     var jqxhr= $.ajax({
                 // url: '/perfhistory/result/'+resultid,
@@ -1306,9 +1247,6 @@ function openChartPage (href_override) {
     jqxhr.success (function(data) 
     {
         document.location = url;
-        // document.getElementById('newResultForm').reset();
-        
-        // console.log('Update Result Table with ->', data);
 
     });
     jqxhr.done(function() 
