@@ -322,6 +322,10 @@ $(document).ready(function() {
                                               <label  type="text">Baseline:</label>
                                               <input id="baseline" name="baseline" class="form-control" type="checkbox" {% if result.baseline %}checked{% endif %}>
                                             </div>
+                                            <div class="form-group">
+                                              <label  type="text">Result filename:</label>
+                                              <input id="filename" name="filename" class="form-control" type="text" value="{{ result.filename|default_if_none:"" }}" readonly>
+                                            </div>
                                             <button type="submit" class="btn btn-warning btn-lg" style="width: 100%;">
                                               <span class="glyphicon glyphicon-ok-sign">
                                               </span> Update
