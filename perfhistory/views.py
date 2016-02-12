@@ -555,16 +555,16 @@ def createResult(request, project_id, tagid):
 
 								txn.success_count = txnData.get('successcount')
 								txn.failure_count = txnData.get('failurecount')
-								txn.average = txnData.get('average')
-								txn.median = txnData.get('median')
-								txn.minimum = txnData.get('minimum')
-								txn.maximum = txnData.get('maximum')
-								txn.stddev = txnData.get('stddev')
-								txn.p90 = txnData.get('p90')
-								txn.p95 = txnData.get('p95')
-								txn.p99 = txnData.get('p99')
-								txn.p99_9 = txnData.get('p99.9')
-								txn.p99_99 = txnData.get('p99.99')
+								txn.responsetime_average = txnData.get('average')
+								txn.responsetime_median = txnData.get('median')
+								txn.responsetime_minimum = txnData.get('minimum')
+								txn.responsetime_maximum = txnData.get('maximum')
+								txn.responsetime_stddev = txnData.get('stddev')
+								txn.responsetime_p90 = txnData.get('p90')
+								txn.responsetime_p95 = txnData.get('p95')
+								txn.responsetime_p99 = txnData.get('p99')
+								txn.responsetime_p99_9 = txnData.get('p99.9')
+								txn.responsetime_p99_99 = txnData.get('p99.99')
 								txn.success_qps = txnData.get('successcount') / (result.duration_minutes * 60.0);
 								txn.failure_qps = txnData.get('failurecount') / (result.duration_minutes * 60.0);
 								# print ('successcount',txnData.get('successcount'),'duration_minutes:',result.duration_minutes, 'success qps:',txnData.get('successcount') / (3600 * 60.00));

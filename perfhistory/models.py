@@ -91,15 +91,15 @@ class Transaction(models.Model):
 	success_qps = models.FloatField()
 	failure_count = models.IntegerField()
 	failure_qps = models.FloatField()
-	average = models.FloatField()
-	median = models.FloatField()
-	minimum = models.FloatField()
-	maximum = models.FloatField()
-	stddev = models.FloatField()
-	p90 = models.FloatField()
-	p95 = models.FloatField()
-	p99 = models.FloatField()
-	p99_99 = models.FloatField()
+	responsetime_average = models.FloatField()
+	responsetime_median = models.FloatField()
+	responsetime_minimum = models.FloatField()
+	responsetime_maximum = models.FloatField()
+	responsetime_stddev = models.FloatField()
+	responsetime_p90 = models.FloatField()
+	responsetime_p95 = models.FloatField()
+	responsetime_p99 = models.FloatField()
+	responsetime_p99_99 = models.FloatField()
 
 	
 
@@ -109,8 +109,9 @@ class Transaction(models.Model):
 			name=self.name, description=self.description, created=str(self.created),
 			last_modified=str(self.last_modified), success_count=self.success_count, failure_count=self.failure_count,
 			success_qps=self.success_qps, failure_qps=self.failure_qps,
-			average=self.average, median=self.median, minimum=self.minimum, maximum=self.maximum, stddev=self.stddev,
-			p90=self.p90, p95=self.p95, p99=self.p99, p99_99=self.p99_99)
+			responsetime_average=self.responsetime_average, responsetime_median=self.responsetime_median, responsetime_minimum=self.responsetime_minimum, 
+			responsetime_maximum=self.responsetime_maximum, responsetime_stddev=self.responsetime_stddev,responsetime_p90=self.responsetime_p90, 
+			responsetime_p95=self.responsetime_p95, responsetime_p99=self.responsetime_p99, responsetime_p99_99=self.responsetime_p99_99)
 
 	def as_short_json(self):
 		return dict(type='transaction',
@@ -118,8 +119,9 @@ class Transaction(models.Model):
 			name=self.name, description=self.description,  created=str(self.created),
 			last_modified=str(self.last_modified), success_count=self.success_count, failure_count=self.failure_count,
 			success_qps=self.success_qps, failure_qps=self.failure_qps,
-			average=self.average, median=self.median, minimum=self.minimum, maximum=self.maximum, stddev=self.stddev,
-			p90=self.p90, p95=self.p95, p99=self.p99, p99_99=self.p99_99)
+			responsetime_average=self.responsetime_average, responsetime_median=self.responsetime_median, responsetime_minimum=self.responsetime_minimum, 
+			responsetime_maximum=self.responsetime_maximum, responsetime_stddev=self.responsetime_stddev, responsetime_p90=self.responsetime_p90, 
+			responsetime_p95=self.responsetime_p95, responsetime_p99=self.responsetime_p99, responsetime_p99_99=self.responsetime_p99_99)
 
 	def get_fields(self):
 		return [(field.name, field.value_to_string(self)) for field in Result._meta.fields]

@@ -1004,15 +1004,15 @@ $(document).ready(function()
                         other_txns[t]['delta-qps'] = (other_txns[t]['success_qps'] - baseline_result[name]['success_qps']);  
                         other_txns[t]['delta-successcount'] = (other_txns[t]['success_count'] - baseline_result[name]['success_count']);  
                         other_txns[t]['delta-failurecount'] = (other_txns[t]['failure_count'] - baseline_result[name]['failure_count']);
-                        other_txns[t]['delta-average'] = (baseline_result[name]['average'] - other_txns[t]['average']);
-                        other_txns[t]['delta-maximum'] = (baseline_result[name]['maximum'] - other_txns[t]['maximum']);
-                        other_txns[t]['delta-median'] = (baseline_result[name]['median'] - other_txns[t]['median']);
-                        other_txns[t]['delta-minimum'] = (baseline_result[name]['minimum'] - other_txns[t]['minimum']);
-                        other_txns[t]['delta-p90'] = (baseline_result[name]['p90'] - other_txns[t]['p90']);
-                        other_txns[t]['delta-p95'] = (baseline_result[name]['p95'] - other_txns[t]['p95']);
-                        other_txns[t]['delta-p99'] = (baseline_result[name]['p99'] - other_txns[t]['p99']);
-                        other_txns[t]['delta-p99_99'] = (baseline_result[name]['p99_99'] - other_txns[t]['p99_99']);
-                        other_txns[t]['delta-stddev'] = (baseline_result[name]['stddev'] - other_txns[t]['stddev']);
+                        other_txns[t]['delta-average'] = (baseline_result[name]['responsetime_average'] - other_txns[t]['responsetime_average']);
+                        other_txns[t]['delta-maximum'] = (baseline_result[name]['responsetime_maximum'] - other_txns[t]['responsetime_maximum']);
+                        other_txns[t]['delta-median'] = (baseline_result[name]['responsetime_median'] - other_txns[t]['responsetime_median']);
+                        other_txns[t]['delta-minimum'] = (baseline_result[name]['responsetime_minimum'] - other_txns[t]['responsetime_minimum']);
+                        other_txns[t]['delta-p90'] = (baseline_result[name]['responsetime_p90'] - other_txns[t]['responsetime_p90']);
+                        other_txns[t]['delta-p95'] = (baseline_result[name]['responsetime_p95'] - other_txns[t]['responsetime_p95']);
+                        other_txns[t]['delta-p99'] = (baseline_result[name]['responsetime_p99'] - other_txns[t]['responsetime_p99']);
+                        other_txns[t]['delta-p99_99'] = (baseline_result[name]['responsetime_p99_99'] - other_txns[t]['responsetime_p99_99']);
+                        other_txns[t]['delta-stddev'] = (baseline_result[name]['responsetime_stddev'] - other_txns[t]['responsetime_stddev']);
 
                         // console.log('actual value',txn_list[t]);
                     }
@@ -1046,15 +1046,15 @@ $(document).ready(function()
         { "data": "success_qps" },
         { "data": "success_count" },
         { "data": "failure_count" },
-        { "data": "average" },
-        { "data": "minimum" },
-        { "data": "maximum" },
-        { "data": "median" },
-        { "data": "stddev" },
-        { "data": "p90" },
-        { "data": "p95" },
-        { "data": "p99" },
-        { "data": "p99_99" }
+        { "data": "responsetime_average" },
+        { "data": "responsetime_minimum" },
+        { "data": "responsetime_maximum" },
+        { "data": "responsetime_median" },
+        { "data": "responsetime_stddev" },
+        { "data": "responsetime_p90" },
+        { "data": "responsetime_p95" },
+        { "data": "responsetime_p99" },
+        { "data": "responsetime_p99_99" }
         ],
         "columnDefs": [
             { "visible": false, "targets": 0 },
