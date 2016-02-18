@@ -78,6 +78,10 @@ class Result(models.Model):
 			project_id=self.project_id, tag_id=self.tag_id,
 			name=self.name, description=self.description, created=str(self.created),
 			last_modified=str(self.last_modified), baseline=self.baseline, version=self.version, numberofusers=self.numberofusers, duration_minutes=self.duration_minutes)
+	
+	def __unicode__(self):
+		return "%s" % self.id
+		# return self.name + "(%s)" % (self.version)
 
 class Transaction(models.Model):
 	result = models.ForeignKey(Result)
@@ -87,19 +91,29 @@ class Transaction(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	last_modified = models.DateTimeField(auto_now=True)
 
-	success_count = models.IntegerField()
-	success_qps = models.FloatField()
-	failure_count = models.IntegerField()
-	failure_qps = models.FloatField()
-	responsetime_average = models.FloatField()
-	responsetime_median = models.FloatField()
-	responsetime_minimum = models.FloatField()
-	responsetime_maximum = models.FloatField()
-	responsetime_stddev = models.FloatField()
-	responsetime_p90 = models.FloatField()
-	responsetime_p95 = models.FloatField()
-	responsetime_p99 = models.FloatField()
-	responsetime_p99_99 = models.FloatField()
+	success_count = models.IntegerField(null=True, blank=True)
+	success_qps = models.FloatField(null=True, blank=True)
+	failure_count = models.IntegerField(null=True, blank=True)
+	failure_qps = models.FloatField(null=True, blank=True)
+	responsetime_average = models.FloatField(null=True, blank=True)
+	responsetime_median = models.FloatField(null=True, blank=True)
+	responsetime_minimum = models.FloatField(null=True, blank=True)
+	responsetime_maximum = models.FloatField(null=True, blank=True)
+	responsetime_stddev = models.FloatField(null=True, blank=True)
+	responsetime_p90 = models.FloatField(null=True, blank=True)
+	responsetime_p95 = models.FloatField(null=True, blank=True)
+	responsetime_p99 = models.FloatField(null=True, blank=True)
+	responsetime_p99_99 = models.FloatField(null=True, blank=True)
+	latency_average = models.FloatField(null=True, blank=True)
+	latency_median = models.FloatField(null=True, blank=True)
+	latency_minimum = models.FloatField(null=True, blank=True)
+	latency_maximum = models.FloatField(null=True, blank=True)
+	latency_stddev = models.FloatField(null=True, blank=True)
+	latency_p90 = models.FloatField(null=True, blank=True)
+	latency_p95 = models.FloatField(null=True, blank=True)
+	latency_p99 = models.FloatField(null=True, blank=True)
+	latency_p99_99 = models.FloatField(null=True, blank=True)
+
 
 	
 

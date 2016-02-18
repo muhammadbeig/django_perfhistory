@@ -1,391 +1,126 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style>
+<<form class="float-label" spellcheck="false">
+  <legend>Float Label Demo</legend>
+  
+  <!-- we need a wrapping element for positioning the label -->
+  <!-- the required attribute is ... required! -->
+  <div class="control">
+    <input type="text" name="title" placeholder="Title" required />
+    <!-- yes, this is not nice, in real live, do it with JS -->
+    <label for="title">Title</label>
+  </div>
+ 
+  <div class="control small">
+    <input type="text" name="price" placeholder="Price" required />
+    <label for="price">Price</label>
+  </div>
+  <div class="control medium">
+    <input type="text" name="location" placeholder="Specific location (optional)" required />
+    <label for="location">Specific location (optional)</label>
+  </div>
+  
+  <div class="control">
+    <textarea name="description" placeholder="Description" required></textarea>
+    <label for="description">Description</label>
+  </div>
+  
+</form>
+
+<style type="text/css">
+  @border: 1px solid #ddd;
+@padding: 10px;
+@label-font-size: 13px;
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
 
 body {
-  font: 10px sans-serif;
+  width: 100%;
+  min-height: 300px;
 }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+// Demo styles
+form {
+  width: 600px;
+  margin: 2em auto;
+  
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 300;
+  font-size: 22px;
+  
+  legend {
+    font-size: 2em;
+    margin-bottom: 1em;
+    width: 100%;
+    border-bottom: @border;
+  }
 }
 
-.x.axis path {
-  display: none;
-}
 
-.line {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
-}
-
-.grid .tick {
-    stroke: lightgrey;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
-}
-
-.overlay {
-  fill: none;
-  pointer-events: all;
-}
-
-.focus circle {
-  fill: none;
-  stroke: steelblue;
-}
-
-</style>
-<body>
-<script src="//d3js.org/d3.v3.min.js"></script>
-<script type="text/javascript" language="javascript" src="/static/jquery-2.1.4.min.js"></script>
-<script>
-
-
-
-$(document).ready(function() 
-{
-  var x= JSON.parse('{{ transactions|safe }}');
-  result_list=JSON.parse('{{ result_list|safe }}');
-  txn_list=JSON.parse('{{ transactions|safe }}');
-
-  res = {}
-  for (r in result_list)
-  {
-    res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
+// float label
+.float-label {
+  .control {
+    float: left;
+    position: relative;
+    width: 100%;
+    border-bottom: @border;
+    padding-top: @padding + @label-font-size;
+    padding-bottom: @padding;
+    
+    // you proably want to replace these with your grid classes
+    &.small {
+      width: 30%;
+      border-right: @border;
+    }
+    
+    &.medium {
+      width: 70%;
+      padding-left: @padding;
+    }
+    
+    &:last-child {
+     border: 0;
+    }
   }
   
-  baseline_result = {}
-  other_txns = []
-  for (t in txn_list) 
-  {
-    result_id = txn_list[t]['result_id']
+  input, textarea {
+    display: block;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    resize: none;
     
-    txn_list[t]['version']= res[result_id]['version']
-    txn_list[t]['baseline'] = res[result_id]['baseline']
-    if (txn_list[t]['baseline'])
-    {
-      // console.log(txn_list[t]['name'])
-      baseline_result[txn_list[t]['name']]=txn_list[t]
-      // delete txn_list[t]
+    // inactive but shown label (exceptions: opacity and top)
+    & + label {
+      position: absolute;
+      top: 10px;
+      transition: top 0.7s ease, opacity 0.7s ease;
+      opacity: 0;
+      
+      // Some nice styling
+      font-size: @label-font-size;
+      font-weight: 600;
+      color: #ccc;
     }
-    else 
-    {
-      other_txns.push(txn_list[t]);
-      // console.log(txn_list[t])
+    
+    // THE MAGIC
+    // as soon as we start typing, the "required" attribute will
+    // set the state to valid and our pseudo selector will match
+    &:valid + label {
+      opacity: 1;
+      top: 3px;
+    }
+    
+    // and we highlight the focused input label
+    &:focus + label {
+      color: #2c8efe;
     }
   }
-
-  drawChart(txn_list);
-});
-
-
-var margin = {top: 20, right: 80, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var parseDate = d3.time.format("%Y%m%d").parse;
-    formatResponseTime = function(d) { return d+" ms"; };
-
-var comparisonField = "p90"
-
-// var x = d3.time.scale()
-//     .range([0, width]);
-var x = d3.scale.ordinal()
-    .range([0, width]);
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var color = d3.scale.category10();
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickPadding(10);;
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .tickPadding(10);;
-
-
-var line_orig = d3.svg.line()
-    .interpolate("basis")
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.temperature); });
-
-
-var line = d3.svg.line()
-    .interpolate("basis")
-    .x(function(d) { return x(d.version); })
-    .y(function(d) { return y(d[comparisonField]); });
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-function drawChart(data3)
-{
-
-
-/* newer code */
-  mytxns = {}
-  data3.filter(function(key) { mytxns[key.name]=1;} )
-  color.domain(d3.keys(mytxns));
-
-  // data3.forEach(function(d) {
-  //   d.last_modified = parseDate(d.last_modified);
-  // });
-
-  var txns = color.domain().map(function(name) 
-  {
-
-    return {
-      name: name,
-      values: data3.filter(function(d)
-      {
-        // console.log(d);
-        if (name == d.name)
-        {
-          // console.log({date: d.date, temperature: +d.temperature});
-          return 1;//{date: d.date, temperature: +d.temperature};  
-        }
-        // else return null;
-        
-      })
-    };
-  });
-
-  console.log('txns:',txns);
-  // x.domain(d3.extent(data3, function(d) { return d.version; }));
-  var versions = {}
-  data3.forEach(function (d){
-    versions[d.version]=""
-
-  });
-
-  // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
-  x.domain(d3.keys(versions))
-    .rangePoints([0, width]);
-  y.domain([
-    d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
-    d3.max(txns, function(c) { return d3.max(c.values, function(v) { return v[comparisonField]; }); })
-  ]);
-  console.log('x.domain:',x.domain)
-  // console.log('y.domain:',y.domain)
-/***********/
-
-
-/* new code */
-  // mycities = {}
-  // data1.filter(function(key) { mycities[key.city]=1;} )
-  // color.domain(d3.keys(mycities));
-
-  // data1.forEach(function(d) {
-  //   d.date = parseDate(d.date);
-  // });
-
-
-  // var cities1 = color.domain().map(function(name) 
-  // {
-
-  //   return {
-  //     name: name,
-  //     values: data1.filter(function(d)
-  //     {
-  //       // console.log(d);
-  //       if (name == d.city)
-  //       {
-  //         // console.log({date: d.date, temperature: +d.temperature});
-  //         return {date: d.date, temperature: +d.temperature};  
-  //       }
-  //       // else return null;
-        
-  //     })
-  //   };
-  // });
-
-  // // console.log(cities1[0].values[0]);
-  // x.domain(d3.extent(data1, function(d) { return d.date; }));
-  // y.domain([
-  //   d3.min(cities1, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
-  //   d3.max(cities1, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
-  // ]);
-
-/************/
-  // data.forEach(function(d) {
-  //   d.date = parseDate(d.date);
-  // });
-
-  // var cities = color.domain().map(function(name) {
-  //   return {
-  //     name: name,
-  //     values: data.map(function(d) {
-  //       return {date: d.date, temperature: +d[name]};
-  //     })
-  //   };
-  // });
-
-  // console.log(cities[0].values[0]);
-
-  // // return;
-
-  // x.domain(d3.extent(data, function(d) { return d.date; }));
-
-  // y.domain([
-  //   d3.min(cities, function(c) { return d3.min(c.values, function(v) { return v.temperature; }); }),
-  //   d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.temperature; }); })
-  // ]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text(comparisonField+" Reponse Time(ms)");
-
-  var city = svg.selectAll(".city")
-      .data(txns)
-      // .data(cities1)
-    .enter().append("g")
-      .attr("class", "city");
-
-
-  city.append("path")
-      .attr("class", "line")
-      // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
-      .attr("d", function(d) {  console.log(line(d.values)); return line(d.values); })
-      .style("stroke", function(d) { console.log(color(d.name)); return color(d.name); });
-
-  city.append("text")
-      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
-      // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
-      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y(d.value[comparisonField]) + ")"; })
-      .attr("x", 3)
-      .attr("dy", ".35em")
-      .text(function(d) { return d.name; });
-// });
-
-  var point = city.append("g")
-                .attr("class", "line-point");
-
-  point.selectAll('circle')
-    .data(function(d){ return d.values})
-    .enter().append('circle')
-    .attr("cx", function(d) { return x(d.version) })
-    .attr("cy", function(d) { return y(d[comparisonField]) })
-    .attr("r", 1.5)
-    .style("fill", function(d) { return color(d.name); })
-    .style("stroke", function(d) { return color(d.name); });
-
-     // Draw the x Grid lines
-    svg.append("g")
-        .attr("class", "grid")
-        .attr("transform", "translate(0," + height + ")")
-        .call(make_x_axis()
-            .tickSize(-height, 0, 0)
-            .tickFormat("")
-        )
-
-    // Draw the y Grid lines
-    svg.append("g")            
-        .attr("class", "grid")
-        .call(make_y_axis()
-            .tickSize(-width, 0, 0)
-            .tickFormat("")
-        )
-
-// var focus = city.append("g")
-//       .attr("class", "focus")
-//       .style("display", "none");
-
-//   focus.append("circle")
-//       .attr("r", 4.5);
-
-//   focus.append("text")
-//       .attr("x", 9)
-//       .attr("dy", ".35em");
-
-//   svg.append("rect")
-//       .attr("class", "overlay")
-//       .attr("width", width)
-//       .attr("height", height)
-//       .on("mouseover", function() { focus.style("display", null); })
-//       .on("mouseout", function() { focus.style("display", "none"); })
-//       .on("mousemove", mousemove);
-
-
-
-// txns.forEach(function(d,i) { 
-//         svg.append("path")
-//             .attr("class", "line")
-//             .style("stroke", function() {
-//                 return d.color = color(d.key); })
-//             .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign ID **
-//             .attr("d", priceline(d.values));
-
-//         // Add the Legend
-//         svg.append("text")
-//             .attr("x", (legendSpace/2)+i*legendSpace)
-//             .attr("y", height + (margin.bottom/2)+ 5)
-//             .attr("class", "legend")
-//             .style("fill", function() {
-//                 return d.color = color(d.key); })
-//             .on("click", function(){                     // ************
-//                 // Determine if current line is visible 
-//                 var active   = d.active ? false : true,  // ************ 
-//                 newOpacity = active ? 0 : 1;             // ************
-//                 // Hide or show the elements based on the ID
-//                 d3.select("#tag"+d.key.replace(/\s+/g, '')) // *********
-//                     .transition().duration(100)          // ************
-//                     .style("opacity", newOpacity);       // ************
-//                 // Update whether or not the elements are active
-//                 d.active = active;                       // ************
-//                 })                                       // ************
-//             .text(d.key); 
-//     });
-
-
 }
-  function mousemove() {
-    var x0 = x.invert(d3.mouse(this)[0]),
-        i = bisectDate(data3, x0, 1),
-        d0 = data3[i - 1],
-        d1 = data3[i],
-        d = x0 - d0.version > d1.version - x0 ? d1 : d0;
-    focus.attr("transform", "translate(" + x(d.version) + "," + y(d[comparisonField]) + ")");
-    focus.select("text").text(formatResponseTime(d[comparisonField]));
-  }
+</style>
 
-// function for the x grid lines
-function make_x_axis() {
-    return d3.svg.axis()
-        .scale(x)
-        .orient("bottom")
-        .ticks(5)
-}
-
-// function for the y grid lines
-function make_y_axis() {
-  return d3.svg.axis()
-      .scale(y)
-      .orient("left")
-      .ticks(5)
-}
-</script>
 

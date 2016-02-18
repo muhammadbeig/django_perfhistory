@@ -1,7 +1,7 @@
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 from perfhistory.models import Project, Tag, Result, Transaction
-from .forms import ProjectForm, TagForm, EditProjectForm, UserForm
+from .forms import ProjectForm, TagForm, EditProjectForm, UserForm, TransactionForm
 from django.http import JsonResponse, HttpResponse, QueryDict, HttpResponseRedirect, Http404
 from django.db import transaction, IntegrityError
 from django.core import serializers
@@ -313,6 +313,8 @@ def comparisonChartbyVersion(request, projectId, tagId):
 
 @login_required(login_url='/'+APPLICATION+'/')
 def result(request, projectId, tagId):
+	transactionForm = TransactionForm(result_qs=Result.objects.filter(tag_id=tagId))
+	# print transactionForm
 	try:
 		if request.method == 'GET':
 			projectobj = Project.objects.get(id=projectId);
@@ -334,14 +336,69 @@ def result(request, projectId, tagId):
 				data.append(dictionary)
 				result_list.append(result.as_json())
 				alltxns.extend([t.as_json() for t in txns])
+		if request.method == 'POST':
+			return addTransactionToResult(request, project_id, tagId);
+
 	except Exception as e:
 		raise Http404
 		# return returnJsonWithResponseTextCodeAndStatus(e.message, 500, False)
 
-	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj, 'transactionForm':transactionForm })
 
+def makeTxnObjectForResult(result, txnData):
+	try:
+		txn = Transaction(result_id=result.id)
+		txn.name = txnData.get('name')
+		txn.description = txnData.get('description')
+		txn.success_count = txnData.get('successcount')
+		txn.failure_count = txnData.get('failurecount')
+		txn.responsetime_average = txnData.get('average')
+		txn.responsetime_median = txnData.get('median')
+		txn.responsetime_minimum = txnData.get('minimum')
+		txn.responsetime_maximum = txnData.get('maximum')
+		txn.responsetime_stddev = txnData.get('stddev')
+		txn.responsetime_p90 = txnData.get('p90')
+		txn.responsetime_p95 = txnData.get('p95')
+		txn.responsetime_p99 = txnData.get('p99')
+		txn.responsetime_p99_9 = txnData.get('p99.9')
+		txn.responsetime_p99_99 = txnData.get('p99.99')
+		txn.success_qps = ( txnData.get('successcount') / (result.duration_minutes * 60.0) ) if txnData.get('successcount') else None;
+		txn.failure_qps = ( txnData.get('failurecount') / (result.duration_minutes * 60.0) ) if txnData.get('successcount') else None;
+	except Exception as e:
+		print 'Exception occurred, could be a malformed input json or bad data type. ' + e.message +' line:' +str(sys.exc_traceback.tb_lineno)
+		return returnJsonWithResponseTextCodeAndStatus('Exception occurred, could be a malformed input json or bad data type' + e.message, 500, False)
 
-# def ResultListView(FormMixin, ListView):
+	return txn
+
+@login_required
+def addTransactionToResult(request, resultId):
+	resId=QueryDict(request.body)['result']
+	form = TransactionForm(request.POST,result_qs=Result.objects.get(id=resId))
+	
+	print 'form:', QueryDict(request.body)['result']
+	# print form.errors, 
+	print form
+	print form.is_valid()
+	response_data = {}
+	try:
+		with transaction.atomic():
+			if request.method == 'POST':
+				result = Result.objects.get(id=resultId)
+				Project.objects.get(id=result.project_id).save()
+				Tag.objects.get(id=result.tag_id).save()
+				txn = makeTxnObjectForResult(result, txnData);
+				txn.save()
+	except Exception as e:
+		print 'exception', e.message
+		response_data['message'] = 'Exception occurred; ', e.message
+		response_data['status'] = False
+		HttpResponse.status_code = 500
+		response_data['created_objects'] = None
+		return HttpResponse(
+			    json.dumps(response_data),
+			    content_type="application/json")
+
+	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj, 'transactionForm':transactionForm })
 
 @login_required(login_url='/'+APPLICATION+'/')
 def updateResult(request, resultId):
@@ -548,28 +605,29 @@ def createResult(request, project_id, tagid):
 							# insertionresultresult.id
 							
 							for txnData in resultData['data']:
-								# print txnData
-								txn = Transaction(result_id=result.id)
-								txn.name = txnData.get('name')
-								txn.description = txnData.get('description')
+								print json.dumps(txnData)
+								txn = makeTxnObjectForResult(result, txnData);
+								# txn = Transaction(result_id=result.id)
+								# txn.name = txnData.get('name')
+								# txn.description = txnData.get('description')
 
-								txn.success_count = txnData.get('successcount')
-								txn.failure_count = txnData.get('failurecount')
-								txn.responsetime_average = txnData.get('average')
-								txn.responsetime_median = txnData.get('median')
-								txn.responsetime_minimum = txnData.get('minimum')
-								txn.responsetime_maximum = txnData.get('maximum')
-								txn.responsetime_stddev = txnData.get('stddev')
-								txn.responsetime_p90 = txnData.get('p90')
-								txn.responsetime_p95 = txnData.get('p95')
-								txn.responsetime_p99 = txnData.get('p99')
-								txn.responsetime_p99_9 = txnData.get('p99.9')
-								txn.responsetime_p99_99 = txnData.get('p99.99')
-								txn.success_qps = txnData.get('successcount') / (result.duration_minutes * 60.0);
-								txn.failure_qps = txnData.get('failurecount') / (result.duration_minutes * 60.0);
-								# print ('successcount',txnData.get('successcount'),'duration_minutes:',result.duration_minutes, 'success qps:',txnData.get('successcount') / (3600 * 60.00));
-								# txn.save()
-								# print txn.as_json()
+								# txn.success_count = txnData.get('successcount')
+								# txn.failure_count = txnData.get('failurecount')
+								# txn.responsetime_average = txnData.get('average')
+								# txn.responsetime_median = txnData.get('median')
+								# txn.responsetime_minimum = txnData.get('minimum')
+								# txn.responsetime_maximum = txnData.get('maximum')
+								# txn.responsetime_stddev = txnData.get('stddev')
+								# txn.responsetime_p90 = txnData.get('p90')
+								# txn.responsetime_p95 = txnData.get('p95')
+								# txn.responsetime_p99 = txnData.get('p99')
+								# txn.responsetime_p99_9 = txnData.get('p99.9')
+								# txn.responsetime_p99_99 = txnData.get('p99.99')
+								# txn.success_qps = txnData.get('successcount') / (result.duration_minutes * 60.0);
+								# txn.failure_qps = txnData.get('failurecount') / (result.duration_minutes * 60.0);
+								## print ('successcount',txnData.get('successcount'),'duration_minutes:',result.duration_minutes, 'success qps:',txnData.get('successcount') / (3600 * 60.00));
+								## txn.save()
+								## print txn.as_json()
 								txns.append(txn)
 							bulkcreatedtxns= Transaction.objects.bulk_create(txns)
 							listoftxns= [str(t.as_short_json()) for t in bulkcreatedtxns]
@@ -592,7 +650,7 @@ def createResult(request, project_id, tagid):
 
 					except Exception as e:
 						print 'exception', e.message, 'line:', sys.exc_traceback.tb_lineno 
-						response_data['message'] = 'Exception occurred; ', e.message, 'line:',sys.exc_traceback.tb_lineno 
+						response_data['message'] = 'Exception occurred;', e.message, 'line:',sys.exc_traceback.tb_lineno 
 						response_data['status'] = False
 						HttpResponse.status_code = 500
 						response_data['created_objects'] = None
@@ -691,7 +749,7 @@ def projectdetail(request,project_id):
 
 def chart(request):
 	# project=Project.objects.get(id=project_id)
-	return render(request, 'chart.html')	
+	return render(request, 'd3-example.html')	
 
 def d3(request):
 	# project=Project.objects.get(id=project_id)
