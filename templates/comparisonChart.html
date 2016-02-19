@@ -122,16 +122,16 @@
         <li><a href="#"><i class="fa fa-ban fa-fw"></i> Ban</a></li>
         <li class="divider"></li> -->
         
-            <li><a class="option" data-comparisonField="responsetime_minimum" >Minimum Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_average"  >Average Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_median" >Median Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_p90" >P90 Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_p95" >P95 Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_p99" >P99 Response Time</a></li>
-            <li><a class="option" data-comparisonField="responsetime_maximum" >Maximum Response Time</a></li>
+            <li><a class="option" data-comparisonField="responsetime_minimum" >Minimum</a></li>
+            <li><a class="option" data-comparisonField="responsetime_average"  >Average</a></li>
+            <li><a class="option" data-comparisonField="responsetime_median" >Median</a></li>
+            <li><a class="option" data-comparisonField="responsetime_p90" >P90</a></li>
+            <li><a class="option" data-comparisonField="responsetime_p95" >P95</a></li>
+            <li><a class="option" data-comparisonField="responsetime_p99" >P99</a></li>
+            <li><a class="option" data-comparisonField="responsetime_maximum" >Maximum</a></li>
             <li role="separator" class="divider"></li>
-            <li><a class="option" data-comparisonField="success_count" >Successful requests</a></li>
-            <li><a class="option" data-comparisonField="success_qps" >Successful requests/second (QPS)</a></li>
+            <li><a class="option" data-comparisonField="success_count" >Passed requests</a></li>
+            <li><a class="option" data-comparisonField="success_qps" >Passed (QPS)</a></li>
             <li><a class="option" data-comparisonField="failure_count" >Failed requests</a></li>
       </ul>
     </div>
@@ -151,16 +151,16 @@ function getText(fieldName)
 {
   switch(fieldName)
   {
-    case "responsetime_p90": return "90th Percentiles - Response Time";
-    case "responsetime_p95": return "95th Percentiles - Response Time";
-    case "responsetime_p99": return "99th Percentiles - Response Time";
-    case "responsetime_maximum": return "Maximums - Response Time";
-    case "responsetime_minimum": return "Minimums - Response Time";
-    case "responsetime_average": return "Averages - Response Time";
-    case "responsetime_median": return "Medians - Response Time";
-    case "success_count": return "Successful request counts";
-    case "success_qps": return "Successful request/second (QPS)";
-    case "failure_count": return "Failed request counts";
+    case "responsetime_p90": return "90th Percentiles";
+    case "responsetime_p95": return "95th Percentiles";
+    case "responsetime_p99": return "99th Percentiles";
+    case "responsetime_maximum": return "Maximums";
+    case "responsetime_minimum": return "Minimums";
+    case "responsetime_average": return "Averages";
+    case "responsetime_median": return "Medians";
+    case "success_count": return "Passed requests";
+    case "success_qps": return "Passed (QPS)";
+    case "failure_count": return "Failed request";
   }
 
 }
