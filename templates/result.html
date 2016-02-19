@@ -358,7 +358,8 @@ $(document).ready(function() {
             
             <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3></div>
             <div class="panel-body" id="panel-body">
-                <p>Given below is a list of projects results for which exist in the repository</p>
+                <p>List of response time and health metrics for tests grouped by tests (using test version). </p>
+                <p>Transaction response times are in <strong>milliseconds (ms)</strong>, while health metrics are in <strong>% (CPU)</strong> and <strong>MB (Memory)</strong>. </p>
 
                 
                 <table id="txn-table" class="display compact cell-border row-border order-column" cellspacing="0" >
@@ -421,7 +422,8 @@ $(document).ready(function() {
               
             </div>
             <div class="panel-body" id="panel-body">
-                <p>Given below is a list of projects results for which exist in the repository</p>
+                <p>Given below are comparisons (delta) for each test <strong>compared to the baseline</strong>.</p>
+                <p><font color="#DE6858"><strong>Negative</strong></font> numbers indicate degradation in that metric compared to the baseline test while <font color="#8DE8FA"><strong>positive</strong></font> numbers indicate improvement. </p>
                 
                 <table id="delta-table" class="hover display compact order-column" cellspacing="0" >
 
