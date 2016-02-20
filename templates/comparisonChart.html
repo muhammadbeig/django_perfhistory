@@ -298,7 +298,7 @@ svg.append("text")
         .attr("class", "chart-heading");
 ;
   var line = d3.svg.line()
-    .interpolate("cardinal")
+    .interpolate("monotone")
     .x(function(d) { return x(d.version); })
     .y(function(d) { return y(d[comparisonField]); });
 
