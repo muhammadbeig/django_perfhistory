@@ -1024,7 +1024,7 @@ $(document).ready(function()
                     {
                         other_txns[t]['delta-qps'] = (other_txns[t]['success_qps'] - baseline_result[name]['success_qps']);  
                         other_txns[t]['delta-successcount'] = (other_txns[t]['success_count'] - baseline_result[name]['success_count']);  
-                        other_txns[t]['delta-failurecount'] = (other_txns[t]['failure_count'] - baseline_result[name]['failure_count']);
+                        other_txns[t]['delta-failurecount'] = (baseline_result[name]['failure_count'] - other_txns[t]['failure_count']);
                         other_txns[t]['delta-average'] = (baseline_result[name]['responsetime_average'] - other_txns[t]['responsetime_average']);
                         other_txns[t]['delta-maximum'] = (baseline_result[name]['responsetime_maximum'] - other_txns[t]['responsetime_maximum']);
                         other_txns[t]['delta-median'] = (baseline_result[name]['responsetime_median'] - other_txns[t]['responsetime_median']);
