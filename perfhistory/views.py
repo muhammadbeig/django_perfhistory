@@ -363,7 +363,7 @@ def makeTxnObjectForResult(result, txnData):
 		txn.responsetime_p99_9 = txnData.get('p99.9')
 		txn.responsetime_p99_99 = txnData.get('p99.99')
 		txn.success_qps = ( txnData.get('successcount') / (result.duration_minutes * 60.0) ) if txnData.get('successcount') else None;
-		txn.failure_qps = ( txnData.get('failurecount') / (result.duration_minutes * 60.0) ) if txnData.get('successcount') else None;
+		txn.failure_qps = ( txnData.get('failurecount') / (result.duration_minutes * 60.0) ) if txnData.get('failurecount') else None;
 	except Exception as e:
 		print 'Exception occurred, could be a malformed input json or bad data type. ' + e.message +' line:' +str(sys.exc_traceback.tb_lineno)
 		return returnJsonWithResponseTextCodeAndStatus('Exception occurred, could be a malformed input json or bad data type' + e.message, 500, False)
@@ -605,7 +605,7 @@ def createResult(request, project_id, tagid):
 							# insertionresultresult.id
 							
 							for txnData in resultData['data']:
-								print json.dumps(txnData)
+								# print json.dumps(txnData)
 								txn = makeTxnObjectForResult(result, txnData);
 								# txn = Transaction(result_id=result.id)
 								# txn.name = txnData.get('name')
