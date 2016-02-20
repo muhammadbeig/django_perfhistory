@@ -1132,8 +1132,9 @@ $(document).ready(function()
                                 if (index == 3) // failed requests column = 3
                                 {
                                   if (parseFloat($(td).html()) > 0) {
-                                    $(td).css("background-color", regression_color);
+                                    // $(td).css("background-color", regression_color);
                                     $(td).css("color", "white");
+                                    $(td).css("class", "label label-danger");
                                     $(td).css("font-weight", "bold");
                                   }
                                 }     
