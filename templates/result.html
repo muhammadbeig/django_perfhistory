@@ -356,7 +356,11 @@ $(document).ready(function() {
     <div>
         <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3></div>
+            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3>
+            <div  class="legends pull-right label label-danger">Failures</div>
+            </div>
+
+
             <div class="panel-body" id="panel-body">
                 <p>List of response time and health metrics for tests grouped by tests (using test version). </p>
                 <p>Transaction response times are in <strong>milliseconds (ms)</strong>, while health metrics are in <strong>% (CPU)</strong> and <strong>MB (Memory)</strong>. </p>
@@ -417,8 +421,8 @@ $(document).ready(function() {
               </h3>
               
 
-              <div id="legendcolornegative" class="legendcolornegative pull-right">Degradation</div>
-              <div id="legendcolorpositive" class="legendcolorpositive pull-right">Improvement</div>
+              <div id="legendcolornegative" class="legends label legendcolornegative pull-right">Degradation</div>
+              <div id="legendcolorpositive" class="legends label legendcolorpositive pull-right">Improvement</div>
               
             </div>
             <div class="panel-body" id="panel-body">
@@ -1111,7 +1115,33 @@ $(document).ready(function()
                     last = group;
                 }
             } );
-        }
+        },
+        "fnRowCallback": function( nRow, aData, iDisplayIndex,iDisplayIndexFull) {
+
+                $(nRow).children().each(function(index, td) {
+
+                            if(index != 0)  {
+                              // console.log('td',parseFloat($(td).html())>= 0, index, parseFloat($(td).html()) );
+                                
+                                // if (parseFloat($(td).html()) > 0) {
+                                //     $(td).css("background-color", improvement_color);
+                                // } 
+                                // else  if (parseFloat($(td).html()) == 0) {
+                                //     $(td).css("background-color", "#33C6C6");
+                                // }            
+                                if (index == 3) // failed requests column = 3
+                                {
+                                  if (parseFloat($(td).html()) > 0) {
+                                    $(td).css("background-color", regression_color);
+                                    $(td).css("color", "white");
+                                    $(td).css("font-weight", "bold");
+                                  }
+                                }     
+
+                            }
+                });                       
+        return nRow;
+      },
 
     });
 
@@ -1530,36 +1560,22 @@ function openChartPage (href_override) {
         background-color: #BF9C67;
     }
 
-    div.legendcolorpositive {
-    width: 100px;
-    
-    height: 30px;
-    padding: 4px;
-    border: 1px solid white;
+   div.legends {
+    width: 8vmax;
+    height: 2vmax;
+    padding: 0.2vmax;
+    border: 0.1vmax solid white;
     margin: 0;
-    color: black;
-font-family: Helvetica;
-  font-size: 15px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 100;
-  line-height: 24.2857px;
+    font-family: Helvetica;
+    font-size: 1.1vmax;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 100;
+    line-height: 1.4vmax;
   }
 
-  div.legendcolornegative {
-
-    width: 100px;
-    
-    height: 30px;
-    padding: 4px;
-    border: 1px solid white;
-    margin: 4;
-font-family: Helvetica;
-  font-size: 15px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 100;
-  line-height: 24.2857px;
+    div.legendcolorpositive {
+    color: black;
   }
 
   td.data-columns {
