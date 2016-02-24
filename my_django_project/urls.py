@@ -34,6 +34,8 @@ urlpatterns = [
     
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+]+)/getTags$', perfhistory.views.getTags),
     url(r'^(?i)perfhistory/tags$', perfhistory.views.getAllTags),
+    url(r'^(?i)perfhistory/tag/update$', perfhistory.views.updateTag),
+    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/delete$', perfhistory.views.deleteTag),
     url(r'^(?i)perfhistory/results$', perfhistory.views.getAllResults),
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+])$', perfhistory.views.projectdetail),
     url(r'^(?i)perfhistory/chart/$', perfhistory.views.chart),

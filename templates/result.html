@@ -8,6 +8,7 @@
 {% load humanize %}
 {% load tz %}
 
+{% load add_time %}
 
 
 
@@ -186,7 +187,7 @@ $(document).ready(function() {
 
 <div class="panel panel-primary">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> Results table
+                                <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> List of Results
 
                                 <!-- <a class="btn btn-danger pull-right" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart</a> -->
 
@@ -216,7 +217,8 @@ $(document).ready(function() {
                                  <th class="text-center">Is baseline</th>
                                  <th class="text-center"># of users</th>
                                  <th class="text-center">Duration (min)</th>
-                                 <th class="text-center">Start Time</th>
+                                 <th class="text-center">Started</th>
+                                 <th class="text-center">Ended</th>
                                  {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
                                  <th  colspan="2" class="text-center">Action(s)</th>
                                 {% endif %}
@@ -237,7 +239,9 @@ $(document).ready(function() {
                                   <td class="result-table-cells" align="center">{{ result.numberofusers|default_if_none:"-"|apnumber|title }}</td>
                                   <td class="result-table-cells" align="center">{{ result.duration_minutes|floatformat }} minute{{ result.duration_minutes|pluralize }}</td>
                                   
-                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|default_if_none:""|localtime|naturaltime }}{{ result.start_time|localtime |default_if_none:""|date:" (d/m/y H:iO)" }}</td>
+                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|default_if_none:""|localtime|date:"M d, y G:i:s O" }}</td>
+
+                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|add_time:result.duration_minutes|localtime|naturaltime }} ({{ result.start_time|add_time:result.duration_minutes|default_if_none:""|localtime|date:"M d, y G:i:s" }})</td>
                                   
 
                                   {% if perms.perfhistory.change_result %}
@@ -356,7 +360,7 @@ $(document).ready(function() {
     <div>
         <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3>
+            <div class="panel-heading"><h3 class="panel-title">Detailed Results</h3>
             <div  class="legends pull-right label label-danger">Failures</div>
             </div>
 
@@ -415,10 +419,10 @@ $(document).ready(function() {
         <div class="panel panel-primary" id="panel-body">
             
             <div class="panel-heading ">
-              <h3 class="panel-title">Regression from baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit/99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
+              <h5 class="panel-title">Comparison (Improvement/Degradation) with Baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit/99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
 
 
-              </h3>
+              </h5>
               
 
               <div id="legendcolornegative" class="legends label legendcolornegative pull-right">Degradation</div>

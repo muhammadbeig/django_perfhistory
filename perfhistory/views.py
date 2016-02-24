@@ -75,6 +75,18 @@ def loginView(request):
 	    return project(request)
 
 
+def deleteTagObject(tag, projectId):
+	try:
+		childResults = Result.objects.filter(project_id=projectId, tag_id=tag.id);
+		for result in childResults:
+			Transaction.objects.filter(result_id=result.id).delete()
+			result.delete()
+		tag.delete()
+	except Exception as e:
+		print 'Exception occurred while deleting tag with id: %s, projectid: %s. Message: %s' % (tagId, projectId, e.message)
+
+
+
 @login_required(login_url='/'+APPLICATION+'/')
 def deleteProject (request, projectId):
 	user = request.user
@@ -92,11 +104,12 @@ def deleteProject (request, projectId):
 					with transaction.atomic():
 						childTags = Tag.objects.filter(project_id=project.id)
 						for tag in childTags:
-							childResults = Result.objects.filter(project_id=projectId, tag_id=tag.id);
-							for result in childResults:
-								Transaction.objects.filter(result_id=result.id).delete()
-								result.delete()
-							tag.delete()
+							deleteTagObject(tag,projectId)
+							# childResults = Result.objects.filter(project_id=projectId, tag_id=tag.id);
+							# for result in childResults:
+							# 	Transaction.objects.filter(result_id=result.id).delete()
+							# 	result.delete()
+							# tag.delete()
 						project.delete()
 
 						response_data['message'] = 'Project and its children deleted'
@@ -194,24 +207,25 @@ def comparisonChartWithLimit(request, projectId, tagId, limit):
 		tagobj = Tag.objects.get(id=tagId);
 		results = Result.objects.filter(project_id=projectId, tag_id=tagId);
 		# print results
-		baseline_result = None 
-		new_results = []
+		# baseline_result = None 
+		# new_results = []
 		
 		# print len(results)
-		for r in results:
-			# print r.version, r.baseline,
-			if r.baseline:
-				baseline_result = r
-			else:
-				new_results.append(r)
-		# print len(new_results)
-		results = new_results
+		# separating baseline result and other results
+		# for r in results:
+		# 	# print r.version, r.baseline,
+		# 	if r.baseline:
+		# 		baseline_result = r
+		# 	else:
+		# 		new_results.append(r)
+		# # print len(new_results)
+		# results = new_results
 
 		# sorting by version with assumption that version is an int/float and no other characters
 		try:
 			results = sorted(results, key=lambda x: float(x.version), reverse=False)
 		except Exception as e:
-			print e.message, 'so sorting results by create date instead of version'
+			print e.message, 'so sorting results by version as a text instead of float'
 			results = sorted(results, key=lambda x: x.version, reverse=False)			
 		results = results[-limit:] if len(results) > limit else results
 		if limit > 99: 
@@ -219,20 +233,24 @@ def comparisonChartWithLimit(request, projectId, tagId, limit):
 		else:
 			limit = "last %s results" % limit
 
-		if baseline_result and results:
-			results.insert(0,baseline_result)
+		# inserting baseline at the start of results array
+		# if baseline_result and results:
+		# 	results.insert(0,baseline_result)
 
 		data = []
 		result_list = [] 
 		alltxns = []
 		for result in results:
-			# print result.id
+			print result.version,
 			txns = Transaction.objects.filter(result_id=result.id)
 			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
 			result_list.append(result.as_json())
 			alltxns.extend([t.as_json() for t in txns])
 
+		#result_list has list of all results, only results (as_json)
+		#alltxns has all transactions for all results, sorted as results is (^^ version)
+		#object_list or data is an array of dictionaries, each dictionary contains result and an array of its txns
 
 	
 	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'limit': limit, 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
@@ -372,14 +390,20 @@ def makeTxnObjectForResult(result, txnData):
 
 @login_required
 def addTransactionToResult(request, resultId):
-	resId=QueryDict(request.body)['result']
-	form = TransactionForm(request.POST,result_qs=Result.objects.get(id=resId))
-	
-	print 'form:', QueryDict(request.body)['result']
-	# print form.errors, 
-	print form
-	print form.is_valid()
 	response_data = {}
+	try:
+		resId=QueryDict(request.body)['result']
+		print 'resId:', resId
+		form = TransactionForm(request.POST,result_qs=Result.objects.get(id=resId))
+		
+		print 'form:', QueryDict(request.body)['result']
+		# print form.errors, 
+		print form
+		# print 'form.is_valid():', form.is_valid()
+	except Exception as e:
+		print "an exception occurred", e.message
+
+	
 	try:
 		with transaction.atomic():
 			if request.method == 'POST':
@@ -677,6 +701,81 @@ def createResult(request, project_id, tagid):
 	return HttpResponse(
 		            json.dumps({'status':False,'message':"Request method "+request.method+" not supported"}),
 		            content_type="application/json")
+
+@login_required(login_url='/'+APPLICATION+'/')
+def deleteTag(request, projectId, tagId):
+	user = request.user
+	if request.method == 'DELETE':
+		if user.has_perm(APPLICATION+'.delete_tag'):
+			try:
+				with transaction.atomic():
+					project = Project.objects.get(id=projectId)
+					tag = Tag.objects.get(id=tagId)
+					if project and tag:
+						tagasjson = tag.as_json()
+						deleteTagObject(tag, projectId);
+						response_data = {}
+						response_data['message'] = 'Tag deleted'
+						response_data['status'] = True
+						HttpResponse.status_code = 200
+						response_data['deleted_object'] = tagasjson
+						return HttpResponse(json.dumps(response_data),content_type="application/json")
+					else:
+						return returnJsonWithResponseTextCodeAndStatus('Invalid project and/or tag', 404, False)
+			except IntegrityError as e:
+				print 'Integrity error',e.message
+				response_data['message'] = 'Database IntegrityError occurred; ', str(e)
+				response_data['status'] = False
+				HttpResponse.status_code = 500
+				response_data['deleted_object'] = None
+				return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+
+			except Exception as e:
+				print 'exception', e.message
+				response_data['message'] = 'Exception occurred; ', e.message
+				response_data['status'] = False
+				HttpResponse.status_code = 500
+				response_data['deleted_object'] = None
+				return HttpResponse(
+		            	json.dumps(response_data),
+		            	content_type="application/json")
+	
+		else:
+			return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions', 403, False)
+	return returnJsonWithResponseTextCodeAndStatus('Invalid method', 500, False)
+
+@login_required(login_url='/'+APPLICATION+'/')
+def updateTag(request):
+	user = request.user
+	if request.method == 'POST': #update case
+		if user.has_perm(APPLICATION+'.change_tag'):
+			data = QueryDict(request.body)
+			print '***form (POST):***', data
+			tag = Tag.objects.get(id=data['id'])
+			form = TagForm(data, instance=tag)
+			if form.is_valid():
+				print 'form is valid: ', form.cleaned_data
+				tag = form.save()
+			else:
+				print 'Invalid Tag Form, POST'
+			response_data = {}
+			response_data['message'] = 'Tag updated'
+			response_data['status'] = True
+			# response_data['tagform'] = form
+			HttpResponse.status_code = 200
+			response_data['updated_object'] = tag.as_json()
+			return HttpResponse(
+			            json.dumps(response_data),
+			            content_type="application/json")
+		else:
+			return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions', 403, False)
+
+	# return render(request, 'tags.html', { 'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
+	return HttpResponse(
+	            json.dumps(response_data),
+	            content_type="application/json")
 
 @login_required(login_url='/'+APPLICATION+'/')
 def createTag(request,project_id):

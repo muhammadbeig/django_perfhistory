@@ -57,11 +57,15 @@
 }*/
 
 
+.legend.text {
+  font-size:6vmax;
+}
+
 
 .legend rect {
   fill:white;
   stroke:black;
-  opacity:0.8;
+  opacity:0.8;  
 }
 
 </style>
@@ -151,15 +155,15 @@ function getText(fieldName)
 {
   switch(fieldName)
   {
-    case "responsetime_p90": return "90th Percentiles";
-    case "responsetime_p95": return "95th Percentiles";
-    case "responsetime_p99": return "99th Percentiles";
-    case "responsetime_maximum": return "Maximums";
-    case "responsetime_minimum": return "Minimums";
-    case "responsetime_average": return "Averages";
-    case "responsetime_median": return "Medians";
+    case "responsetime_p90": return "P90 Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_p95": return "P95 Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_p99": return "P99 Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_maximum": return "Maximum Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_minimum": return "Minimum Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_average": return "Average Response Time (ms), CPU (%) or Memory (MB)";
+    case "responsetime_median": return "Median Response Time (ms), CPU (%) or Memory (MB)";
     case "success_count": return "Passed requests";
-    case "success_qps": return "Passed (QPS)";
+    case "success_qps": return "Passed (QPS) (Counts/second)";
     case "failure_count": return "Failed request";
   }
 
@@ -199,34 +203,38 @@ $(document).ready(function()
   var x= JSON.parse('{{ transactions|safe }}');
   result_list=JSON.parse('{{ result_list|safe }}');
   txn_list=JSON.parse('{{ transactions|safe }}');
-
+  // console.log("result_list");
+  // console.log(result_list);
+  // console.log("txn_list");
+  // console.log(txn_list);
   res = {}
   for (r in result_list)
   {
     // console.log('r:',result_list[r]);
     res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
   }
-  
-  baseline_result = {}
+  // console.log("res:")
+  // console.log(res)
+  // baseline_result = {}
   other_txns = []
   for (t in txn_list) 
   {
     result_id = txn_list[t]['result_id']
     
     txn_list[t]['version']= res[result_id]['version']
-    txn_list[t]['baseline'] = res[result_id]['baseline']
-    if (txn_list[t]['baseline'])
-    {
-      // console.log(txn_list[t]['name'])
-      baseline_result[txn_list[t]['name']]=txn_list[t]
-      // delete txn_list[t]
-      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
-    }
-    else 
-    {
-      other_txns.push(txn_list[t]);
-      // console.log(txn_list[t])
-    }
+    // txn_list[t]['baseline'] = res[result_id]['baseline']
+    // if (txn_list[t]['baseline'])
+    // {
+    //   // console.log(txn_list[t]['name'])
+    //   baseline_result[txn_list[t]['name']]=txn_list[t]
+    //   // delete txn_list[t]
+    //   txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+    // }
+    // else 
+    // {
+    //   other_txns.push(txn_list[t]);
+    //   // console.log(txn_list[t])
+    // }
   }
 
   
@@ -293,7 +301,7 @@ svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", -20)
         .attr("text-anchor", "middle")  
-        .style("font-size", "18px") 
+        .style("font-size", "1.6vmax") 
         .text(getText(comparisonField) + " comparison ({{ limit }})")
         .attr("class", "chart-heading");
 ;
@@ -332,14 +340,16 @@ svg.append("text")
 
   // console.log('txns:',txns);
   // x.domain(d3.extent(data3, function(d) { return d.version; }));
-  var versions = {}
+  // var versions = {}
+  var versionarr = []
   data3.forEach(function (d){
-    versions[d.version]=""
+    // versions[d.version]=""
+    versionarr.push(d.version);
 
   });
 
-  
-  versionArray = d3.keys(versions);
+  versionArray = versionarr;
+  // versionArray = d3.keys(versions);
 
   // console.log("VersionArray:", versionArray)
   // versionArray.sort(function(a,b){
@@ -352,9 +362,9 @@ svg.append("text")
   //     return parseFloat(a) - parseFloat(b);
   // })
 
-  versionArray.sort(function(a,b){
-    return parseFloat(a) - parseFloat(b);
-  })
+  // versionArray.sort(function(a,b){
+  //   return parseFloat(a) - parseFloat(b);
+  // })
 
 
   // console.log("txns:", txns);
@@ -385,10 +395,10 @@ svg.append("text")
       .call(xAxis)
 
     .append("text")
-      .attr("dx", "30em")
-      .attr("y", 50)
-      .style("font-size", "15px") 
-      .text("Version");;
+      .attr("x", 250)
+      .attr("y", 60)
+      .style("font-size", "2vmax") 
+      .text("Test Version");;
 
   svg.append("g")
       .attr("class", "y-axis")
@@ -400,7 +410,7 @@ svg.append("text")
       .attr("x", 0)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .style("font-size", "15px") 
+      .style("font-size", "1vmax") 
       .text(getText(comparisonField));
 
   var city = svg.selectAll(".city")
@@ -417,7 +427,8 @@ svg.append("text")
       .style("stroke", function(d) {  return color(d.name); })
       .attr('id',function(d){ return d.name+"-line"; })
       .on("mouseover", function (d) 
-      {  
+      {
+        zetipforline.show(d);
         // console.log("mouseover",this);                                
         d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
           .style("stroke-width",'4px');
@@ -440,6 +451,7 @@ svg.append("text")
             .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
       })
       .on("mouseout", function(d) {        //undo everything on the mouseout
+          zetipforline.hide(d);
           d3.select(this)
             .style("stroke-width",'2.5px');
           
@@ -482,7 +494,15 @@ svg.append("text")
     // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
   })
 
+  var zetipforline = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong style='color:"+color(d.name)+"'>"+ d.name+"</strong>";
+  })
+
   svg.call(zetip);
+  svg.call(zetipforline);
 
   var point = city.append("g");
 
@@ -660,11 +680,11 @@ var lastvalues = []
                     
   //add the legend text
     legendEnter.append('text')
-        .attr('x', width+35)
-        .attr('y', function(d,i ){ return i*10;})
+        .attr('x', width+10)
+        .attr('y', function(d,i ){ return 40+i*20;})
         // .attr('y', function(d,i ){ console.log(legendscale(d.values[d.values.length-1].value)); return legendscale(d.values[d.values.length-1].value);})
         .text(function(d){ return d.name; })
-        .style("font-size", "10px") 
+        .style("font-size", "1.1vmax") 
         .style('fill', function(d) { 
             return color(d.name);
         });;
