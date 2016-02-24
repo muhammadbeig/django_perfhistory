@@ -572,7 +572,7 @@ def createResultByProjectTagName(request):
 			tag = Tag.objects.get(name=tagName, project_id=project.id)
 		except Tag.DoesNotExist as e:
 			print 'Invalid tag name:', tagName, 'Exception:', e
-			raise Http404
+			raise Http404('Invalid tag name:', tagName, 'Exception:')
 
 		return createResult(request, project.id, tag.id)
 	else:
