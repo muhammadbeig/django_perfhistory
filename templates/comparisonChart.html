@@ -391,11 +391,12 @@ svg.append("text")
 
   svg.append("g")
       .attr("class", "x-axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + height + ")")//"translate(0," + height + ")")
       .call(xAxis)
     .selectAll("text")
-      .attr("x", -50)
-      .style("font-size", ".9vmax") 
+      .attr("x", -80)
+      .attr("y", -5)
+      .style("font-size", ".8vmax") 
       .attr("transform", "rotate(-90)")
 
 
