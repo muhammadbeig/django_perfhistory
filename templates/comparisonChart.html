@@ -215,21 +215,21 @@ $(document).ready(function()
   }
   // console.log("res:")
   // console.log(res)
-  // baseline_result = {}
+  baseline_result = {}
   other_txns = []
   for (t in txn_list) 
   {
     result_id = txn_list[t]['result_id']
     
     txn_list[t]['version']= res[result_id]['version']
-    // txn_list[t]['baseline'] = res[result_id]['baseline']
-    // if (txn_list[t]['baseline'])
-    // {
-    //   // console.log(txn_list[t]['name'])
-    //   baseline_result[txn_list[t]['name']]=txn_list[t]
-    //   // delete txn_list[t]
-    //   txn_list[t]['version']= res[result_id]['version']+' (baseline)'
-    // }
+    txn_list[t]['baseline'] = res[result_id]['baseline']
+    if (txn_list[t]['baseline'])
+    {
+      // console.log(txn_list[t]['name'])
+      baseline_result[txn_list[t]['name']]=txn_list[t]
+      // delete txn_list[t]
+      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+    }
     // else 
     // {
     //   other_txns.push(txn_list[t]);
