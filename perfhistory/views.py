@@ -358,7 +358,7 @@ def result(request, projectId, tagId):
 			return addTransactionToResult(request, project_id, tagId);
 
 	except Exception as e:
-		raise Http404
+		raise Http404(e.message)
 		# return returnJsonWithResponseTextCodeAndStatus(e.message, 500, False)
 
 	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj, 'transactionForm':transactionForm })
@@ -566,13 +566,13 @@ def createResultByProjectTagName(request):
 			project = Project.objects.get(name=projectName)
 		except Project.DoesNotExist as e:
 			print 'Invalid project name:', projectName, 'Exception:', e
-			raise Http404
+			raise Http404('Invalid project name:', projectName, 'Exception:', e.message)
 		try:
 			tagName = data.get('tag_name')
 			tag = Tag.objects.get(name=tagName, project_id=project.id)
 		except Tag.DoesNotExist as e:
 			print 'Invalid tag name:', tagName, 'Exception:', e
-			raise Http404('Invalid tag name:', tagName, 'Exception:')
+			raise Http404('Invalid tag name:', tagName, 'Exception:', e.message)
 
 		return createResult(request, project.id, tag.id)
 	else:
