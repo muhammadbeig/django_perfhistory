@@ -865,7 +865,7 @@ def d3(request):
 
 
 def getTags(request, project_id):
-	tags=Tag.objects.filter(project_id=project_id)
+	tags=Tag.objects.filter(project_id=project_id).order_by('-last_modified', 'name')
 	results = [ob.as_json() for ob in tags]
 	HttpResponse.status_code = 200
 	# print tags, results
