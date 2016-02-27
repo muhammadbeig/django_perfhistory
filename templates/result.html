@@ -482,15 +482,15 @@ $(document).ready(function() {
 
 </div>
 
-{% if perms.perfhistory.add_transaction %}
+<!-- {% if perms.perfhistory.add_transaction %}
 <div class="row" id="transactionForm">
   <form method="post" action="/perfhistory/result/87/addTransaction">
     <div align="center">{% csrf_token %}
       {% load css_filter %}
       {% for field in transactionForm %}
-      <!-- {% if forloop.counter|divisibleby:6 %}<div class="form-group">{% endif %} -->
+      {% if forloop.counter|divisibleby:6 %}<div class="form-group">{% endif %}
       {{ field|addcss:"form-inline" }}                                                
-      <!-- {% if forloop.counter|divisibleby:6 %}</div>{% endif %} -->
+      {% if forloop.counter|divisibleby:6 %}</div>{% endif %}
       {% endfor %}
       
 
@@ -498,7 +498,7 @@ $(document).ready(function() {
     </div>    
   </form>
 </div>
-{% endif %}
+{% endif %} -->
 
 <style type="text/css">
   .small-input {
