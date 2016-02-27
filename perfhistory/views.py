@@ -202,6 +202,16 @@ def project(request):
 @login_required(login_url='/'+APPLICATION+'/')
 def comparisonChartWithLimit(request, projectId, tagId, limit):
 	limit = int(limit)
+	compare_by = request.GET.get('compareby', None);
+	exclude = request.GET.get('exclude', None);
+	show_only = request.GET.get('showonly', None);
+	if not exclude:
+		exclude = None
+	if not compare_by:
+		compare_by = None
+	if not show_only:
+		show_only = None		
+
 	if request.method == 'GET':
 		projectobj = Project.objects.get(id=projectId);
 		tagobj = Tag.objects.get(id=tagId);
@@ -241,7 +251,7 @@ def comparisonChartWithLimit(request, projectId, tagId, limit):
 		result_list = [] 
 		alltxns = []
 		for result in results:
-			print result.version,
+			# print result.version,
 			txns = Transaction.objects.filter(result_id=result.id)
 			dictionary={'result': result.as_json(), 'transactions':[t.as_json() for t in txns]}
 			data.append(dictionary)
@@ -252,8 +262,7 @@ def comparisonChartWithLimit(request, projectId, tagId, limit):
 		#alltxns has all transactions for all results, sorted as results is (^^ version)
 		#object_list or data is an array of dictionaries, each dictionary contains result and an array of its txns
 
-	
-	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'limit': limit, 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
+	return render(request, 'comparisonChart.html', {'object_list': json.dumps(data), 'showonly':show_only, 'exclude':exclude, 'compareby':compare_by, 'limit': limit, 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'transactions':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj })
 
 
 

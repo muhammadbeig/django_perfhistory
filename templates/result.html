@@ -1003,6 +1003,16 @@ $(document).ready(function()
 
             txn_list[t]['version']= res[result_id]['version']
             txn_list[t]['baseline'] = res[result_id]['baseline']
+            // console.log(txn_list[t]['failurecount'])
+            if (txn_list[t]['failure_count'] != null && parseInt(txn_list[t]['failure_count']) > 0) 
+            {
+              txn_list[t]['errorwithpercent'] = parseInt(txn_list[t]['failure_count']) / (parseInt(txn_list[t]['success_count']) + parseInt(txn_list[t]['failure_count'])) * 100; 
+              // console.log(txn_list[t]['errorwithpercent'])
+            } else {
+              txn_list[t]['errorwithpercent'] = 0
+            }
+            // console.log(txn_list[t]['errorwithpercent']);
+            
             if (txn_list[t]['baseline'])
             {
                 // console.log(txn_list[t]['name'])
@@ -1070,7 +1080,7 @@ $(document).ready(function()
         { "data": "name" },
         { "data": "success_qps" },
         { "data": "success_count" },
-        { "data": "failure_count" },
+        { "data": "errorwithpercent" }, //errorwithpercent
         { "data": "responsetime_average" },
         { "data": "responsetime_minimum" },
         { "data": "responsetime_maximum" },
@@ -1082,7 +1092,7 @@ $(document).ready(function()
         { "data": "responsetime_p99_99" }
         ],
         "columnDefs": [
-            { "visible": false, "targets": 0 },
+            // { "visible": false, "targets": 0 },
             // { className: "data-version", "targets": [0] },
             { className: "data-labels", "targets": [1] },
             { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
@@ -1090,13 +1100,25 @@ $(document).ready(function()
                         {
                           return numberWithCommas(Math.round(data*10)/10); 
                         },
-              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+              "targets": [2,3,5,6,7,8,9,10,11,12,13]
+            },
+            { "data": "errorwithpercent",
+              "render": function (data, type, row) 
+                        {
+                          if (data != 0) {
+                            failures=numberWithCommas(Math.round(row.failure_count*10)/10);
+                            return failures + " (" + Math.round(data*10)/10 + "%)";
+                          }
+                          return data;
+                        },
+              "targets": 4
             },
             { "render": function (data, type, row) 
                         {
                           return "version=>"+data; 
                         },
-              "targets": [0]
+              "targets": [0],
+              "visible": false
             }            
         ],
         "order": [[ 0, 'asc' ],[ 1, 'asc' ]],

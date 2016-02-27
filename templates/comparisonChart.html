@@ -229,6 +229,22 @@ function getText2(fieldName)
 
 }
 
+function compareByTranslate (compareby)
+{
+    switch(compareby)
+  {
+    case "p90": return "responsetime_p90";
+    case "p95": return "responsetime_p95";
+    case "p99": return "responsetime_p99";
+    case "maximum": return "responsetime_maximum";
+    case "minimum": return "responsetime_minimum";
+    case "average": return "responsetime_average";
+    case "median": return "responsetime_median";
+    case "success": return "success_count";
+    case "qps": return "success_qps";
+    case "failure": return "failure_count";
+  }
+}
 
 var txn_list;
 
@@ -320,16 +336,20 @@ graph.selectAll('.line')
   .attr("d", line);
 }
 
-
 $(document).ready(function() 
 {
   var x= JSON.parse('{{ transactions|safe }}');
   result_list=JSON.parse('{{ result_list|safe }}');
   txn_list=JSON.parse('{{ transactions|safe }}');
+  compareby = '{{ compareby }}';
+  exclude = '{{ exclude }}'
+  showonly = '{{ showonly }}'
+  // console.log("exclude:",exclude);
   // console.log("result_list");
   // console.log(result_list);
   // console.log("txn_list");
-  // console.log(txn_list);
+  // for (t in txn_list)
+  //   console.log(txn_list[t].name);
   res = {}
   for (r in result_list)
   {
@@ -337,33 +357,109 @@ $(document).ready(function()
     res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
   }
   // console.log("res:")
+
+// console.log("length before showonly:" + txn_list.length);
+if ( showonly != "None")
+  {
+    // console.log("showonly");
+    var found = false;
+    var show_only_list = showonly.split(",")
+    // console.log("exclude_list", exclude_list)
+
+    for(var i = txn_list.length -1; i >= 0 ; i--)
+    {
+      // console.log("txn_list[i]:",i, txn_list[i]);
+      found=false;
+      for (e in show_only_list)
+      {
+        if (txn_list[i]['name'].toLowerCase().includes(show_only_list[e].toLowerCase()))
+        {
+          found = true;
+          continue;
+        }
+      }
+      if (!found)
+      {
+        // console.log("deleting"+txn_list[i].name);
+        txn_list.splice(i,1);
+        // delete txn_list[i];
+      }
+    }
+  }
+
+
+// console.log("length after showonly:" + txn_list.length);
   // console.log(res)
   baseline_result = {}
   other_txns = []
-  for (t in txn_list) 
+
+  if (exclude != "None")
   {
-    result_id = txn_list[t]['result_id']
-    
-    txn_list[t]['version']= res[result_id]['version']
-    txn_list[t]['baseline'] = res[result_id]['baseline']
-    txn_list[t]['active'] = true
-    if (txn_list[t]['baseline'])
+    // console.log("exclude");
+    var found = false;
+
+    var exclude_list = exclude.split(",")
+    // console.log("exclude_list", exclude_list)
+
+    for(var i = txn_list.length -1; i >= 0 ; i--)
     {
-      // console.log(txn_list[t]['name'])
-      baseline_result[txn_list[t]['name']]=txn_list[t]
-      // delete txn_list[t]
-      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+      // console.log("txn_list[i]:",i, txn_list[i]);
+      found=false;
+      for (e in exclude_list)
+      {
+        if (txn_list[i]['name'].toLowerCase().includes(exclude_list[e].toLowerCase()))
+        {
+          found = true;
+          continue;
+        }
+      }
+      if (found)
+      {
+        txn_list.splice(i,1);
+        // delete txn_list[i];
+        continue;
+      }
+        
+      result_id = txn_list[i]['result_id'];
+      txn_list[i]['version']= res[result_id]['version'];
+      txn_list[i]['baseline'] = res[result_id]['baseline'];
+      txn_list[i]['active'] = true;
+      if (txn_list[i]['baseline'])
+      {
+        baseline_result[txn_list[i]['name']]=txn_list[i]
+        txn_list[i]['version']= res[result_id]['version']+' (baseline)'
+      }
+      
     }
-    // else 
-    // {
-    //   other_txns.push(txn_list[t]);
-    //   // console.log(txn_list[t])
-    // }
+  }
+  else 
+  {
+    // console.log("Nor case");
+    for (t in txn_list) 
+    {
+      result_id = txn_list[t]['result_id']
+      
+      txn_list[t]['version']= res[result_id]['version']
+      txn_list[t]['baseline'] = res[result_id]['baseline']
+      txn_list[t]['active'] = true
+      if (txn_list[t]['baseline'])
+      {
+        baseline_result[txn_list[t]['name']]=txn_list[t]
+        txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+      }
+    }
   }
 
+
+// console.log(txn_list);
+
+  if (compareby != "None") {
+    drawChart(txn_list, compareByTranslate(compareby));  
+  }
+  else {
+    drawChart(txn_list, "responsetime_p90");  
+  }
   
-  drawChart(txn_list, "responsetime_p90");
-  // console.log(txn_list);
 });
 
 function compare(a,b) {
@@ -746,7 +842,9 @@ svg.append("text")
     .enter().append("g")
       .attr("class", "city2");
 
-city2.append("path")
+    // if (health_txn.length > 0)
+    // {
+  city2.append("path")
       .attr("class",function(d) { return "line "+d.name+"-line" })
       // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
       .attr("d", function(d) {   return line2(d.values); })
@@ -799,13 +897,15 @@ city2.append("path")
             .attr("class", "legend");         
       });
 
+
       city2.append("text")
       .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
       // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
-      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y(d.value[comparisonField]) + ")"; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y1(d.value[comparisonField]) + ")"; })
       .attr("x", 3)
       .attr("dy", ".35em")
 
+    // }
       // .text(function(d) { return d.name; })
       // .style("stroke", function(d) {  return color(d.name); })
       // .style("stroke-width",".04em")
