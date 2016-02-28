@@ -167,9 +167,9 @@ $(document).ready(function() {
             
             var limit = this.dataset["resultlimit"];
 
-            var parent_href = $(this).parents('.btn-group').find('#comparisonChartWithLimitLink').attr('href');
+            var parent_href = $(this).parents('.btn-group').find('#showComparisonChartLink').attr('href');
             
-            openChartPage(parent_href+'/'+limit);
+            openChartPage(parent_href+'?limit='+limit);
             
             
           });
@@ -193,7 +193,7 @@ $(document).ready(function() {
 
                                 
                                 <div class="btn-group pull-right">
-                                  <a class="btn btn-danger pull-right dropdown-toggle"  data-toggle="dropdown" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit" id="comparisonChartWithLimitLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart <span class="fa fa-caret-down"></span></a>
+                                  <a class="btn btn-danger pull-right dropdown-toggle"  data-toggle="dropdown" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/showComparisonChart" id="showComparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart <span class="fa fa-caret-down"></span></a>
                                       <ul class="dropdown-menu">
                                               <li><a class="option" data-resultlimit=3 >Last 3</a></li>
                                               <li><a class="option" data-resultlimit=5 >Last 5</a></li>
@@ -419,7 +419,7 @@ $(document).ready(function() {
         <div class="panel panel-primary" id="panel-body">
             
             <div class="panel-heading ">
-              <h5 class="panel-title">Comparison (Improvement/Degradation) with Baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit/99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
+              <h5 class="panel-title">Comparison (Improvement/Degradation) with Baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/showComparisonChart?limit=99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
 
 
               </h5>

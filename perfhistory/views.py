@@ -200,11 +200,20 @@ def project(request):
 	
 
 @login_required(login_url='/'+APPLICATION+'/')
-def comparisonChartWithLimit(request, projectId, tagId, limit):
+def showComparisonChart(request, projectId, tagId, limit=99999):
 	limit = int(limit)
 	compare_by = request.GET.get('compareby', None);
 	exclude = request.GET.get('exclude', None);
 	show_only = request.GET.get('showonly', None);
+	limit_qp = request.GET.get('limit', None);
+	if not limit_qp:
+		limit_qp = None
+	else:
+		try:
+			l=int(limit_qp)
+			limit=l
+		except Exception as e:
+			print e.message, "continuing with limit provided in the url:", limit
 	if not exclude:
 		exclude = None
 	if not compare_by:
