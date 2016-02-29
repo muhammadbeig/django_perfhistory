@@ -687,7 +687,7 @@ var mytable;
                             aria-controls="collapse_{{ obj.id }}" 
                             data-pid="{{ obj.id}}">
                             
-                                <h4 > {{ obj.name | title }} </h4>
+                                <h4 > {{ obj.name }} </h4>
                                 
                         </a>
                             <div class="pull-right">
@@ -873,7 +873,7 @@ var mytable;
 
                                     
 
-
+                            {% if perms.perfhistory.create_tag %}
                             <div id="errorAlert_{{ obj.id }}" class="alert alert-danger fade in errorAlert_{{ obj.id }}">
                                     <a href="#" class="close" data-dismiss="alert">&times;</a>
                             </div>
@@ -892,6 +892,7 @@ var mytable;
                                     </div>    
                                 </form>
                             </div>
+                            {% endif %}
                     </div>
                 </div>
             </div>
