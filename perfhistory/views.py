@@ -350,6 +350,25 @@ def comparisonChartbyVersion(request, projectId, tagId):
 @login_required(login_url='/'+APPLICATION+'/')
 def result(request, projectId, tagId):
 	transactionForm = TransactionForm(result_qs=Result.objects.filter(tag_id=tagId))
+
+	# Get all projects and build a map with projects along with their tags
+	allprojects = []
+	for p in Project.objects.all():
+		print p.name
+		projectDic = {}
+		projectDic["name"] = p.name
+		projectDic["id"] = p.id
+		tags = Tag.objects.filter(project_id=p.id)
+		projectDic["tags"] = []
+		for t in tags:
+			tagDic={}
+			tagDic["name"]=t.name
+			tagDic["id"]=t.id
+			projectDic["tags"].append(tagDic)
+		allprojects.append(projectDic)
+	print 'All projects dictionary:', allprojects
+
+
 	# print transactionForm
 	try:
 		if request.method == 'GET':
@@ -379,7 +398,7 @@ def result(request, projectId, tagId):
 		raise Http404(e.message)
 		# return returnJsonWithResponseTextCodeAndStatus(e.message, 500, False)
 
-	return render(request, 'result.html', {'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj, 'transactionForm':transactionForm })
+	return render(request, 'result.html', {'allprojects':json.dumps(allprojects), 'object_list': json.dumps(data), 'type': 'Transaction', 'allresults':results, 'result_list': json.dumps(result_list), 'txn_list':json.dumps(alltxns), 'projectobj':projectobj, 'tagobj':tagobj, 'transactionForm':transactionForm })
 
 def makeTxnObjectForResult(result, txnData):
 	try:

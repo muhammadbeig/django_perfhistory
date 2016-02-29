@@ -174,7 +174,21 @@ $(document).ready(function() {
             
           });
 
-          
+        
+        
+        var $select = $('#selectproject');
+        jsonData = '{{ allprojects|safe }}';
+ 
+      //clear the current content of the select
+      $select.html('');
+ 
+      //iterate over the data and append a select option
+      $.each(jsonData, function(key, val){ 
+        $select.append('<option id="' + val.id + '">' + val.name + '</option>');
+      });
+  
+
+
       });
 
 
@@ -223,7 +237,7 @@ $(document).ready(function() {
                                  <th  colspan="2" class="text-center">Action(s)</th>
                                 {% endif %}
                               </tr>
-                              
+                              {{ allprojects }}
                               {% for result in allresults %}
                               <tr class="result-data-row {% if result.baseline %}active{% endif %}"  data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
                               
@@ -243,11 +257,19 @@ $(document).ready(function() {
 
                                   <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|add_time:result.duration_minutes|localtime|naturaltime }} ({{ result.start_time|add_time:result.duration_minutes|default_if_none:""|localtime|date:"M d, y G:i:s" }})</td>
                                   
-
+                                  
                                   {% if perms.perfhistory.change_result %}
                                   <td align="center">
                                     <button  class="btn btn-default btn-xs" data-title="Edit" data-toggle="modal" data-target="#edit_{{ result.id }}" >
                                       <span data-placement="top" data-toggle="tooltip" title="Edit" class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                  </td>
+                                  {% endif %}
+
+                                  {% if perms.perfhistory.change_result %}
+                                  <td align="center">
+                                    <button  class="btn btn-default btn-xs" data-title="Copy Result" data-toggle="modal" data-target="#copyresult" data-resultid="{{ result.id }}" >
+                                      <span data-placement="top" data-toggle="tooltip" title="Copy Result" class="glyphicon glyphicon-edit"></span>
                                     </button>
                                   </td>
                                   {% endif %}
@@ -287,6 +309,8 @@ $(document).ready(function() {
                                       </div>
                                     </div>
                                   </div>
+
+
 
                                   <!-- /.modal-edit --> 
                                   <div class="modal fade" id="edit_{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
@@ -347,7 +371,35 @@ $(document).ready(function() {
                             </table>
 </div>
 
-                                      
+                                  <!-- copy result modal -->
+                                  <div class="modal fade" id="copyresult"  data-resultid="{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                          </button>
+                                          <h4 class="modal-title custom_align" id="Heading">Copy this Result</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="alert">
+                                            <span class="glyphicon glyphicon-warning-sign">
+                                            </span> Chose project and tag to copy result to.
+                                          </div>
+                                          <select id="selectproject"></select>
+                                        </div>
+                                        <div class="modal-footer ">
+                                          <dropdown id="selectproject" class="btn btn-success">
+                                            <span class="glyphicon glyphicon-ok-sign">
+                                            </span>&nbsp;Yes
+                                          </button>
+                                          <button type="button" class="btn btn-default" data-dismiss="modal">
+                                            <span class="glyphicon glyphicon-remove">
+                                            </span>&nbsp;No
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
 
 
 <!-- 
