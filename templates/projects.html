@@ -670,8 +670,8 @@ var mytable;
 <ul class="list-group">
         {% for obj in object_list %}
 
-    <li class="list-group-item projectpanel_{{ obj.id }}" data-pid="{{ obj.id }}"> 
-            <div class="panel panel-default">
+    <li class="list-group-item projectpanel_{{ obj.id }} " data-pid="{{ obj.id }}"> 
+            <div class="panel panel-default ">
                 <div class="panel-heading" role="tab" id="heading_{{ obj.id }}">
 
                     <h4 class="col panel-title">
@@ -839,7 +839,7 @@ var mytable;
 
 {% if perms.perfhistory.add_project %}
 
-    <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
+    <form align="center" class="form-inline sm-col-12 createprojectform" data-action="/perfhistory/projects" action="" method="post">
         {% csrf_token %}
         {% load css_filter %}
 
