@@ -871,9 +871,9 @@ var mytable;
 
                                     
 
-                                    
+                                
 
-                            {% if perms.perfhistory.create_tag %}
+                            {% if perms.perfhistory.add_tag %}
                             <div id="errorAlert_{{ obj.id }}" class="alert alert-danger fade in errorAlert_{{ obj.id }}">
                                     <a href="#" class="close" data-dismiss="alert">&times;</a>
                             </div>
@@ -906,7 +906,7 @@ var mytable;
 </div>
 
 
-{% if perms.perfhistory.create_project %}
+{% if perms.perfhistory.add_project %}
 
     <form align="center" class="createprojectform form-inline" data-action="/perfhistory/projects" action="" method="post">
         {% csrf_token %}

@@ -23,14 +23,14 @@ Given below are the steps to install an instance of the performance history app.
 	
 	git clone <giturl-of-this-repo>
 
-- Go to the directory created by the cloning of the git repo and type:
+- Go to the directory created by the cloning of the git repo (and then the perfhistory_app directory) and type:
 
 	pip install -r requirements.txt (You need pip :))
 
 - Install migrations
 	
-	./manage.py -makemigrations
-	./manage.py -migrate
+	./manage.py makemigrations
+	&& ./manage.py migrate
 
 Currently there isn't a bash script to run the development server as daemon (We are not using a webserver with perfhistory app yet)
 

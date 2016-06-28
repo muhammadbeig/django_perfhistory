@@ -50,4 +50,8 @@ urlpatterns = [
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChartByVersion$', perfhistory.views.comparisonChartbyVersion),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/showComparisonChart/(?P<limit>[0-9]+)$', perfhistory.views.showComparisonChart),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/showComparisonChart$', perfhistory.views.showComparisonChart),
+
+    url(r'^(?i)perfhistory/temp$', perfhistory.views.temp),
+    url(r'^(?i)perfhistory/temp2$', perfhistory.views.temp2),
+    url(r'^(?i)perfhistory/temp3$', perfhistory.views.temp3),
 ]

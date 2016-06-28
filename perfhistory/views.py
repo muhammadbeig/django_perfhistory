@@ -12,6 +12,15 @@ from django.contrib.auth.decorators import login_required
 APPLICATION = 'perfhistory'
 # Create your views here.
 
+def temp(request):
+	return render(request, 'temp.html')
+
+def temp2(request):
+	return render(request, 'temp2.html')
+
+def temp3(request):
+	return render(request, 'temp3.html')	
+
 
 def logoutView(request):
     logout(request)
@@ -293,11 +302,12 @@ def comparisonChart(request, projectId, tagId):
 				baseline_result = r
 			else:
 				new_results.append(r)
-		print len(new_results)
+		# print len(new_results)
 		results = new_results
 
 		# sorting by version with assumption that version is an int/float and no other characters
 		results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		# results = sorted(results, key=lambda x: x.created, reverse=False)
 		results = results[-limit:] if len(results) > limit else results
 
 		if baseline_result and results:
@@ -356,12 +366,13 @@ def result(request, projectId, tagId):
 			projectobj = Project.objects.get(id=projectId);
 			tagobj = Tag.objects.get(id=tagId);
 			results = Result.objects.filter(project_id=projectId, tag_id=tagId);
-			try:
-			# sorting by version with assumption that version is an int/float and no other characters
-				results = sorted(results, key=lambda x: float(x.version), reverse=False)
-			except Exception as e:
-				print e.message, 'so sorting results by create date instead of version'
-				results = sorted(results, key=lambda x: x.version, reverse=False)
+			# try:
+			# # sorting by version with assumption that version is an int/float and no other characters
+			# 	results = sorted(results, key=lambda x: float(x.version), reverse=False)
+			# except Exception as e:
+			# 	print e.message, 'so sorting results by create date instead of version'
+			# 	results = sorted(results, key=lambda x: x.version, reverse=False)
+			results = sorted(results, key=lambda x: x.created, reverse=True)
 			data = []
 			result_list = [] 
 			alltxns = []
@@ -384,7 +395,7 @@ def result(request, projectId, tagId):
 def makeTxnObjectForResult(result, txnData):
 	try:
 		txn = Transaction(result_id=result.id)
-		txn.name = txnData.get('name')
+		txn.name = txnData.get('name').rstrip()
 		txn.description = txnData.get('description')
 		txn.success_count = txnData.get('successcount')
 		txn.failure_count = txnData.get('failurecount')
@@ -619,6 +630,7 @@ def createResult(request, project_id, tagid):
 			# print 'file read time:',request.META.get('HTTP_FILEREADTIME')
 
 			data = json.loads(request.body)
+			print data
 			if data.get('type') == 'summaryresults':			
 				for resultData in data['results']:
 					try:
