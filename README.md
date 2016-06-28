@@ -31,7 +31,7 @@ Given below are the steps to install an instance of the performance history app.
 	
 	./manage.py makemigrations
 	&& ./manage.py migrate
-
+	&& ./manage.py loaddata dataDump/feb292016.json (or use latest data json file in the dataDump folder)
 Currently there isn't a bash script to run the development server as daemon (We are not using a webserver with perfhistory app yet)
 
 - Install screen

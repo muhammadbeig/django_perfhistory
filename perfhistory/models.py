@@ -71,7 +71,7 @@ class Result(models.Model):
 	numberofusers = models.IntegerField(null=True)
 
 	class Meta:
-		unique_together = ('project', 'tag', 'version', 'numberofusers')
+		unique_together = ('project', 'tag', 'version', 'name')
 
 	def as_json(self):
 		return dict( type='result', result_id=self.id,

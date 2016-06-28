@@ -1,0 +1,137 @@
+.navbar {
+	background-color: #701F41;
+    border-color: #8F1F4E;
+    border-radius: 0px; 
+        min-height: 10vh;
+        margin-bottom: 0px;
+}
+
+a {
+	color: #8F1F4E;
+	font-family: Optima
+}
+
+a:focus, a:hover {
+	color: #8F1F4E;
+	text-decoration: none;
+	background: #fff;
+}
+
+.navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover {
+	color: #8F1F4E;
+	background: #e7e7e7;
+}
+
+.navbar-default .navbar-brand:focus, .navbar-default .navbar-brand:hover {
+	color: #e7e7e7;
+}
+
+.navbar-default .navbar-default .navbar-brand:hover  {
+	color: #fff;
+}
+
+a.navbar-brand {
+	float: left;
+    height: 50px;
+    padding: 15px 15px 15px 15px;
+    font-size: 35px;
+    font-weight: bold;
+    line-height: 20px;
+    font-family: Optima
+    
+}
+
+
+.navbar-default .navbar-nav>.active>a {
+	color: #8F1F4E;
+}
+
+.navbar-default .navbar-nav>li>a {
+	color: white;
+}
+.navbar-default .navbar-brand {
+	color: #e7e7e7;
+}
+/*.mynavbar-header {
+	background: url('_MG_1014.jpg');
+	background-size:cover;
+}*/
+
+
+.my-navbar-nav>li>a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.my-nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+}
+
+
+/* Buttons */
+
+.btn-primary {
+    /*color: #fff;*/
+    color: #fff;
+    background-color: #8F1F4E;
+    border-color: #701F41;
+    /*background-color: #337ab7;*/
+    /*border-color: #2e6da4;*/
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #7D1E46;
+    border-color: #54132E;
+    /*background-color: #286090;*/
+    /*border-color: #204d74;*/
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #EB8900;
+    border-color: #C77400;
+}
+.btn-danger:hover {
+    color: #fff;
+    background-color: #B36A04;
+    border-color: #A36103;
+}
+
+/********************/
+
+.jtcol {
+	padding: 0em;
+	border-radius:2em;
+}
+.jumbotron {
+	color: #701F41;
+	padding: 2em;
+	border-radius: 0em;
+}
+
+.panel-default>.panel-heading {
+	color: #701F41;
+	background: #e7e7e7;
+}
+
+body {
+	background: #FFFDF7;
+	font-family: Optima;
+}
+.list-group-item {
+	color: #701F41;
+	background: #FFFDF7;
+	padding: 10px 5px;	
+	border: none;
+}
+
+.floatleft {
+	float: left;
+}
+
+.floatright {
+	float: right;
+}

@@ -1,0 +1,29 @@
+/* Generic */
+@font-face {
+  font-family: "Montserrat";
+  src: url('../fonts/Montserrat/Montserrat-Regular.ttf');
+}
+
+@font-face {
+  font-family: "Roboto";
+  src:url('../fonts/Roboto_Slab/RobotoSlab-Regular.ttf');
+}
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+ font-family: 'Montserrat', sans-serif; 
+}
+
+a {
+  font-family: "Roboto", Arial;
+}
+
+
+
+/* Nav Bar */
+.navbar-brand {
+  font-size: 24px;
+  font-weight: bold;
+}

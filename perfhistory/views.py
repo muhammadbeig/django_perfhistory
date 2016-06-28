@@ -12,15 +12,6 @@ from django.contrib.auth.decorators import login_required
 APPLICATION = 'perfhistory'
 # Create your views here.
 
-def temp(request):
-	return render(request, 'temp.html')
-
-def temp2(request):
-	return render(request, 'temp2.html')
-
-def temp3(request):
-	return render(request, 'temp3.html')	
-
 
 def logoutView(request):
     logout(request)
@@ -306,8 +297,8 @@ def comparisonChart(request, projectId, tagId):
 		results = new_results
 
 		# sorting by version with assumption that version is an int/float and no other characters
-		results = sorted(results, key=lambda x: float(x.version), reverse=False)
-		# results = sorted(results, key=lambda x: x.created, reverse=False)
+		# results = sorted(results, key=lambda x: float(x.version), reverse=False)
+		results = sorted(results, key=lambda x: x.created, reverse=False)
 		results = results[-limit:] if len(results) > limit else results
 
 		if baseline_result and results:
@@ -630,7 +621,7 @@ def createResult(request, project_id, tagid):
 			# print 'file read time:',request.META.get('HTTP_FILEREADTIME')
 
 			data = json.loads(request.body)
-			print data
+			# print data
 			if data.get('type') == 'summaryresults':			
 				for resultData in data['results']:
 					try:
@@ -890,7 +881,63 @@ def d3(request):
 	if request.method == "POST":
 		data=request.POST;
 
-	return render(request, 'my_base.html', {'transactions': request.body})	
+	return render(request, 'base_index_simple.html', {'transactions': request.body})	
+
+@login_required(login_url='/'+APPLICATION+'/')
+def project_temporary(request):
+	# print request.user.has_perm('perfhistory.change_project')
+	# if request.session.test_cookie_worked():
+	# 	print "The test cookie worked!!!"
+	# 	request.session.delete_test_cookie()
+	user = request.user
+	# print 'user:',request.user.email
+	tagForm = TagForm()
+	projectform = ProjectForm(request.POST or None)
+	editprojectform = EditProjectForm()
+	allprojs= Project.objects.all().order_by('-last_modified')
+	
+	if request.method == 'POST':
+		if user.has_perm(APPLICATION+'.add_project'):
+			if projectform.is_valid():
+				project = projectform.save()
+			else:
+				# print 'Invalid Project Form, POST'
+				returnJsonWithResponseTextCodeAndStatus('Invalid Project Form', 500, False)
+		else:
+			return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions', 403, False)
+	
+	
+	if request.method == 'PUT': #update case
+		if user.has_perm(APPLICATION+'.change_project'):
+			data = QueryDict(request.body)
+			# print '***form PUT (POST):***', data
+			project = Project.objects.get(id=data['id'])
+			form = ProjectForm(data, instance=project)
+			if form.is_valid():
+				print form.cleaned_data
+				project = form.save()
+			else:
+				print 'Invalid Project Form, PUT'
+			# allprojs= Project.objects.all() #to get an updated list
+			response_data = {}
+			response_data['message'] = 'Project updated'
+			response_data['status'] = True
+			# response_data['project_id'] = project.id
+			# response_data['project_name'] = project_name
+			# response_data['project_description'] = project_description
+			HttpResponse.status_code = 200
+			response_data['updated_object'] = project.as_json()
+			return HttpResponse(
+			            json.dumps(response_data),
+			            content_type="application/json")
+		else:
+			return returnJsonWithResponseTextCodeAndStatus('Insufficient permissions', 403, False)
+	
+	return render(request, 'projects.html', {'projectform':projectform,  'tagForm':tagForm,'object_list': allprojs, 'type': 'Project'})
+	
+
+
+
 
 
 
