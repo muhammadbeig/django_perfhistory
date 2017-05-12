@@ -34,6 +34,8 @@ urlpatterns = [
     
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+]+)/getTags$', perfhistory.views.getTags),
     url(r'^(?i)perfhistory/tags$', perfhistory.views.getAllTags),
+    url(r'^(?i)perfhistory/tag/update$', perfhistory.views.updateTag),
+    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/delete$', perfhistory.views.deleteTag),
     url(r'^(?i)perfhistory/results$', perfhistory.views.getAllResults),
     url(r'^(?i)perfhistory/project/(?P<project_id>[\d+])$', perfhistory.views.projectdetail),
     url(r'^(?i)perfhistory/chart/$', perfhistory.views.chart),
@@ -46,5 +48,10 @@ urlpatterns = [
     url(r'^(?i)perfhistory/result/(?P<resultId>[0-9]+)/addTransaction$', perfhistory.views.addTransactionToResult),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChart$', perfhistory.views.comparisonChart),
     url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChartByVersion$', perfhistory.views.comparisonChartbyVersion),
-    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/comparisonChartWithLimit/(?P<limit>[0-9]+)$', perfhistory.views.comparisonChartWithLimit),
+    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/showComparisonChart/(?P<limit>[0-9]+)$', perfhistory.views.showComparisonChart),
+    url(r'^(?i)perfhistory/project/(?P<projectId>[0-9]+)/tag/(?P<tagId>[0-9]+)/showComparisonChart$', perfhistory.views.showComparisonChart),
+
+    url(r'^(?i)perfhistory/temp$', perfhistory.views.temp),
+    url(r'^(?i)perfhistory/temp2$', perfhistory.views.temp2),
+    url(r'^(?i)perfhistory/temp3$', perfhistory.views.temp3),
 ]

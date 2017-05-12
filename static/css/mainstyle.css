@@ -1,0 +1,53 @@
+body {
+	margin: 0;
+}
+
+header {
+	background: #999; 
+	color: white;
+	padding: 15px 15px 0 15px;
+}
+
+header h1 {
+	margin: 0;
+	display: inline;
+}
+
+nav	ul {
+	margin: 0;
+	display: inline;
+	padding: 0 0 0 15px;
+}
+
+nav ul li {
+	background: black;
+	columns: white;
+	display: inline-block;
+	list-style-type: none;
+	padding: 5px 15px;
+
+}
+
+nav ul li a {
+	color: white;
+}
+
+.row {
+
+
+}
+
+.col {
+	background: #333;
+	color: white;
+	float: left;
+	border-radius: 5px;
+	padding: .5%;
+	width: 31%;
+	margin: .5%;
+
+}
+
+footer {
+	clear: both;
+}

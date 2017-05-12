@@ -8,6 +8,7 @@
 {% load humanize %}
 {% load tz %}
 
+{% load add_time %}
 
 
 
@@ -166,9 +167,9 @@ $(document).ready(function() {
             
             var limit = this.dataset["resultlimit"];
 
-            var parent_href = $(this).parents('.btn-group').find('#comparisonChartWithLimitLink').attr('href');
+            var parent_href = $(this).parents('.btn-group').find('#showComparisonChartLink').attr('href');
             
-            openChartPage(parent_href+'/'+limit);
+            openChartPage(parent_href+'?limit='+limit);
             
             
           });
@@ -186,13 +187,13 @@ $(document).ready(function() {
 
 <div class="panel panel-primary">
                             <div class="panel-heading">
-                                <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> Results table
+                                <h3 class="panel-title"><i class="glyphicon glyphicon-align-left"></i> List of Results
 
                                 <!-- <a class="btn btn-danger pull-right" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChart" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart</a> -->
 
                                 
                                 <div class="btn-group pull-right">
-                                  <a class="btn btn-danger pull-right dropdown-toggle"  data-toggle="dropdown" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit" id="comparisonChartWithLimitLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart <span class="fa fa-caret-down"></span></a>
+                                  <a class="btn btn-danger pull-right dropdown-toggle"  data-toggle="dropdown" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/showComparisonChart" id="showComparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Comparison Chart <span class="fa fa-caret-down"></span></a>
                                       <ul class="dropdown-menu">
                                               <li><a class="option" data-resultlimit=3 >Last 3</a></li>
                                               <li><a class="option" data-resultlimit=5 >Last 5</a></li>
@@ -216,12 +217,15 @@ $(document).ready(function() {
                                  <th class="text-center">Is baseline</th>
                                  <th class="text-center"># of users</th>
                                  <th class="text-center">Duration (min)</th>
-                                 <th class="text-center">Start Time</th>
+                                 <th class="text-center">Started</th>
+                                 <th class="text-center">Ended</th>
                                  {% if perms.perfhistory.change_result or perms.perfhistory.delete_result %}
                                  <th  colspan="2" class="text-center">Action(s)</th>
                                 {% endif %}
                               </tr>
                               
+                              
+
                               {% for result in allresults %}
                               <tr class="result-data-row {% if result.baseline %}active{% endif %}"  data-projectid="{{ result.project_id }}" data-tagid="{{ result.tag_id }}" data-resultid="{{ result.id }}" >
                               
@@ -237,7 +241,9 @@ $(document).ready(function() {
                                   <td class="result-table-cells" align="center">{{ result.numberofusers|default_if_none:"-"|apnumber|title }}</td>
                                   <td class="result-table-cells" align="center">{{ result.duration_minutes|floatformat }} minute{{ result.duration_minutes|pluralize }}</td>
                                   
-                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|default_if_none:""|localtime|naturaltime }}{{ result.start_time|localtime |default_if_none:""|date:" (d/m/y H:iO)" }}</td>
+                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|default_if_none:""|localtime|date:"M d, y G:i:s O" }}</td>
+
+                                  <td class="result-table-cells" align="center">{% get_current_timezone as TIME_ZONE %}{{ result.start_time|add_time:result.duration_minutes|localtime|naturaltime }} ({{ result.start_time|add_time:result.duration_minutes|default_if_none:""|localtime|date:"M d, y G:i:s" }})</td>
                                   
 
                                   {% if perms.perfhistory.change_result %}
@@ -356,14 +362,17 @@ $(document).ready(function() {
     <div>
         <div class="panel panel-primary" id="panel-body">
             
-            <div class="panel-heading"><h3 class="panel-title">{{ type }} by Results</h3>
+            <div class="panel-heading"><h3 class="panel-title">Detailed Results</h3>
             <div  class="legends pull-right label label-danger">Failures</div>
             </div>
 
 
             <div class="panel-body" id="panel-body">
+
                 <p>List of response time and health metrics for tests grouped by tests (using test version). </p>
-                <p>Transaction response times are in <strong>milliseconds (ms)</strong>, while health metrics are in <strong>% (CPU)</strong> and <strong>MB (Memory)</strong>. </p>
+                <p>Transaction response times are in <strong>milliseconds (ms)</strong>, while health metrics are in <strong>% (CPU)</strong> and <strong>GB (Memory)</strong>. </p>
+
+                <p ><strong>Description: </strong> <i> {{ tagobj.description }} </i></p>
 
                 
                 <table id="txn-table" class="display compact cell-border row-border order-column" cellspacing="0" >
@@ -372,9 +381,10 @@ $(document).ready(function() {
                         <tr>
                             <th>Version</th>
                             <th>Name</th>
+                            <th>Description</th>
                             <th>qps</th>
-                            <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
-                            <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th><span style="color:green">pass</span></th>
+                            <th><span  style="color:red">fail</span>
                             <th>avg</th>
                             <th>min</th>
                             <th>max</th>
@@ -391,9 +401,10 @@ $(document).ready(function() {
                             
                             <th>Version</th>
                             <th>Name</th>
+                            <th>Description</th>
                             <th>qps</th>
-                            <th><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
-                            <th><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th><span style="color:green">pass</span></th>
+                            <th><span style="color:red">fail</span>
                             <th>avg</th>
                             <th>min</th>
                             <th>max</th>
@@ -415,10 +426,10 @@ $(document).ready(function() {
         <div class="panel panel-primary" id="panel-body">
             
             <div class="panel-heading ">
-              <h3 class="panel-title">Regression from baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/comparisonChartWithLimit/99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
+              <h5 class="panel-title">Comparison (Improvement/Degradation) with Baseline <a class="btn btn-danger" href="/perfhistory/project/{{ projectobj.id }}/tag/{{ tagobj.id }}/showComparisonChart?limit=99999" id="comparisonChartLink"><i class="fa fa-line-chart text-secondary"></i> Chart</a>
 
 
-              </h3>
+              </h5>
               
 
               <div id="legendcolornegative" class="legends label legendcolornegative pull-right">Degradation</div>
@@ -436,8 +447,8 @@ $(document).ready(function() {
                             <th>Version</th>
                             <th>Name</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
-                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
-                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span style="color:green">pass</span></th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span style="color:red">fail</span>
                             <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>min</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>max</th>
@@ -455,8 +466,8 @@ $(document).ready(function() {
                             <th>Version</th>
                             <th>Name</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>qps</th>
-                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-ok" style="color:green"></span></th>
-                            <th class="delta-headers"><span class="delta">&Delta;</span><span class="glyphicon glyphicon-remove" style="color:red"></span>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span style="color:green">pass</span></th>
+                            <th class="delta-headers"><span class="delta">&Delta;</span><span style="color:red">fail</span>
                             <th class="delta-headers"><span class="delta">&Delta;</span>avg</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>min</th>
                             <th class="delta-headers"><span class="delta">&Delta;</span>max</th>
@@ -478,15 +489,15 @@ $(document).ready(function() {
 
 </div>
 
-{% if perms.perfhistory.add_transaction %}
+<!-- {% if perms.perfhistory.add_transaction %}
 <div class="row" id="transactionForm">
   <form method="post" action="/perfhistory/result/87/addTransaction">
     <div align="center">{% csrf_token %}
       {% load css_filter %}
       {% for field in transactionForm %}
-      <!-- {% if forloop.counter|divisibleby:6 %}<div class="form-group">{% endif %} -->
+      {% if forloop.counter|divisibleby:6 %}<div class="form-group">{% endif %}
       {{ field|addcss:"form-inline" }}                                                
-      <!-- {% if forloop.counter|divisibleby:6 %}</div>{% endif %} -->
+      {% if forloop.counter|divisibleby:6 %}</div>{% endif %}
       {% endfor %}
       
 
@@ -494,7 +505,7 @@ $(document).ready(function() {
     </div>    
   </form>
 </div>
-{% endif %}
+{% endif %} -->
 
 <style type="text/css">
   .small-input {
@@ -505,6 +516,7 @@ $(document).ready(function() {
 
 
 <script type="text/javascript" language="javascript" src="/static/math.min.js"></script>
+
 <script>
 
 var improvement_color =  "#8DE8FA"
@@ -969,8 +981,32 @@ function create_result(formData, fileReadTime)
 
 
 <link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.min.css">
+<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.dataTables.min.css"> -->
+<!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css"> -->
+
+<link rel="stylesheet" type="text/css" href="/static/datatables/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="/static/datatables/css/select.dataTables.min.css">
+
+
 <script type="text/javascript" language="javascript" src="/static/jquery.dataTables.min.js">
     </script>
+    <!-- <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.1.2/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script> -->
+    <script type="text/javascript" src="/static/datatables/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/dataTables.select.min.js"></script>
+
+    <script type="text/javascript" src="/static/datatables/js/jszip.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/pdfmake.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/vfs_fonts.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/buttons.html5.min.js"></script>
+
+    <script type="text/javascript" src="/static/datatables/js/moment.min.js"></script>
+    <script type="text/javascript" src="/static/datatables/js/datetime-moment.js"></script>
+    <!-- <script type="text/javascript" src="/static/datatables/js/moment-with-locales.js"></script> -->
+
+    
 <script type="text/javascript">
     
 $(document).ready(function() 
@@ -999,6 +1035,16 @@ $(document).ready(function()
 
             txn_list[t]['version']= res[result_id]['version']
             txn_list[t]['baseline'] = res[result_id]['baseline']
+            // console.log(txn_list[t]['failurecount'])
+            if (txn_list[t]['failure_count'] != null && parseInt(txn_list[t]['failure_count']) > 0) 
+            {
+              txn_list[t]['errorwithpercent'] = parseInt(txn_list[t]['failure_count']) / (parseInt(txn_list[t]['success_count']) + parseInt(txn_list[t]['failure_count'])) * 100; 
+              // console.log(txn_list[t]['errorwithpercent'])
+            } else {
+              txn_list[t]['errorwithpercent'] = 0
+            }
+            // console.log(txn_list[t]['errorwithpercent']);
+            
             if (txn_list[t]['baseline'])
             {
                 // console.log(txn_list[t]['name'])
@@ -1011,6 +1057,8 @@ $(document).ready(function()
                 other_txns.push(txn_list[t]);
                 // console.log(txn_list[t])
             }
+
+            if (!txn_list[t]['description']) txn_list[t]['description'] = "-";
 
         }
 
@@ -1056,7 +1104,13 @@ $(document).ready(function()
                     }
             }
 
+            // console.log(txn_list);
 
+
+
+
+    $.fn.dataTable.moment('Y-MM-dd hh:mm:ss.SSSSSSZ');
+                          // "2016-05-05 05:09:32.668995+00:00"
 
     txnTable= $('#txn-table').DataTable(
     {
@@ -1064,9 +1118,10 @@ $(document).ready(function()
         "columns": [
         { "data": "version" },
         { "data": "name" },
+        { "data": "description" },
         { "data": "success_qps" },
         { "data": "success_count" },
-        { "data": "failure_count" },
+        { "data": "errorwithpercent" }, //errorwithpercent
         { "data": "responsetime_average" },
         { "data": "responsetime_minimum" },
         { "data": "responsetime_maximum" },
@@ -1075,24 +1130,107 @@ $(document).ready(function()
         { "data": "responsetime_p90" },
         { "data": "responsetime_p95" },
         { "data": "responsetime_p99" },
-        { "data": "responsetime_p99_99" }
+        { "data": "responsetime_p99_99" },
+        // { "data": "created" },
         ],
+        // "columnDefs": [
+        //   { "type": "date", "targets": 15 }
+        // ]
+        "pagingType": "full_numbers",
+        "lengthMenu": [[10,25,50,100,-1],[10,25,50,100,"All"]],
+         dom: 'Blfrtip',
+         // stateSave: true,
+         select: true,
+        buttons: [
+            {
+                extend: 'colvisGroup',
+                text: 'Basic',
+                show: [ 1, 3, 4, 5, 6, 7, 8, 11 ,12 ,13, 14],
+                hide: [ 2,  9, 10 ]
+            },
+            {
+                extend: 'colvisGroup',
+                text: 'Full',
+                show: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ,12 ,13, 14],
+                hide: [ 0 ]
+            },
+            {
+              extend : 'colvis',
+              collectionLayout: 'fixed',
+              postfixButtons: [ 'colvisRestore' ],
+              text: 'Pick Columns'
+            },
+
+            // {
+            //     text: 'Row selected data',
+            //     action: function ( e, dt, node, config ) {
+            //         alert(
+            //             'Row data: '+
+            //             JSON.stringify( dt.row( { selected: true } ).data() )
+            //         );
+            //     },
+            //     enabled: false
+            // },
+            // 'copyHtml5',
+            // 'excelHtml5',
+            // 'csvHtml5',
+            
+            { 
+              extend : 'copyHtml5',
+              text: 'Copy Table'
+            },
+            { 
+              extend : 'excelHtml5',
+              text: 'Export to Excel'
+            },
+            { 
+              extend : 'csvHtml5',
+              text: 'Export to CSV'
+            },
+            { 
+              extend : 'pdfHtml5',
+              text: 'Export to PDF'
+            },
+        
+
+
+            
+        ],
+        // language: {
+        //     buttons: {
+        //         colvis: 'Show/hide columns'
+        //     }
+        // },
+
         "columnDefs": [
-            { "visible": false, "targets": 0 },
+            // { "visible": false, "targets": 0 },
             // { className: "data-version", "targets": [0] },
             { className: "data-labels", "targets": [1] },
-            { className: "data-columns", "targets": [2,3,4,5,6,7,8,9,10,11,12,13] },
+            { className: "data-columns", "targets": [3,4,5,6,7,8,9,10,11,12,13,14] },
             { "render": function (data, type, row) 
                         {
                           return numberWithCommas(Math.round(data*10)/10); 
                         },
-              "targets": [2,3,4,5,6,7,8,9,10,11,12,13]
+              "targets": [3,4,5,6,7,8,9,10,11,12,13,14]
+            },
+
+            { "data": "errorwithpercent",
+              "render": function (data, type, row) 
+                        {
+                          if (data != 0) {
+                            failures=numberWithCommas(Math.round(row.failure_count*10)/10);
+                            return failures + " (" + Math.round(data*10)/10 + "%)";
+                          }
+                          return data;
+                        },
+              "targets": 5
             },
             { "render": function (data, type, row) 
                         {
-                          return "version=>"+data; 
+                          return data; 
                         },
-              "targets": [0]
+              "targets": [0],
+              "visible": false
             }            
         ],
         "order": [[ 0, 'asc' ],[ 1, 'asc' ]],
@@ -1109,7 +1247,7 @@ $(document).ready(function()
             {
                 if ( last !== group ) {
                     $(rows).eq( i ).before(
-                        '<tr class="group"><td class="data-version" colspan="13">'+group+'</td></tr>'
+                        '<tr class="group"><td class="data-version" colspan="14">'+group+'</td></tr>'
                     );
  
                     last = group;
@@ -1129,7 +1267,7 @@ $(document).ready(function()
                                 // else  if (parseFloat($(td).html()) == 0) {
                                 //     $(td).css("background-color", "#33C6C6");
                                 // }            
-                                if (index == 3) // failed requests column = 3
+                                if (index == 4) // failed requests column = 3
                                 {
                                   if (parseFloat($(td).html()) > 0) {
                                     $(td).css("background-color", "#d9534f");
@@ -1144,6 +1282,21 @@ $(document).ready(function()
       },
 
     });
+
+    txnTable.on( 'select', function () {
+        var selectedRows = txnTable.rows( { selected: true } ).count();
+ 
+        // txnTable.button( 3 ).enable( selectedRows === 1 );
+        txnTable.button( 3 ).enable( selectedRows > 0 );
+        // console.log(selectedRows > 0);
+    } );
+
+      txnTable.on( 'deselect', function () {
+        var selectedRows = txnTable.rows( { selected: true } ).count();
+ 
+        // txnTable.button( 3 ).enable( selectedRows === 1 );
+        txnTable.button( 3 ).enable( selectedRows > 0 );
+    } );
 
 
 
@@ -1610,6 +1763,11 @@ margin: 0;
     color: #515151;
 
     /*background-color: #eff1f2;*/
+  }
+
+  .dataTables_wrapper .dt-buttons {
+    float:none;  
+    text-align:center;
   }
 
 

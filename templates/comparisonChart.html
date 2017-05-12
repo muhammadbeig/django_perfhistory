@@ -22,29 +22,66 @@
 
 }
 
+ .axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+       stroke-opacity: .6;
+     stroke: navy;
+     stroke-width: 1.5;
+}
+
 .x-axis, .y-axis, .axis path,
 .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
+       /*stroke-opacity: .6;
+     stroke: navy;*/
+     /*stroke-width: 1.5;*/
 }
 
 
 .line {
   fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+  /*stroke: steelblue;*/
+  stroke-width: .1vmax;
 }
 
 .d3-tip {
   line-height: 1;
-  padding: 8px;
+  padding: 1vmax;
   background: rgba(0, 0, 0, 0.8);
   color: white;
-  border-radius: 1px;
+  border-radius: 1vmax;
 
 }
 
+.tick line{
+    opacity: 0.2;
+  }
+
+  .x-axis .line {
+     stroke-opacity: .2;
+     stroke: red;
+     stroke-width: 1.5;
+  }
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    /*position: absolute;*/
+    /*top: 10px;*/
+    left: 0;
+}
 
 /*.overlay {
   fill: none;
@@ -57,11 +94,18 @@
 }*/
 
 
+.legend.text {
+  font-size:6vmax;
+}
+.legend2.text {
+  font-size:6vmax;
+}
+
 
 .legend rect {
   fill:white;
   stroke:black;
-  opacity:0.8;
+  opacity:0.8;  
 }
 
 </style>
@@ -69,7 +113,7 @@
 
 <body>
 
-  <div id="page-wrapper">
+  <!-- <div id="page-wrapper"> -->
      <!-- Page Heading -->
     
      
@@ -115,7 +159,7 @@
 
     <div class="btn-group pull-right">
       <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
-      Compare by <span class="fa fa-caret-down"></span></a>
+      Compare other <span class="fa fa-caret-down"></span></a>
       <ul class="dropdown-menu">
         <!-- <li><a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
         <li><a href="#"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
@@ -136,41 +180,107 @@
       </ul>
     </div>
 
-    <div class="d3graph">
+    <div id="chart">
 
     </div>
 
 </body>
-<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="/static/d3.v3.min.js"></script>
 
 
 
 <script>
 
-function getText(fieldName)
+function getTextForTxnAxis(fieldName)
 {
+  // console.log("fieldName", fieldName);
   switch(fieldName)
   {
-    case "responsetime_p90": return "90th Percentiles";
-    case "responsetime_p95": return "95th Percentiles";
-    case "responsetime_p99": return "99th Percentiles";
-    case "responsetime_maximum": return "Maximums";
-    case "responsetime_minimum": return "Minimums";
-    case "responsetime_average": return "Averages";
-    case "responsetime_median": return "Medians";
-    case "success_count": return "Passed requests";
-    case "success_qps": return "Passed (QPS)";
-    case "failure_count": return "Failed request";
+    case "responsetime_p90": return "Response Time (ms)";
+    case "responsetime_p95": return "Response Time (ms)";
+    case "responsetime_p99": return "Response Time (ms)";
+    case "responsetime_maximum": return "Response Time (ms)";
+    case "responsetime_minimum": return "Response Time (ms)";
+    case "responsetime_average": return "Response Time (ms)";
+    case "responsetime_median": return "Response Time (ms)";
+    case "success_count": return "Request Count";
+    case "success_qps": return "Request Counts/second (QPS)";
+    case "failure_count": return "Request Counts";
   }
 
 }
 
+function getTextForHeader(fieldName)
+{
+  // console.log("fieldName", fieldName);
+  switch(fieldName)
+  {
+    case "responsetime_p90": return "90th Percentile values";
+    case "responsetime_p95": return "95th Percentile values";
+    case "responsetime_p99": return "99th Percentile values";
+    case "responsetime_maximum": return "Maximum values";
+    case "responsetime_minimum": return "Minimum values";
+    case "responsetime_average": return "Average values";
+    case "responsetime_median": return "Median values";
+    case "success_count": return "Counts";
+    case "success_qps": return "Passed QPS";
+    case "failure_count": return "Failed QPS";
+  }
+
+}
+
+function getTextForHealthAxis(fieldName)
+{
+  // console.log("fieldName", fieldName);
+  switch(fieldName)
+  {
+    case "responsetime_p90": return "CPU (%), Memory (GB), Network IO (MB)";
+    case "responsetime_p95": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "responsetime_p99": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "responsetime_maximum": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "responsetime_minimum": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "responsetime_average": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "responsetime_median": return "CPU (%) or Memory (GB), Network IO (MB)";
+    case "success_count": return "Count of captured health metrics";
+    case "success_qps": return "Count of captured health metrics/second";
+    case "failure_count": return "Not applicable for health metrics";
+  }
+
+}
+
+function compareByTranslate (compareby)
+{
+    switch(compareby)
+  {
+    case "p90": return "responsetime_p90";
+    case "p95": return "responsetime_p95";
+    case "p99": return "responsetime_p99";
+    case "maximum": return "responsetime_maximum";
+    case "minimum": return "responsetime_minimum";
+    case "average": return "responsetime_average";
+    case "median": return "responsetime_median";
+    case "success": return "success_count";
+    case "qps": return "success_qps";
+    case "failure": return "failure_count";
+  }
+}
 
 var txn_list;
 
 
 
 $(document).ready(function() {
+
+          // d3.select(window).on('resize', resize);
+          function updateWindow(){
+              x = w.innerWidth || e.clientWidth || g.clientWidth;
+              y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+              svg.attr("width", x).attr("height", y);
+              console.log("something happening");
+          }
+          // window.onresize = updateWindow; 
+
           $("a.option").click(function(ev) {
             
             // console.log(this.dataset["comparisonfield"]);
@@ -193,45 +303,183 @@ $(document).ready(function() {
       });
 
 
+function resize() {
+
+
+/* Find the new window dimensions */
+var width = parseInt(d3.select("#chart").style("width")) - margin*2,
+height = parseInt(d3.select("#chart").style("height")) - margin*2;
+
+/* Update the range of the scale with new width/height */
+x.range([0, width]).nice(d3.time.year);
+y.range([height, 0]).nice();
+y1.range([height, 0]).nice();
+
+/* Update the axis with the new scale */
+graph.select('.x-axis')
+  .attr("transform", "translate(0," + height + ")")
+  .call(xAxis);
+
+graph.select('.y-axis')
+  .call(yAxis);
+
+graph.select('.y-axis')
+  .call(secondyAxis);
+
+
+/* Force D3 to recalculate and update the line */
+graph.selectAll('.line')
+  .attr("d", line);
+
+/* Find the new window dimensions */
+var width = parseInt(d3.select("#chart").style("width")) - margin*2,
+height = parseInt(d3.select("#chart").style("height")) - margin*2;
+ 
+/* Update the range of the scale with new width/height */
+x.range([0, width]).nice(d3.time.year);
+y.range([height, 0]).nice();
+y1.range([height, 0]).nice();
+ 
+/* Update the axis with the new scale */
+graph.select('.x-axis')
+  .attr("transform", "translate(0," + height + ")")
+  .call(xAxis);
+ 
+graph.select('.y-axis')
+  .call(yAxis);
+ 
+ graph.select('.y-axis')
+  .call(secondyAxis);
+
+/* Force D3 to recalculate and update the line */
+graph.selectAll('.line')
+  .attr("d", line);
+}
 
 $(document).ready(function() 
 {
   var x= JSON.parse('{{ transactions|safe }}');
   result_list=JSON.parse('{{ result_list|safe }}');
   txn_list=JSON.parse('{{ transactions|safe }}');
-
+  compareby = '{{ compareby }}';
+  exclude = '{{ exclude }}'
+  showonly = '{{ showonly }}'
+  // console.log("exclude:",exclude);
+  // console.log("result_list");
+  // console.log(result_list);
+  // console.log("txn_list");
+  // for (t in txn_list)
+  //   console.log(txn_list[t].name);
   res = {}
   for (r in result_list)
   {
     // console.log('r:',result_list[r]);
     res[result_list[r]['result_id']]={'version':result_list[r]['version'], 'baseline':result_list[r]['baseline']}
   }
-  
-  baseline_result = {}
-  other_txns = []
-  for (t in txn_list) 
+  // console.log("res:")
+
+// console.log("length before showonly:" + txn_list.length);
+if ( showonly != "None")
   {
-    result_id = txn_list[t]['result_id']
-    
-    txn_list[t]['version']= res[result_id]['version']
-    txn_list[t]['baseline'] = res[result_id]['baseline']
-    if (txn_list[t]['baseline'])
+    // console.log("showonly");
+    var found = false;
+    var show_only_list = showonly.split(",")
+    // console.log("exclude_list", exclude_list)
+
+    for(var i = txn_list.length -1; i >= 0 ; i--)
     {
-      // console.log(txn_list[t]['name'])
-      baseline_result[txn_list[t]['name']]=txn_list[t]
-      // delete txn_list[t]
-      txn_list[t]['version']= res[result_id]['version']+' (baseline)'
-    }
-    else 
-    {
-      other_txns.push(txn_list[t]);
-      // console.log(txn_list[t])
+      // console.log("txn_list[i]:",i, txn_list[i]);
+      found=false;
+      for (e in show_only_list)
+      {
+        if (txn_list[i]['name'].toLowerCase().includes(show_only_list[e].toLowerCase()))
+        {
+          found = true;
+          continue;
+        }
+      }
+      if (!found)
+      {
+        // console.log("deleting"+txn_list[i].name);
+        txn_list.splice(i,1);
+        // delete txn_list[i];
+      }
     }
   }
 
+
+// console.log("length after showonly:" + txn_list.length);
+  // console.log(res)
+  baseline_result = {}
+  other_txns = []
+
+  if (exclude != "None")
+  {
+    // console.log("exclude");
+    var found = false;
+
+    var exclude_list = exclude.split(",")
+    // console.log("exclude_list", exclude_list)
+
+    for(var i = txn_list.length -1; i >= 0 ; i--)
+    {
+      // console.log("txn_list[i]:",i, txn_list[i]);
+      found=false;
+      for (e in exclude_list)
+      {
+        if (txn_list[i]['name'].toLowerCase().includes(exclude_list[e].toLowerCase()))
+        {
+          found = true;
+          continue;
+        }
+      }
+      if (found)
+      {
+        txn_list.splice(i,1);
+        // delete txn_list[i];
+        continue;
+      }
+        
+      result_id = txn_list[i]['result_id'];
+      txn_list[i]['version']= res[result_id]['version'];
+      txn_list[i]['baseline'] = res[result_id]['baseline'];
+      txn_list[i]['active'] = true;
+      if (txn_list[i]['baseline'])
+      {
+        baseline_result[txn_list[i]['name']]=txn_list[i]
+        txn_list[i]['version']= res[result_id]['version']+' (baseline)'
+      }
+      
+    }
+  }
+  else 
+  {
+    // console.log("Nor case");
+    for (t in txn_list) 
+    {
+      result_id = txn_list[t]['result_id']
+      
+      txn_list[t]['version']= res[result_id]['version']
+      txn_list[t]['baseline'] = res[result_id]['baseline']
+      txn_list[t]['active'] = true
+      if (txn_list[t]['baseline'])
+      {
+        baseline_result[txn_list[t]['name']]=txn_list[t]
+        txn_list[t]['version']= res[result_id]['version']+' (baseline)'
+      }
+    }
+  }
+
+
+// console.log(txn_list);
+
+  if (compareby != "None") {
+    drawChart(txn_list, compareByTranslate(compareby));  
+  }
+  else {
+    drawChart(txn_list, "responsetime_p90");  
+  }
   
-  drawChart(txn_list, "responsetime_p90");
-  // console.log(txn_list);
 });
 
 function compare(a,b) {
@@ -240,51 +488,69 @@ function compare(a,b) {
 }
 
 
-var x, y;
+var x, y, margin;
 
 
 
 function drawChart(data3, comparisonField)
 {
 
-  var parentWidth = $(".d3graph").parent().width(),
+  // var parentWidth = $("#chart").clientWidth(),//parseInt(d3.select('.chart').style('width'), 10)
+  var parentWidth = document.getElementById("chart").clientWidth;
 parentHeight = parentWidth * .6;
+ padding = 40;
 
-  var margin = {top: 50, right: 200, bottom: 80, left: 80},
+// parentHeight =  700;//$("#chart").parent().height()
+
+   margin = {top: 50, right: 200, bottom: 200, left: 200},
     width = parentWidth - margin.left - margin.right,
     height = parentHeight - margin.top - margin.bottom;
+
 
 var parseDate = d3.time.format("%Y%m%d").parse;
     formatResponseTime = function(d) { return d+" ms"; };
 
-// var comparisonField = "p90"
 
-// var x = d3.time.scale()
-//     .range([0, width]);
 x = d3.scale.ordinal()
     .range([0, width]);
 
 y = d3.scale.linear()
     .range([height, 0]);
 
+y1 = d3.scale.linear()
+    .range([height, 0]);
+
 var color = d3.scale.category20();
+var color2 = d3.scale.category20b();
 
 var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom")
-    .tickPadding(10);
+    .innerTickSize(-width)
+    .outerTickSize(0)
+    .tickPadding(2);
 
 var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left")
-    .tickPadding(4);
+    // .ticks(10)
+    .tickPadding(2);
+
+var secondyAxis = d3.svg.axis()
+    .scale(y1)
+    .orient("left")
+    // .ticks(10)
+    .tickPadding(2);
 
 
 
-
-  var svg = d3.select("body").selectAll("div.d3graph").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+  var svg = d3.select("body").select("#chart").append("svg")
+    .attr("width", parentWidth)
+    .attr("height", parentHeight)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .classed("svg-content-responsive", true)
+    .attr("viewBox", "0 0 "+parentWidth+" "+parentHeight)
+    // .classed("svg-container", true)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -293,23 +559,24 @@ svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", -20)
         .attr("text-anchor", "middle")  
-        .style("font-size", "18px") 
-        .text(getText(comparisonField) + " comparison ({{ limit }})")
+        .style("font-size", "1.6vmax") 
+        .text(getTextForHeader(comparisonField))
         .attr("class", "chart-heading");
-;
+
   var line = d3.svg.line()
     .interpolate("monotone")
     .x(function(d) { return x(d.version); })
-    .y(function(d) { return y(d[comparisonField]); });
+    .y(function(d) { if (!d.name.toLowerCase().includes("cpu") && !d.name.toLowerCase().includes("memory") && !d.name.toLowerCase().includes("network")) return y(d[comparisonField]); });
+
+  var line2 = d3.svg.line()
+    .interpolate("monotone")
+    .x(function(d) { return x(d.version); })
+    .y(function(d) { if (d.name.toLowerCase().includes("cpu") || d.name.toLowerCase().includes("memory") || d.name.toLowerCase().includes("network")) return y1(d[comparisonField]); });
 
 /* newer code */
   mytxns = {}
   data3.filter(function(key) { mytxns[key.name]=1;} )
   color.domain(d3.keys(mytxns));
-
-  // data3.forEach(function(d) {
-  //   d.last_modified = parseDate(d.last_modified);
-  // });
 
   var txns = color.domain().map(function(name) 
   {
@@ -330,42 +597,43 @@ svg.append("text")
     };
   });
 
-  // console.log('txns:',txns);
-  // x.domain(d3.extent(data3, function(d) { return d.version; }));
-  var versions = {}
+
+  sorted_txn = txns.sort(function(a,b) { if (a.name < b.name) return -1; else if (a.name > b.name) return 1; else return 0; }); 
+  health_txn = txns.filter(function(c){return c.name.toLowerCase().includes("cpu") || c.name.toLowerCase().includes("memory") || c.name.toLowerCase().includes("network")});
+  regular_txn = txns.filter(function(c){return !c.name.toLowerCase().includes("cpu") && !c.name.toLowerCase().includes("memory") && !c.name.toLowerCase().includes("network")});
+
+  var versionarr = []
   data3.forEach(function (d){
-    versions[d.version]=""
+    // versions[d.version]=""
+    versionarr.push(d.version);
 
   });
 
-  
-  versionArray = d3.keys(versions);
+  versionArray = versionarr;
 
-  // console.log("VersionArray:", versionArray)
-  // versionArray.sort(function(a,b){
-  //   // console.log(a +" "+ b)
-  //   if (a.indexOf('baseline') > -1)
-  //     return -1;
-  //   else if (b.indexOf('baseline') > -1)
-  //     return 1;
-  //   else
-  //     return parseFloat(a) - parseFloat(b);
-  // })
-
-  versionArray.sort(function(a,b){
-    return parseFloat(a) - parseFloat(b);
-  })
-
-
-  // console.log("txns:", txns);
-
-  // x.domain(d3.extent(data3, function(d) { console.log(d.version); return d.version; }));
   x.domain(versionArray)
     .rangePoints([0, width]);
+
+
   y.domain([
     // d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
     0,
-    d3.max(txns, function(c) 
+    d3.max(regular_txn, function(c) 
+      { 
+        
+        var maxvalue = d3.max(c.values, function(v) 
+          { 
+            return v[comparisonField];
+          });
+        if (maxvalue==0) return 10;
+        else return d3.max(c.values, function(v) { return v[comparisonField]; }); 
+      })
+  ]).nice();
+  //.range([height - padding, padding])
+  y1.domain([
+    // d3.min(txns, function(c) { return d3.min(c.values, function(v) { return v[comparisonField]; }); }),
+    0,
+    d3.max(health_txn, function(c) 
       { 
         var maxvalue = d3.max(c.values, function(v) 
           { 
@@ -374,37 +642,70 @@ svg.append("text")
         if (maxvalue==0) return 10;
         else return d3.max(c.values, function(v) { return v[comparisonField]; }); 
       })
-  ]);
+      
+  ]).nice();
+//.range([height - padding, padding])
+
   // console.log('x.domain:',x.domain)
   // console.log('y.domain:',y.domain)
 /***********/
 
   svg.append("g")
       .attr("class", "x-axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + height + ")")//"translate(0," + height + ")")
       .call(xAxis)
-
+    .selectAll("text")
+      .attr("x", -80)
+      .attr("y", -5)
+      .style("font-size", ".9vmax") 
+      // .attr("transform", "rotate(-90)")
+      .attr("transform", function(d) {
+             return "translate(" + this.getBBox().height*1.1 + "," + 0 + ")rotate(-45)";
+             // return "translate(" + this.getBBox().height*-1 + "," + this.getBBox().height + ")rotate(-45)";
+         })
     .append("text")
-      .attr("dx", "30em")
-      .attr("y", 50)
-      .style("font-size", "15px") 
-      .text("Version");;
+      .attr("x", -250)
+      .attr("y", -500)
+      .style("font-size", "2vmax") 
+      .text("Tests");
 
   svg.append("g")
       .attr("class", "y-axis")
+      .style("stroke", "#707070") //9d9d9d
       .call(yAxis)
+
 
     .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -65)
-      .attr("x", 0)
+      .attr("y", -60)
+      .attr("x", 50)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .style("font-size", "15px") 
-      .text(getText(comparisonField));
+      .style("font-size", "1.2vmax") 
+      .text(getTextForTxnAxis(comparisonField))
+
+  svg.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", "translate(" + width + " ,0)") 
+      .style("stroke", "#707070") 
+      .call(secondyAxis)
+
+
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("x", 50)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .style("font-size", "1vmax") 
+      .text(getTextForHealthAxis(comparisonField));;
+
+  // console.log("txns:");
+  // console.log(txns);
 
   var city = svg.selectAll(".city")
-      .data(txns)
+      // .data(txns)
+      .data(regular_txn)
     .enter().append("g")
       .attr("class", "city");
 
@@ -417,10 +718,11 @@ svg.append("text")
       .style("stroke", function(d) {  return color(d.name); })
       .attr('id',function(d){ return d.name+"-line"; })
       .on("mouseover", function (d) 
-      {  
+      {
+        zetipforline.show(d);
         // console.log("mouseover",this);                                
         d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
-          .style("stroke-width",'4px');
+          .style("stroke-width",'3px');
           
         var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
         d3.selectAll(selectthegraphs)
@@ -432,6 +734,9 @@ svg.append("text")
           
         var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
         var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+        var otherlegends = $('.legend2');
+        d3.selectAll(otherlegends)    // drop opacity on other legend names
+            .style("opacity",.1);
 
         d3.selectAll(selectlegend)    // drop opacity on other legend names
             .style("opacity",.1);
@@ -440,8 +745,9 @@ svg.append("text")
             .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
       })
       .on("mouseout", function(d) {        //undo everything on the mouseout
+          zetipforline.hide(d);
           d3.select(this)
-            .style("stroke-width",'2.5px');
+            .style("stroke-width",'1px');
           
           var selectthegraphs = $('.line').not(this);
           d3.selectAll(selectthegraphs)
@@ -456,6 +762,10 @@ svg.append("text")
 
           d3.selectAll(selectlegend)
             .style("opacity",1);
+
+        var otherlegends = $('.legend2');
+        d3.selectAll(otherlegends)    // drop opacity on other legend names
+            .style("opacity",1);
           
           d3.select(getname)
             .attr("class", "legend");         
@@ -467,12 +777,86 @@ svg.append("text")
       .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y(d.value[comparisonField]) + ")"; })
       .attr("x", 3)
       .attr("dy", ".35em")
-      // .text(function(d) { return d.name; })
-      // .style("stroke", function(d) {  return color(d.name); })
-      // .style("stroke-width",".04em")
-      // .style("text-anchor", "start");
 
-// });
+
+
+  var city2 = svg.selectAll(".city2")
+      // .data(txns)
+      .data(health_txn)
+    .enter().append("g")
+      .attr("class", "city2");
+
+    // if (health_txn.length > 0)
+    // {
+  city2.append("path")
+      .attr("class",function(d) { return "line "+d.name+"-line" })
+      // .attr("d", function(d) {  console.log(line_orig(d.values)); return line_orig(d.values); })
+      .attr("d", function(d) {   return line2(d.values); })
+      .style("stroke", function(d) {  return color(d.name); })
+      .attr('id',function(d){ return d.name+"-line"; })
+      .on("mouseover", function (d) 
+      {
+        zetipforline.show(d);
+        // console.log("mouseover",this);                                
+        d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+          .style("stroke-width",'3px');
+          
+        var selectthegraphs = $('.line').not(this);     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+        d3.selectAll(selectthegraphs)
+            .style("opacity",0.1);
+        
+        var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+        d3.selectAll(other_line_circles)
+            .style("opacity",0.1);
+          
+        var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+        var selectlegend = $('.legend2').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+
+        d3.selectAll(selectlegend)    // drop opacity on other legend names
+            .style("opacity",.1);
+
+        var otherlegends = $('.legend');
+        d3.selectAll(otherlegends)    // drop opacity on other legend names
+            .style("opacity",.1);
+
+        d3.select(getname)
+            .attr("class", "legend2-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+      })
+      .on("mouseout", function(d) {        //undo everything on the mouseout
+          zetipforline.hide(d);
+          d3.select(this)
+            .style("stroke-width",'1px');
+          
+          var selectthegraphs = $('.line').not(this);
+          d3.selectAll(selectthegraphs)
+            .style("opacity",1);
+          var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+          d3.selectAll(other_line_circles)
+            .style("opacity",1);
+          
+          var getname = document.getElementById(d.name);
+          var getname2= $('.legend[fakeclass="fakelegend"]')
+          var selectlegend = $('.legend2').not(getname2).not(getname);
+
+          d3.selectAll(selectlegend)
+            .style("opacity",1);
+        
+        var otherlegends = $('.legend');
+        d3.selectAll(otherlegends)    // drop opacity on other legend names
+            .style("opacity",1);
+
+          
+          d3.select(getname)
+            .attr("class", "legend2");         
+      });
+
+
+      city2.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.version) + "," + y1(d.value[comparisonField]) + ")"; })
+      .attr("x", 3)
+      .attr("dy", ".35em")
 
   var zetip = d3.tip()
   .attr('class', 'd3-tip')
@@ -482,17 +866,39 @@ svg.append("text")
     // return '<p>' + d.name + '<p>' + d[comparisonField] + '</p> <p>'+  d.version+'</p>';
   })
 
+  var zetipforline = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong style='color:"+color(d.name)+"'>"+ d.name+"</strong>";
+  })
+
   svg.call(zetip);
+  svg.call(zetipforline);
 
   var point = city.append("g");
-
   point.selectAll('circle')
     .data(function(d){ return d.values})
+    // .data(function(d) { txns.filter(function(c){return c.name.toLowerCase().includes("cpu") || c.name.toLowerCase().includes("memory")}))
     .enter().append('circle')
     .attr("class", function(d) { return d.name+"-circle" })
     .attr("cx", function(d) { return x(d.version) })
     .attr("cy", function(d) { return y(d[comparisonField]) })
-    .attr("r", 3)
+    .attr("r", 2.5)
+    .style("fill", function(d) { return color(d.name); })
+    .style("stroke", function(d) { return color(d.name); })
+    .style("opacity",1)
+    .on('mouseover', zetip.show)
+    .on('mouseout', zetip.hide);
+
+var point2 = city2.append("g");
+  point2.selectAll('circle')
+    .data(function(d){ return d.values})
+    .enter().append('circle')
+    .attr("class", function(d) { return d.name+"-circle" })
+    .attr("cx", function(d) { return x(d.version) })
+    .attr("cy", function(d) { return y1(d[comparisonField]); })
+    .attr("r", 2.5)
     .style("fill", function(d) { return color(d.name); })
     .style("stroke", function(d) { return color(d.name); })
     .style("opacity",1)
@@ -501,31 +907,177 @@ svg.append("text")
 
 
      // Draw the x Grid lines
-    svg.append("g")
-        .attr("class", "grid")
-        .attr("transform", "translate(0," + height + ")")
-        .call(make_x_axis()
-            .tickSize(-height, 0, 0)
-            .tickFormat("")
-        )
+    // svg.append("g")
+    //     .attr("class", "grid")
+    //     .attr("transform", "translate(0," + height + ")")
+    //     .call(make_x_axis()
+    //         .tickSize(-height, 0, 0)
+    //         .tickFormat("")
+    //     )
 
-    // Draw the y Grid lines
-    svg.append("g")            
-        .attr("class", "grid")
-        .call(make_y_axis()
-            .tickSize(-width, 0, 0)
-            .tickFormat("")
-        )
+    // // Draw the y Grid lines
+    // svg.append("g")            
+    //     .attr("class", "grid")
+    //     .call(make_y_axis()
+    //         .tickSize(-width, 0, 0)
+    //         .tickFormat("")
+    //     )
 
-
+        
+        // health_txn = txns.filter(function(c){return c.name.toLowerCase().includes("cpu") || c.name.toLowerCase().includes("memory")});
+        // regular_txn = txns.filter(function(c){return !c.name.toLowerCase().includes("cpu") && !c.name.toLowerCase().includes("memory")});
 //append the legend
     var legend = svg.selectAll('.legend')
-        .data(txns);
-    
+        .data(regular_txn);
+        // .data(txns);
+
     var legendEnter=legend
         .enter()
         .append('g')
         .attr('class', 'legend')
+        .attr('id',function(d){  return d.name; })
+        .on('click', function (d) 
+        { 
+            
+          if($(this).css("opacity") == 1)
+          {
+            // id of the line 045_DELETE Service-line
+            var elemented = document.getElementById(this.id +"-line");   //grab the line that has the same ID as this point along w/ "-line"  use get element cause ID has spaces
+            var dots = document.getElementsByClassName(this.id +"-circle")
+            
+            d3.select(elemented)
+              .transition()
+              .duration(250)
+              .style("opacity",0)
+              .style("display",'none');
+          
+            d3.select(this)
+              .attr('fakeclass', 'fakelegend')
+            .transition()
+              .duration(250)
+              .style ("opacity", .2);
+
+
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .transition()
+              .duration(250)
+              .style("opacity",0)
+              .style("display",'none'); 
+
+            }
+
+          } 
+          else 
+          {
+            var elemented = document.getElementById(this.id +"-line");
+            var dots = document.getElementsByClassName(this.id +"-circle")
+
+            d3.select(elemented)
+              .style("display", "block")
+              .transition()
+              .duration(250)
+              .style("opacity",1);
+          
+            d3.select(this)
+              .attr('fakeclass','legend')
+              .transition()
+              .duration(250)
+              .style ("opacity", 1);
+
+            
+            for (var i=0; i<dots.length; i++) 
+            { 
+              
+              d3.select(dots[i])
+              .style("display", "block")
+              .transition()
+              .style("opacity",1); 
+            }
+
+          }
+    })
+          .on("mouseover", function (d) 
+      {  
+        // console.log("mouseover",this);                                
+        // console.log("d.name",d.name)
+        d3.select(this)                          //on mouseover of each line, give it a nice thick stroke
+          .style("stroke-width",'4px');
+          
+        var other_lines = $( "[class*='line']" ).not( "[class*='line "+d.name+"-line']" );     //select all the rest of the lines, except the one you are hovering on and drop their opacity
+        // console.log("other lines", other_lines)
+        d3.selectAll(other_lines)
+            .style("opacity",0.1);
+        
+        var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+        d3.selectAll(other_line_circles)
+            .style("opacity",0.1);
+          
+        var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
+        var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+        var selectlegend2 = $('.legend2');
+
+        d3.selectAll(selectlegend)    // drop opacity on other legend names
+            .style("opacity",.1);
+        d3.selectAll(selectlegend2)    // drop opacity on other legend names
+            .style("opacity",.1);
+
+        d3.select(getname)
+            .attr("class", "legend-select");  //change the class on the legend name that corresponds to hovered line to be bolder         
+      })
+      .on("mouseout", function(d) {        //undo everything on the mouseout
+          d3.select(this)
+            .style("stroke-width",'2.5px');
+          
+        var other_lines = $( "[class*='line']" ).not( "[class*='"+d.name+"-line']" );    
+        d3.selectAll(other_lines)
+            .style("opacity",1);
+
+          var other_line_circles= $( "[class*='circle']" ).not( "[class*='"+d.name+"-circle']" );
+          d3.selectAll(other_line_circles)
+            .style("opacity",1);
+          
+          var getname = document.getElementById(d.name);
+          var getname2= $('.legend[fakeclass="fakelegend"]')
+
+          var selectlegend = $('.legend').not(getname2).not(getname);
+          var selectlegend2 = $('.legend2');
+          
+         d3.selectAll(selectlegend)
+            .style("opacity",1);
+          d3.selectAll(selectlegend2)
+            .style("opacity",1);
+          
+          d3.select(getname)
+            .attr("class", "legend");         
+      });
+
+  var legendscale= d3.scale.ordinal()
+        .domain(color.domain())
+  //add the legend text
+    legendEnter.append('text')
+        .attr('x', -200)
+        .attr('y', function(d,i ){ return 40+i*26;})
+        // .attr('y', function(d,i ){ console.log(legendscale(d.values[d.values.length-1].value)); return legendscale(d.values[d.values.length-1].value);})
+        .text(function(d){ return d.name; })
+        .style("font-size", ".8vmax") 
+        // .style("word-wrap", "break-word")
+        .style('fill', function(d) { 
+            return color(d.name);
+        });;
+
+
+
+  // health legend *************
+      var legend2 = svg.selectAll('.legend2')
+        .data(health_txn);        
+
+    var legendEnter2=legend2
+        .enter()
+        .append('g')
+        .attr('class', 'legend2')
         .attr('id',function(d){  return d.name; })
         .on('click', function (d) 
         { 
@@ -605,9 +1157,12 @@ svg.append("text")
             .style("opacity",0.1);
           
         var getname = document.getElementById(d.name);    //use get element cause the ID names have spaces in them
-        var selectlegend = $('.legend').not(getname);    //grab all the legend items that match the line you are on, except the one you are hovering on
+        var selectlegend = $('.legend');    //grab all the legend items that match the line you are on, except the one you are hovering on
+        var selectlegend2 = $('.legend2').not(getname);
 
         d3.selectAll(selectlegend)    // drop opacity on other legend names
+            .style("opacity",.1);
+        d3.selectAll(selectlegend2)    // drop opacity on other legend names
             .style("opacity",.1);
 
         d3.select(getname)
@@ -625,50 +1180,39 @@ svg.append("text")
           d3.selectAll(other_line_circles)
             .style("opacity",1);
           
+
+          
+
           var getname = document.getElementById(d.name);
           var getname2= $('.legend[fakeclass="fakelegend"]')
-          var selectlegend = $('.legend').not(getname2).not(getname);
+          var selectlegend2 = $('.legend2').not(getname2).not(getname);
+
+          var selectlegend = $('.legend');
 
           d3.selectAll(selectlegend)
             .style("opacity",1);
+          d3.selectAll(selectlegend2)
+            .style("opacity",1);
           
           d3.select(getname)
-            .attr("class", "legend");         
+            .attr("class", "legend2");         
       });
 
-var lastvalues = []
-
-  var txnname = {}
-  txns.forEach(function (d){
-    txnname[d.name]=""
-
-  });
-  // console.log(d3.keys(txnname));
-  //create a scale to pass the legend items through
-  var legendscale= d3.scale.ordinal()
+  var legendscale2= d3.scale.ordinal()
         .domain(color.domain())
-        // .range([0,30,60,90,120,150,180,210]);
-
-  //actually add the circles to the created legend container
-    // legendEnter.append('circle')
-    //     .attr('cx', width +20)
-    //     .attr('cy', function(d){return legendscale(d.values[d.values.length-1].value);})
-    //     .attr('r', 7)
-    //     .style('fill', function(d) { 
-    //         return color(d.name);
-    //     });
-                    
   //add the legend text
-    legendEnter.append('text')
-        .attr('x', width+35)
-        .attr('y', function(d,i ){ return i*10;})
+    legendEnter2.append('text')
+        .attr('x', width+40)
+        .attr('y', function(d,i ){ return i*26;})
         // .attr('y', function(d,i ){ console.log(legendscale(d.values[d.values.length-1].value)); return legendscale(d.values[d.values.length-1].value);})
         .text(function(d){ return d.name; })
-        .style("font-size", "10px") 
+        .style("font-size", ".8vmax") 
         .style('fill', function(d) { 
             return color(d.name);
         });;
-  
+
+
+
   bisectDate = d3.bisector(function(d) { return d.version; }).left;
 
   function mousemove() {
