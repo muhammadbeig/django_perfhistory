@@ -49,3 +49,7 @@ Currently there isn't a bash script to run the development server as daemon (We 
 	e.g. ./manage.py runserver 0.0.0.0:8081 --insecure
 
 - Exit the screen using Ctl + a, then press d
+
+## Screenshots
+
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/login.jpg)
