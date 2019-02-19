@@ -51,5 +51,22 @@ Currently there isn't a bash script to run the development server as daemon (We 
 - Exit the screen using Ctl + a, then press d
 
 ## Screenshots
-
+### Login page
 ![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/login.jpg)
+
+### Projects page
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/ProjectsPage.jpg)
+
+### Tags in a project
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/ProjectWithTags.jpg)
+
+### Detailed Results page
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/DetailedResultsTable.jpg)
+ 
+### Results Comparison Chart page
+Comparing 90th percentile of response time for requests across performance tests
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/ComparisonChart_P90ResponseTime.jpg)
+
+### Results Comparison Chart page
+Comparing throughput of successful requests across performance tests
+![Login Screen](https://github.com/muhammadbeig/django_perfhistory/blob/master/jpgs/ComparisonChart_ThroughputQPS.png)
